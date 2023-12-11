@@ -6,7 +6,7 @@ from dataclasses import dataclass, field, replace
 class Node:
     id: int
     length: int = 0
-    first_endpos: int = 0
+    first_endpos: int = 0  # First possible ending position of substring.
     link: Node | None = None
     transitions: dict[str, Node] = field(default_factory=dict)
 

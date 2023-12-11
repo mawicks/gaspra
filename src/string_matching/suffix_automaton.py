@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
 from collections.abc import Iterator
+from dataclasses import dataclass, field, replace
 
 
 @dataclass
@@ -12,6 +12,15 @@ class Node:
     link: Node | None = None
     transitions: dict[str, Node] = field(default_factory=dict)
 
+    @staticmethod
+    def get_factory():
+        generator = make_id_sequence()
+
+        def factory(**kwargs):
+            return Node(id=next(generator), **kwargs)
+
+        return factory
+
 
 def make_id_sequence() -> Iterator[int]:
     id = 0
@@ -20,7 +29,7 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def build(input_string: str) -> tuple[Node, Node]:
+def build(input_string: str) -> tuple[Node, Node, Iterator[int]]:
     # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
     id_sequence = make_id_sequence()
     root = Node(next(id_sequence))
@@ -30,7 +39,7 @@ def build(input_string: str) -> tuple[Node, Node]:
     for character in input_string:
         current = extend(character, current, id_sequence)
 
-    return root, current
+    return root, current, id_sequence
 
 
 def extend(character: str, last: Node, id_sequence: Iterator[int]):
@@ -54,15 +63,15 @@ def extend(character: str, last: Node, id_sequence: Iterator[int]):
         if q.length == current.length + 1:
             new_node.link = q
         else:
-            new_node.link = insert_node(character, current, q, id_sequence)
+            new_node.link = insert_node(character, current, q, next(id_sequence))
 
     return new_node
 
 
-def insert_node(character: str, p: Node, q: Node, id_sequence: Iterator[int]):
+def insert_node(character: str, p: Node, q: Node, id: int):
     clone = replace(
         q,
-        id=next(id_sequence),
+        id=id,
         length=p.length + 1,
         # Explicitly copy() the transitions dict because replace() makes a
         # shallow copy
@@ -114,8 +123,8 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
 if __name__ == "__main__":
     for string in ("abcbc", "bananas"):
         print(f"\n{string}")
-        root, __ignore__ = build(string)
-        dump(root, 2)
+        root, __ignore__, __ignore__ = build(string)
+        dump(root, indent=2)
 
         def show_match(substring):
             position = is_substring(root, substring)

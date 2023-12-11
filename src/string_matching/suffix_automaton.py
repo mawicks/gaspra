@@ -110,7 +110,7 @@ def is_substring(root: Node, s: str):
     return current.first_endpos - len(s)
 
 
-def all_suffixes(current: Node):
+def all_suffixes(current: Node) -> Iterator[str]:
     """
     Iterate over every suffix in the automaton.  The only purpose
     for this is in a test that ensures the automaton produces all suffixes

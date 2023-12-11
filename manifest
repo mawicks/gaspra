@@ -1,11 +1,12 @@
-C Add\sinitial\spyproject.toml\sand\ssuffix_automaton.py
-D 2023-12-11T01:56:22.182
+C Add\spoetry.lock
+D 2023-12-11T01:57:05.464
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+F poetry.lock 727794d097e85a58304682af5513af901520a03dcc42491c4688d1b68f3e0a13
 F pyproject.toml da26f07df226dd29fa1ef85cbb12e4b01137733e18e474071f6ef0d39b1e115b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F src/string_matching/suffix_automaton.py 7cc25c0fa8df7b29967098f05a88a007b63620a50060af4d94b104895b58fc91
-P 101e208742770962cd9346301a03bae35bebe3bf26fbf04d4e74ea16695f42e5
-R 1436a372e46856a2c1ccc3b199495c1b
+P 43413b69be992d6c54a375b82db16823081412cdf378c7cd7933856227cd0958
+R c9a47e7dc87605ef2d664017ebe69d7d
 U mwicks
-Z 9100646b956549e7115625f4e109fca2
+Z 82dba8614def7f1a83efc7afa67cbbeb
 # Remove this line to create a well-formed Fossil manifest.

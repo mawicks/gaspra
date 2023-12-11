@@ -6,6 +6,7 @@ from dataclasses import dataclass, field, replace
 class Node:
     id: int
     length: int = 0
+    first_endpos: int = 0
     link: Node | None = None
     transitions: dict[str, Node] = field(default_factory=dict)
 
@@ -19,7 +20,7 @@ def build(input_string: str):
 
     for character in input_string:
         last = current
-        current = Node(id=next_id, length=last.length + 1)
+        current = Node(id=next_id, length=last.length + 1, first_endpos=last.length + 1)
         next_id += 1
 
         p = last
@@ -61,8 +62,8 @@ def is_substring(root: Node, s: str):
     for character in s:
         current = current.transitions.get(character)
         if current is None:
-            return False
-    return True
+            return None
+    return current.first_endpos - len(s)
 
 
 def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
@@ -72,7 +73,7 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
     if root.id in dumped:
         return
 
-    print(f"{' '*indent}{root.id}:")
+    print(f"{' '*indent}{root.id}: (length:{root.length})")
     if root.transitions.items():
         for character, node in root.transitions.items():
             print(f"{' '*indent}  {character} -> {node.id}")
@@ -86,13 +87,14 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
 
 
 if __name__ == "__main__":
-    for string in ("abcabs", "bananas"):
-        print("\n{string}")
+    for string in ("abcbc", "bananas"):
+        print(f"\n{string}")
         root = build(string)
         dump(root, 2)
 
         def show_match(substring):
-            print(f"'{substring}': {'yes' if is_substring(root, substring) else 'no'}")
+            position = is_substring(root, substring)
+            print(f"'{substring}': {'no' if position is None else 'yes'} ({position})")
 
         for k in range(len(string)):
             suffix = string[k:]

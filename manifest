@@ -1,12 +1,12 @@
-C Add\sis_substring()
-D 2023-12-11T02:20:32.265
+C Return\sposition\sof\smatched\sstring.
+D 2023-12-11T02:44:36.132
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 727794d097e85a58304682af5513af901520a03dcc42491c4688d1b68f3e0a13
 F pyproject.toml da26f07df226dd29fa1ef85cbb12e4b01137733e18e474071f6ef0d39b1e115b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/suffix_automaton.py bf026c96e9334f7c55caeed1c18337a6b4981624789427c6e97a7f453311c05b
-P 9e25ad4b47c76b9b1492a8a676f74046831aa56b09b63820dbf893e1f7ff59f6
-R 188b03de49ac59af4c9dbe9701414fa3
+F src/string_matching/suffix_automaton.py c89996627bf600c989fbe1720812bf530da72311d22eb15be5bf8be53d0bd060
+P 5eed2dc7de7dbbb9ddb829aaa82a6d730c76ea5b2be6633b0cd2a0f0beaac932
+R 8b692331b190d23bf46c1741257954b8
 U mwicks
-Z 9e8de13e159fe9955d6860e3f5be530a
+Z cc7b70be4f4dc57cc4dcde8b8cfb9f39
 # Remove this line to create a well-formed Fossil manifest.

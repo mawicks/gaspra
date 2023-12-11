@@ -10,9 +10,10 @@ import random
 class Node:
     id: int
     length: int = 0
-    first_endpos: int = 0  # First possible ending position of substring.
-    link: Node | None = None
     transitions: dict[str, Node] = field(default_factory=dict)
+    first_endpos: int = 0  # First possible ending position of substring.
+    is_terminal: bool = False  # Is this a terminal state?
+    link: Node | None = None
 
     @staticmethod
     def get_factory():
@@ -40,6 +41,8 @@ def build(input_string: str) -> tuple[Node, Node, Callable[..., Node]]:
 
     for character in input_string:
         current = extend(character, current, node_factory)
+
+    mark_terminals(current)
 
     return root, current, node_factory
 
@@ -90,6 +93,14 @@ def insert_node(character: str, p: Node, q: Node, node_factory):
     return clone
 
 
+def mark_terminals(final_node):
+    current = final_node
+    while current is not None:
+        current.is_terminal = True
+        current = current.link
+    return
+
+
 def is_substring(root: Node, s: str):
     current = root
     for character in s:
@@ -99,6 +110,20 @@ def is_substring(root: Node, s: str):
     return current.first_endpos - len(s)
 
 
+def all_suffixes(current: Node):
+    """
+    Iterate over every suffix in the automaton.  The only purpose
+    for this is in a test that ensures the automaton produces all suffixes
+    and only suffixes.
+    """
+    if current.is_terminal:
+        yield ""
+
+    for character, node in current.transitions.items():
+        for substring in all_suffixes(node):
+            yield character + substring
+
+
 def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
     if dumped is None:
         dumped = set()
@@ -106,7 +131,9 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
     if root.id in dumped:
         return
 
-    print(f"{' '*indent}{root.id}: (length:{root.length})")
+    print(
+        f"{' '*indent}{root.id}: (length:{root.length}, is_terminal:{root.is_terminal})"
+    )
     if root.transitions.items():
         for character, node in root.transitions.items():
             print(f"{' '*indent}  {character} -> {node.id}")
@@ -125,6 +152,12 @@ if __name__ == "__main__":
         print(f"\n{string}")
         root, __ignore__, __ignore__ = build(string)
         dump(root, indent=2)
+
+        print("\nAll suffixes:")
+        l = sorted(all_suffixes(root), key=len)
+        for item in l:
+            print(f"'{item}'")
+        print()
 
         def show_match(substring):
             position = is_substring(root, substring)

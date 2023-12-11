@@ -1,12 +1,12 @@
-C Use\srandom\ssubstrings\sas\stest\scases.
-D 2023-12-11T04:40:07.261
+C Add\smark_terminals()\sand\sall_suffixes().
+D 2023-12-11T13:09:08.894
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 727794d097e85a58304682af5513af901520a03dcc42491c4688d1b68f3e0a13
 F pyproject.toml da26f07df226dd29fa1ef85cbb12e4b01137733e18e474071f6ef0d39b1e115b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/suffix_automaton.py ccd512396f863e43c46ed35cbc6d3e319bba7af4577f26ae8c92d753f11acbf1
-P dc6e31a04920df13fbffc9fe8a859ef3e90ffba06353adf6271875073f41d088
-R cf33799486d1857766e6f2a88917507c
+F src/string_matching/suffix_automaton.py 970db80ab481905826bb4d688c7f76ea751d9f6e96cdd88b269878b6aacd0949
+P 3787bee1a840fd2b8ab6512ed983c6aa53c6a30f0f55b65c67c6c706eda62b80
+R 7356558d008f8a1b3d9b78536c59cb14
 U mwicks
-Z 341c598324792a31766dd94a6ed1b30f
+Z 40198e9c904b9c2f109b88dc97fa5edb
 # Remove this line to create a well-formed Fossil manifest.

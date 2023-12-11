@@ -1,5 +1,7 @@
 from __future__ import annotations
+
 from dataclasses import dataclass, field, replace
+from collections.abc import Iterator
 
 
 @dataclass
@@ -11,50 +13,73 @@ class Node:
     transitions: dict[str, Node] = field(default_factory=dict)
 
 
-def build(input_string: str):
+def make_id_sequence() -> Iterator[int]:
+    id = 0
+    while True:
+        yield id
+        id += 1
+
+
+def build(input_string: str) -> tuple[Node, Node]:
     # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
-    root = Node(id=0)
-    next_id = 1
+    id_sequence = make_id_sequence()
+    root = Node(next(id_sequence))
 
     current = root
 
     for character in input_string:
-        last = current
-        current = Node(id=next_id, length=last.length + 1, first_endpos=last.length + 1)
-        next_id += 1
+        current = extend(character, current, id_sequence)
 
-        p = last
-        while p is not None and character not in p.transitions:
-            p.transitions[character] = current
-            p = p.link
+    return root, current
 
-        if p is None:
-            current.link = root
-            continue
 
-        q = p.transitions[character]
-        if q.length == p.length + 1:
-            current.link = q
-            continue
+def extend(character: str, last: Node, id_sequence: Iterator[int]):
+    new_node = Node(
+        id=next(id_sequence),
+        length=last.length + 1,
+        first_endpos=last.length + 1,
+    )
 
+    previous = None
+    current = last
+    while current is not None and character not in current.transitions:
+        current.transitions[character] = new_node
+        previous = current
+        current = current.link
+
+    if current is None:
+        new_node.link = previous
+    else:
+        q = current.transitions[character]
+        if q.length == current.length + 1:
+            new_node.link = q
+        else:
+            new_node.link = insert_node(character, current, q, id_sequence)
+
+    return new_node
+
+
+def insert_node(character: str, p: Node, q: Node, id_sequence: Iterator[int]):
+    clone = replace(
+        q,
+        id=next(id_sequence),
+        length=p.length + 1,
         # Explicitly copy() the transitions dict because replace() makes a
         # shallow copy
-        clone = replace(
-            q, id=next_id, length=p.length + 1, transitions=q.transitions.copy()
-        )
-        next_id += 1
-        current.link = clone
-        q.link = clone
+        transitions=q.transitions.copy(),
+    )
+    q.link = clone
 
-        while (
-            p is not None
-            and character in p.transitions
-            and p.transitions[character] == q
-        ):
-            p.transitions[character] = clone
-            p = p.link
+    current = p
+    while (
+        current is not None
+        and character in current.transitions
+        and current.transitions[character] == q
+    ):
+        current.transitions[character] = clone
+        current = current.link
 
-    return root
+    return clone
 
 
 def is_substring(root: Node, s: str):
@@ -89,7 +114,7 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
 if __name__ == "__main__":
     for string in ("abcbc", "bananas"):
         print(f"\n{string}")
-        root = build(string)
+        root, __ignore__ = build(string)
         dump(root, 2)
 
         def show_match(substring):

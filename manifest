@@ -1,12 +1,12 @@
-C Add\scomment\sabout\sfirst_endpos
-D 2023-12-11T02:57:07.769
+C Refactor\sfor\slegibility.
+D 2023-12-11T03:54:27.158
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 727794d097e85a58304682af5513af901520a03dcc42491c4688d1b68f3e0a13
 F pyproject.toml da26f07df226dd29fa1ef85cbb12e4b01137733e18e474071f6ef0d39b1e115b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/suffix_automaton.py 7dc6f768e83cf62bf5bb217f7d3a3cdd15f15d572d948a7607d0961cdae0de08
-P f2a2a0bc4236a20d86bf84de8be5e39abe257ed84ace77335b1493d8b47d0632
-R 2daedbfc69d088465a0370220fabb2e8
+F src/string_matching/suffix_automaton.py ea0953dfb2fe2a2fb939e531c5468774dd637f3300245a33419a3ef16a7627db
+P 5ce6fad4fd0456069d12cef5920411ad942e805af839ceb279a24bc9c8993fa7
+R 2aac85072ce982c1afe4b6a4824f597a
 U mwicks
-Z 204f54c7ec830728fa887fdeb6dbff13
+Z c091079b9118f453c7138ddd40efe5ec
 # Remove this line to create a well-formed Fossil manifest.

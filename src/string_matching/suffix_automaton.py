@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
+from typing import Callable
 
 
 @dataclass
@@ -29,22 +30,21 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def build(input_string: str) -> tuple[Node, Node, Iterator[int]]:
+def build(input_string: str) -> tuple[Node, Node, Callable[..., Node]]:
     # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
-    id_sequence = make_id_sequence()
-    root = Node(next(id_sequence))
+    node_factory = Node.get_factory()
+    root = node_factory()
 
     current = root
 
     for character in input_string:
-        current = extend(character, current, id_sequence)
+        current = extend(character, current, node_factory)
 
-    return root, current, id_sequence
+    return root, current, node_factory
 
 
-def extend(character: str, last: Node, id_sequence: Iterator[int]):
-    new_node = Node(
-        id=next(id_sequence),
+def extend(character: str, last: Node, node_factory):
+    new_node = node_factory(
         length=last.length + 1,
         first_endpos=last.length + 1,
     )
@@ -63,18 +63,16 @@ def extend(character: str, last: Node, id_sequence: Iterator[int]):
         if q.length == current.length + 1:
             new_node.link = q
         else:
-            new_node.link = insert_node(character, current, q, next(id_sequence))
+            new_node.link = insert_node(character, current, q, node_factory)
 
     return new_node
 
 
-def insert_node(character: str, p: Node, q: Node, id: int):
-    clone = replace(
-        q,
-        id=id,
+def insert_node(character: str, p: Node, q: Node, node_factory):
+    clone = node_factory(
         length=p.length + 1,
-        # Explicitly copy() the transitions dict because replace() makes a
-        # shallow copy
+        first_endpos=q.first_endpos,
+        link=q.link,
         transitions=q.transitions.copy(),
     )
     q.link = clone

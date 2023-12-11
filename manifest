@@ -1,13 +1,13 @@
-C Test\sconstruction\stime\sis\sapproximately\slinear.
-D 2023-12-11T16:02:59.625
+C Clean\sup\scomputational\scomplexity\stest.
+D 2023-12-11T16:16:12.885
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock f942489157e402e149b832bee739159b8c3451bbbe27fd6fd1ee2ce3316a2956
 F pyproject.toml a0ac5fa50f3e26b7e4bd410df05d462edacb04a916c1a19375ceea6f3c603e8b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F src/string_matching/suffix_automaton.py a7a095a573f1f528d7d0e88cc7a83d99e5b6b2f07af064822aab17d7b57d6820
-F tests/test_suffix_automaton.py 72f46a741885616d4055e8e061158846fed014c5268ed5b2916526b766808898
-P 73d907004c0089d77ec639d45a4ddec8ab0e0061b5cfd8e7d7deed81f89a8ed2
-R 8351d93d3036e74c967329b7e970d985
+F tests/test_suffix_automaton.py 1bcf7a243c03aa4b3bc0539e72d2659b7ae13c3c7977502173845cf3d9d90943
+P b76dec9bc469f80c0fce7fdd78b39baa957a0febe0d7e3eac661ca9104531fdd
+R 9ad264c1679351a2172e640e185c68a7
 U mwicks
-Z 79bf5027fdbd23c7ccbbb8815731dd88
+Z bea122c8eb680f0c4db286ad42512477
 # Remove this line to create a well-formed Fossil manifest.

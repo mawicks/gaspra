@@ -54,6 +54,10 @@ def test_automaton_generates_each_length_once(string):
     assert len(lengths) == 0
 
 
+COMPLEXITY_TEST_COEFFICIENT = 3.0
+COMPLEXITY_TEST_EXPONENT = 1.5
+
+
 def test_construction_time_is_approximately_linear():
     """
     This is an attempt to verify that the construction
@@ -74,10 +78,13 @@ def test_construction_time_is_approximately_linear():
     time_ratio = time_2 / time_1
     string_ratio = len(string_2) / len(string_1)
 
+    if string_ratio < 2.0 * COMPLEXITY_TEST_COEFFICIENT:
+        raise ValueError("Choose test strings with a larger ratio of their lengths")
+
     # Use two tests in case k gets changed above.
     # Both assume a fairly large ratio of string lengths (say 10).
     # First check that it's less than about O(n^1.5)
-    assert time_ratio < string_ratio**1.5
+    assert time_ratio < string_ratio**COMPLEXITY_TEST_EXPONENT
     # Then check for approximate linearity with a small
     # coefficient greater than 1 to provide some slop.
-    assert time_ratio < 3.0 * string_ratio
+    assert time_ratio < COMPLEXITY_TEST_COEFFICIENT * string_ratio

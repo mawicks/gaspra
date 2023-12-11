@@ -1,8 +1,11 @@
-C initial\sempty\scheck-in
-D 2023-12-11T01:29:30.366
-R d41d8cd98f00b204e9800998ecf8427e
-T *branch * trunk
-T *sym-trunk *
+C Add\sinitial\spyproject.toml\sand\ssuffix_automaton.py
+D 2023-12-11T01:56:22.182
+F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+F pyproject.toml da26f07df226dd29fa1ef85cbb12e4b01137733e18e474071f6ef0d39b1e115b
+F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+F src/string_matching/suffix_automaton.py 7cc25c0fa8df7b29967098f05a88a007b63620a50060af4d94b104895b58fc91
+P 101e208742770962cd9346301a03bae35bebe3bf26fbf04d4e74ea16695f42e5
+R 1436a372e46856a2c1ccc3b199495c1b
 U mwicks
-Z 16d6f8b36fc43f0e7e785a2115e03156
+Z 9100646b956549e7115625f4e109fca2
 # Remove this line to create a well-formed Fossil manifest.

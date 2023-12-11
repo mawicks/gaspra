@@ -56,7 +56,16 @@ def build(input_string: str):
     return root
 
 
-def dump(root, indent=0, dumped=None):
+def is_substring(root: Node, s: str):
+    current = root
+    for character in s:
+        current = current.transitions.get(character)
+        if current is None:
+            return False
+    return True
+
+
+def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
     if dumped is None:
         dumped = set()
 
@@ -77,8 +86,19 @@ def dump(root, indent=0, dumped=None):
 
 
 if __name__ == "__main__":
-    print("abcabc")
-    dump(build("abcbc"), 2)
+    for string in ("abcabs", "bananas"):
+        print("\n{string}")
+        root = build(string)
+        dump(root, 2)
 
-    print("\nbananas")
-    dump(build("bananas"), 2)
+        def show_match(substring):
+            print(f"'{substring}': {'yes' if is_substring(root, substring) else 'no'}")
+
+        for k in range(len(string)):
+            suffix = string[k:]
+            prefix = string[:-k]
+            extended_prefix = prefix + "x"
+
+            show_match(suffix)
+            show_match(prefix)
+            show_match(extended_prefix)

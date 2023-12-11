@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass, field
 from typing import Callable
+import random
 
 
 @dataclass
@@ -119,7 +120,8 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
 
 
 if __name__ == "__main__":
-    for string in ("abcbc", "bananas"):
+    random_string = "".join(random.choices("XYZ", k=10))
+    for string in ("abcbc", "bananas", random_string):
         print(f"\n{string}")
         root, __ignore__, __ignore__ = build(string)
         dump(root, indent=2)
@@ -131,8 +133,8 @@ if __name__ == "__main__":
         for k in range(len(string)):
             suffix = string[k:]
             prefix = string[:-k]
-            extended_prefix = prefix + "x"
+            random_substring = "".join(random.choices(string, k=len(string) - k))
 
             show_match(suffix)
             show_match(prefix)
-            show_match(extended_prefix)
+            show_match(random_substring)

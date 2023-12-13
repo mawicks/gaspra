@@ -1,13 +1,13 @@
-C Add\stests\sfor\sfind_substring()
-D 2023-12-13T03:25:17.929
+C Commit\sWIP\son\sfind_lcs()
+D 2023-12-13T04:14:20.033
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock f942489157e402e149b832bee739159b8c3451bbbe27fd6fd1ee2ce3316a2956
 F pyproject.toml a0ac5fa50f3e26b7e4bd410df05d462edacb04a916c1a19375ceea6f3c603e8b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/suffix_automaton.py b87dd90e17962ddab1bb02b673f751c8300fe4212458cb81933888e49819cd98
-F tests/test_suffix_automaton.py 3042d4b4d1a5748b1556f543bc4a8a9f12c8f9ca42240355e7a109f823bcf0f2
-P bef2c841d47bc4b12e312e2a3438176e6b4e2fd84e2070bbd5629e001ae54cde
-R 69cf82d8f3744f3b822a6327caf4db49
+F src/string_matching/suffix_automaton.py 87a3264d0d13c6ff2f4d8116876bade02d13aaf0661cd885be72f43ff556402b
+F tests/test_suffix_automaton.py 942cb93a7958b8337d24ce3f95074823c872ead5bf0eadff1aae179a00e76ebb
+P 744d602663338e1403e393152548b9a213d0e250e22e0ffcac19d63ede21f343
+R 5778255a7b4a07c4b9466e3f04f93d9d
 U mwicks
-Z 640b2a2ff3d82797ed8f88a2c0e7a28c
+Z 10f2e7ad3fa8c7d86a66c8d2344ff9c0
 # Remove this line to create a well-formed Fossil manifest.

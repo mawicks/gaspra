@@ -4,7 +4,12 @@ import time
 
 random.seed(42)
 
-from string_matching.suffix_automaton import build, all_suffixes, find_substring
+from string_matching.suffix_automaton import (
+    build,
+    all_suffixes,
+    find_substring,
+    find_lcs,
+)
 
 build_and_search_test_strings = [
     "bananas",
@@ -12,7 +17,7 @@ build_and_search_test_strings = [
     "".join(random.choices("ABC", k=20)),
 ]
 
-substring_test_strings = [("bananas", "xnanananx", "anana")]
+lcs_test_strings = [("bananas", "xnanananx", "anana")]
 
 
 @pytest.mark.parametrize(
@@ -121,3 +126,11 @@ def test_find_substring_is_correct_on_random_letters(string):
         candidate = "".join(random.choices(string, k=k + 1))
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
+
+
+@pytest.mark.parametrize("s1,s2,lcs", lcs_test_strings)
+def test_longest_common_string(s1: str, s2: str, lcs: str):
+    root = build(s1)[0]
+
+    start, end = find_lcs(root, s2)
+    assert s1[start:end] == lcs

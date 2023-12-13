@@ -110,6 +110,31 @@ def find_substring(root: Node, s: str):
     return current.first_endpos - len(s)
 
 
+def find_lcs(root: Node, s: str) -> tuple[int, int]:
+    longest_match_length = current_match_length = 0
+    longest_match_first_endpos = 0
+
+    current = root
+    for character in s:
+        while (
+            next := current.transitions.get(character)
+        ) is None and current.link is not None:
+            current_match_length -= current.length - current.link.length
+            current = current.link
+
+        if next is not None:
+            current_match_length += 1
+            current = next
+            if current_match_length > longest_match_length:
+                longest_match_length = current_match_length
+                longest_match_first_endpos = current.first_endpos
+
+    return (
+        longest_match_first_endpos - 1 - longest_match_length,
+        longest_match_first_endpos,
+    )
+
+
 def all_suffixes(current: Node) -> Iterator[str]:
     """
     Iterate over every suffix in the automaton.  The only purpose

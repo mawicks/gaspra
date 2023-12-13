@@ -4,18 +4,20 @@ import time
 
 random.seed(42)
 
-from string_matching.suffix_automaton import build, all_suffixes
+from string_matching.suffix_automaton import build, all_suffixes, find_substring
 
-test_strings = [
+build_and_search_test_strings = [
     "bananas",
     "abcbc",
     "".join(random.choices("ABC", k=20)),
 ]
 
+substring_test_strings = [("bananas", "xnanananx", "anana")]
+
 
 @pytest.mark.parametrize(
     "string",
-    test_strings,
+    build_and_search_test_strings,
 )
 def test_automaton_generates_only_suffixes(string):
     """
@@ -32,7 +34,7 @@ def test_automaton_generates_only_suffixes(string):
 
 @pytest.mark.parametrize(
     "string",
-    test_strings,
+    build_and_search_test_strings,
 )
 def test_automaton_generates_each_length_once(string):
     """
@@ -88,3 +90,34 @@ def test_construction_time_is_approximately_linear():
     # Then check for approximate linearity with a small
     # coefficient greater than 1 to provide some slop.
     assert time_ratio < COMPLEXITY_TEST_COEFFICIENT * string_ratio
+
+
+@pytest.mark.parametrize("string", build_and_search_test_strings)
+def test_find_substring_is_true_on_all_substrings(string):
+    """
+    Build automaton for "string" and check that every non-trivial
+    substring is correctly detected.
+    """
+    root = build(string)[0]
+
+    for start in range(len(string)):
+        for end in range(start + 1, len(string)):
+            substring = string[start:end]
+            position = find_substring(root, substring)
+            assert position is not None
+            assert string[position : position + len(substring)] == substring
+
+
+@pytest.mark.parametrize("string", build_and_search_test_strings)
+def test_find_substring_is_correct_on_random_letters(string):
+    """
+    Build automaton for "string" and check that non-trivial
+    random strings of different lengths selected from characters
+    of "string" are detected (or not detected) correctly.
+    """
+    root = build(string)[0]
+
+    for k in range(len(string)):
+        candidate = "".join(random.choices(string, k=k + 1))
+        position = find_substring(root, candidate)
+        assert string.find(candidate) == position or position is None

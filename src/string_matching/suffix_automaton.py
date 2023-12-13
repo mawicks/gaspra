@@ -101,7 +101,7 @@ def mark_terminals(final_node):
     return
 
 
-def is_substring(root: Node, s: str):
+def find_substring(root: Node, s: str):
     current = root
     for character in s:
         current = current.transitions.get(character)
@@ -160,7 +160,7 @@ if __name__ == "__main__":
         print()
 
         def show_match(substring):
-            position = is_substring(root, substring)
+            position = find_substring(root, substring)
             print(f"'{substring}': {'no' if position is None else 'yes'} ({position})")
 
         for k in range(len(string)):

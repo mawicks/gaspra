@@ -17,7 +17,20 @@ build_and_search_test_strings = [
     "".join(random.choices("ABC", k=20)),
 ]
 
-lcs_test_strings = [("bananas", "xnanananx", "anana")]
+common = "".join(random.choices("ABC", k=17))
+not_common1 = "".join(random.choices("ABC", k=13))
+not_common2 = "".join(random.choices("ABC", k=13))
+s1 = not_common1[:3] + common + not_common1[3:]
+s2 = not_common2[:6] + common + not_common1[6:]
+
+lcs_test_strings = [
+    ("bananas", "xnanananx", 5),
+    ("abcabcxyzfoo", "xyzafabcxyzfaz", 7),
+    # Since these longer strings are randomly generated,
+    # we don't know the exactly length of the common string.
+    # We know that it's *at least* len(common).
+    (s1, s2, len(common)),
+]
 
 
 @pytest.mark.parametrize(
@@ -128,9 +141,26 @@ def test_find_substring_is_correct_on_random_letters(string):
         assert string.find(candidate) == position or position is None
 
 
-@pytest.mark.parametrize("s1,s2,lcs", lcs_test_strings)
-def test_longest_common_string(s1: str, s2: str, lcs: str):
+@pytest.mark.parametrize("s1,s2,lcs_length", lcs_test_strings)
+def test_longest_common_string(s1: str, s2: str, lcs_length: int):
+    """
+    Since some test strings are generated randomly,
+    the parameter lcs_legnth is a lower bound on the lcs.
+    We check that the computed lcs is 1) common; 2) locally maximal;
+    and 3) at *least* lcs_length in length.
+    """
     root = build(s1)[0]
 
     start, end = find_lcs(root, s2)
-    assert s1[start:end] == lcs
+
+    # Check that returned result is a common substring
+    assert s2[start:end] in s1
+
+    # Check that it's locally maximal in the sense that
+    # if we extend it by one in either direction, it fails
+    # to be a common substring anymore:
+    assert s2[max(start - 1, 0) : end] not in s1
+    assert s2[start : end + 1] not in s1
+
+    # Make sure it's at least as long as the expected length.
+    assert end - start >= lcs_length

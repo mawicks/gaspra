@@ -111,33 +111,40 @@ def find_substring(root: Node, s: str):
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int]:
+    """
+    Return the starting and ending (Python style) of a longest common
+    substring of the automaton rooted at root and the string s.
+    The starting and ending positions are with respect to s.
+    """
     longest_match_length = current_match_length = 0
-    longest_match_first_endpos = 0
+    longest_match_endpos = 0
 
     current = root
-    for character in s:
+    for position, character in enumerate(s):
         while (
             next := current.transitions.get(character)
         ) is None and current.link is not None:
-            current_match_length -= current.length - current.link.length
             current = current.link
+            current_match_length = current.length
 
         if next is not None:
             current_match_length += 1
             current = next
-            if current_match_length > longest_match_length:
-                longest_match_length = current_match_length
-                longest_match_first_endpos = current.first_endpos
+        # This block can be indented by the sample implementation has it this way.
+        if current_match_length > longest_match_length:
+            longest_match_length = current_match_length
+            longest_match_endpos = position
 
     return (
-        longest_match_first_endpos - 1 - longest_match_length,
-        longest_match_first_endpos,
+        longest_match_endpos + 1 - longest_match_length,
+        longest_match_endpos + 1,
     )
 
 
 def all_suffixes(current: Node) -> Iterator[str]:
     """
-    Iterate over every suffix in the automaton.  The only purpose
+    Iterate over every suffixes in the automation.  The
+    only purpose
     for this is in a test that ensures the automaton produces all suffixes
     and only suffixes.
     """

@@ -1,13 +1,13 @@
-C Commit\sWIP\son\sfind_lcs()
-D 2023-12-13T04:14:20.033
+C Add\stests\sand\sfix\sbug\sin\sfind_lcs().
+D 2023-12-14T05:20:40.549
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock f942489157e402e149b832bee739159b8c3451bbbe27fd6fd1ee2ce3316a2956
 F pyproject.toml a0ac5fa50f3e26b7e4bd410df05d462edacb04a916c1a19375ceea6f3c603e8b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/suffix_automaton.py 87a3264d0d13c6ff2f4d8116876bade02d13aaf0661cd885be72f43ff556402b
-F tests/test_suffix_automaton.py 942cb93a7958b8337d24ce3f95074823c872ead5bf0eadff1aae179a00e76ebb
-P 744d602663338e1403e393152548b9a213d0e250e22e0ffcac19d63ede21f343
-R 5778255a7b4a07c4b9466e3f04f93d9d
+F src/string_matching/suffix_automaton.py 8903374149aa33fa1370209f5982f460de93f564c090e634ae90d910626b8edf
+F tests/test_suffix_automaton.py ccc37e1a1c80591b3623ed64f54cdd8c901da0bd7d89f2af2e49fa141f5455e0
+P e3b456c5839c080390f45b6fa3f8624c87ae3366d7d1196f769fc0a1301a0a26
+R 19b60fd49ccdbfca2290432ad93deb58
 U mwicks
-Z 10f2e7ad3fa8c7d86a66c8d2344ff9c0
+Z 42490c9aeae15ae1c5539216636b1e4a
 # Remove this line to create a well-formed Fossil manifest.

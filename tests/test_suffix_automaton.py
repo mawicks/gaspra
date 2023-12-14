@@ -11,31 +11,31 @@ from string_matching.suffix_automaton import (
     find_lcs,
 )
 
-build_and_search_test_strings = [
+BUILD_AND_SEARCH_TEST_STRINGS = [
     "bananas",
     "abcbc",
     "".join(random.choices("ABC", k=20)),
 ]
 
-common = "".join(random.choices("ABC", k=17))
-not_common1 = "".join(random.choices("ABC", k=13))
-not_common2 = "".join(random.choices("ABC", k=13))
-s1 = not_common1[:3] + common + not_common1[3:]
-s2 = not_common2[:6] + common + not_common1[6:]
+COMMON = "".join(random.choices("ABC", k=17))
+NOT_COMMON1 = "".join(random.choices("ABC", k=13))
+NOT_COMMON2 = "".join(random.choices("ABC", k=13))
+s1 = NOT_COMMON1[:3] + COMMON + NOT_COMMON1[3:]
+s2 = NOT_COMMON2[:6] + COMMON + NOT_COMMON1[6:]
 
-lcs_test_strings = [
+LCS_TEST_STRINGS = [
     ("bananas", "xnanananx", 5),
     ("abcabcxyzfoo", "xyzafabcxyzfaz", 7),
     # Since these longer strings are randomly generated,
     # we don't know the exactly length of the common string.
     # We know that it's *at least* len(common).
-    (s1, s2, len(common)),
+    (s1, s2, len(COMMON)),
 ]
 
 
 @pytest.mark.parametrize(
     "string",
-    build_and_search_test_strings,
+    BUILD_AND_SEARCH_TEST_STRINGS,
 )
 def test_automaton_generates_only_suffixes(string):
     """
@@ -52,7 +52,7 @@ def test_automaton_generates_only_suffixes(string):
 
 @pytest.mark.parametrize(
     "string",
-    build_and_search_test_strings,
+    BUILD_AND_SEARCH_TEST_STRINGS,
 )
 def test_automaton_generates_each_length_once(string):
     """
@@ -110,7 +110,7 @@ def test_construction_time_is_approximately_linear():
     assert time_ratio < COMPLEXITY_TEST_COEFFICIENT * string_ratio
 
 
-@pytest.mark.parametrize("string", build_and_search_test_strings)
+@pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)
 def test_find_substring_is_true_on_all_substrings(string):
     """
     Build automaton for "string" and check that every non-trivial
@@ -126,7 +126,7 @@ def test_find_substring_is_true_on_all_substrings(string):
             assert string[position : position + len(substring)] == substring
 
 
-@pytest.mark.parametrize("string", build_and_search_test_strings)
+@pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)
 def test_find_substring_is_correct_on_random_letters(string):
     """
     Build automaton for "string" and check that non-trivial
@@ -141,7 +141,7 @@ def test_find_substring_is_correct_on_random_letters(string):
         assert string.find(candidate) == position or position is None
 
 
-@pytest.mark.parametrize("s1,s2,lcs_length", lcs_test_strings)
+@pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
 def test_longest_common_string(s1: str, s2: str, lcs_length: int):
     """
     Since some test strings are generated randomly,
@@ -151,16 +151,21 @@ def test_longest_common_string(s1: str, s2: str, lcs_length: int):
     """
     root = build(s1)[0]
 
-    start, end = find_lcs(root, s2)
+    start1, start2, length = find_lcs(root, s2)
 
     # Check that returned result is a common substring
-    assert s2[start:end] in s1
+    assert s1[start1 : start1 + length] == s2[start2 : start2 + length]
+
+    # Make sure it's at least as long as the expected length.
+    assert length >= lcs_length
 
     # Check that it's locally maximal in the sense that
     # if we extend it by one in either direction, it fails
-    # to be a common substring anymore:
-    assert s2[max(start - 1, 0) : end] not in s1
-    assert s2[start : end + 1] not in s1
+    # to be a common substring in at least one direction:
+    pre_start1 = max(start1 - 1, 0)
+    pre_start2 = max(start2 - 1, 0)
 
-    # Make sure it's at least as long as the expected length.
-    assert end - start >= lcs_length
+    assert (
+        s1[pre_start1 : start1 + length] != s2[pre_start2 : start2 + length]
+        or s1[start1 : start1 + length + 1] != s2[start2 : start2 + length + 1]
+    )

@@ -110,14 +110,25 @@ def find_substring(root: Node, s: str):
     return current.first_endpos - len(s)
 
 
-def find_lcs(root: Node, s: str) -> tuple[int, int]:
+def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
     """
     Return the starting and ending (Python style) of a longest common
     substring of the automaton rooted at root and the string s.
     The starting and ending positions are with respect to s.
+
+    Arguments:
+        root: Node - Root node of a suffix automaton for one of the strings
+        s: str - The string for finding common substrings with the automaton
+        string
+
+    Returns:
+        int - The starting position of the match in the automaton string
+        int - The starting position of the match in `s`
+        int - The length of the common string
+
     """
     longest_match_length = current_match_length = 0
-    longest_match_endpos = 0
+    longest_match_s1_endpos = longest_match_s2_endpos = 0
 
     current = root
     for position, character in enumerate(s):
@@ -133,11 +144,13 @@ def find_lcs(root: Node, s: str) -> tuple[int, int]:
         # This block can be indented by the sample implementation has it this way.
         if current_match_length > longest_match_length:
             longest_match_length = current_match_length
-            longest_match_endpos = position
+            longest_match_s1_endpos = current.first_endpos
+            longest_match_s2_endpos = position + 1
 
     return (
-        longest_match_endpos + 1 - longest_match_length,
-        longest_match_endpos + 1,
+        longest_match_s1_endpos - longest_match_length,
+        longest_match_s2_endpos - longest_match_length,
+        longest_match_length,
     )
 
 

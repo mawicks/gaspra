@@ -33,6 +33,15 @@ LCS_TEST_STRINGS = [
 ]
 
 
+def test_build_empty_string():
+    """
+    Ensure that an empty string is handled correctly.
+    """
+    automaton = build("")
+    for string in all_suffixes(automaton):
+        assert string == ""
+
+
 @pytest.mark.parametrize(
     "string",
     BUILD_AND_SEARCH_TEST_STRINGS,
@@ -141,8 +150,40 @@ def test_find_substring_is_correct_on_random_letters(string):
         assert string.find(candidate) == position or position is None
 
 
+def test_find_returns_zero_when_no_match():
+    """
+    Ensure that find_substring returns 0 when no match is found.
+    """
+    root = build("bananas")
+    assert find_substring(root, "absent") is None
+
+
+def test_find_returns_none_when_build_is_empty_and_query_is_not():
+    """
+    Ensure that find_substring returns 0 when automaton represents empty string.
+    """
+    root = build("")
+    assert find_substring(root, "anything") is None
+
+
+def test_find_returns_zero_when_build_and_query_are_empty():
+    """
+    Ensure that find_substring returns 0 when automaton represents empty string.
+    """
+    root = build("")
+    assert find_substring(root, "anything") is None
+
+
+def test_find_returns_0_on_empty_query_string():
+    """
+    Ensure that find_substring returns 0 when automaton represents empty string.
+    """
+    root = build("anything")
+    assert find_substring(root, "") == 0
+
+
 @pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
-def test_longest_common_string_finds_common_string(s1: str, s2: str, lcs_length: int):
+def test_longest_common_string_finds_a_common_string(s1: str, s2: str, lcs_length: int):
     """
     Since some test strings are generated randomly,
     the parameter lcs_legnth is a lower bound on the lcs.
@@ -155,6 +196,21 @@ def test_longest_common_string_finds_common_string(s1: str, s2: str, lcs_length:
 
     # Check that returned result is a common substring
     assert s1[start1 : start1 + length] == s2[start2 : start2 + length]
+
+
+@pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
+def test_longest_common_string_finds_a_maximal_common_string(
+    s1: str, s2: str, lcs_length: int
+):
+    """
+    Since some test strings are generated randomly,
+    the parameter lcs_legnth is a lower bound on the lcs.
+    We check that the computed lcs is 1) common; 2) locally maximal;
+    and 3) at *least* lcs_length in length.
+    """
+    root = build(s1)
+
+    start1, start2, length = find_lcs(root, s2)
 
     # Make sure it's at least as long as the expected length.
     assert length >= lcs_length

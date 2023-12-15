@@ -44,7 +44,7 @@ def test_automaton_generates_only_suffixes(string):
     test_automaton_generates_each_length_once()
     ensures that all suffixes are generated, each only once.
     """
-    automaton = build(string)[0]
+    automaton = build(string)
     for string in all_suffixes(automaton):
         # Assert that string is indeed a suffix
         assert string.endswith(string)
@@ -63,7 +63,7 @@ def test_automaton_generates_each_length_once(string):
     only once.
     """
     lengths = set(range(len(string) + 1))
-    automaton = build(string)[0]
+    automaton = build(string)
 
     for string in all_suffixes(automaton):
         assert len(string) in lengths
@@ -116,7 +116,7 @@ def test_find_substring_is_true_on_all_substrings(string):
     Build automaton for "string" and check that every non-trivial
     substring is correctly detected.
     """
-    root = build(string)[0]
+    root = build(string)
 
     for start in range(len(string)):
         for end in range(start + 1, len(string)):
@@ -133,7 +133,7 @@ def test_find_substring_is_correct_on_random_letters(string):
     random strings of different lengths selected from characters
     of "string" are detected (or not detected) correctly.
     """
-    root = build(string)[0]
+    root = build(string)
 
     for k in range(len(string)):
         candidate = "".join(random.choices(string, k=k + 1))
@@ -142,14 +142,14 @@ def test_find_substring_is_correct_on_random_letters(string):
 
 
 @pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
-def test_longest_common_string(s1: str, s2: str, lcs_length: int):
+def test_longest_common_string_finds_common_string(s1: str, s2: str, lcs_length: int):
     """
     Since some test strings are generated randomly,
     the parameter lcs_legnth is a lower bound on the lcs.
     We check that the computed lcs is 1) common; 2) locally maximal;
     and 3) at *least* lcs_length in length.
     """
-    root = build(s1)[0]
+    root = build(s1)
 
     start1, start2, length = find_lcs(root, s2)
 
@@ -169,3 +169,12 @@ def test_longest_common_string(s1: str, s2: str, lcs_length: int):
         s1[pre_start1 : start1 + length] != s2[pre_start2 : start2 + length]
         or s1[start1 : start1 + length + 1] != s2[start2 : start2 + length + 1]
     )
+
+
+def test_find_lcs_returns_all_zeros_when_nothing_in_common():
+    root = build("abc")
+    start1, start2, length = find_lcs(root, "xyz")
+
+    assert start1 == 0
+    assert start2 == 0
+    assert length == 0

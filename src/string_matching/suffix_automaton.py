@@ -32,7 +32,7 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def build(input_string: str) -> tuple[Node, Node, Callable[..., Node]]:
+def build(input_string: str) -> Node:
     # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
     node_factory = Node.get_factory()
     root = node_factory()
@@ -44,7 +44,7 @@ def build(input_string: str) -> tuple[Node, Node, Callable[..., Node]]:
 
     mark_terminals(current)
 
-    return root, current, node_factory
+    return root
 
 
 def extend(character: str, last: Node, node_factory):
@@ -195,7 +195,7 @@ if __name__ == "__main__":
     random_string = "".join(random.choices("XYZ", k=10))
     for string in ("abcbc", "bananas", random_string):
         print(f"\n{string}")
-        root, __ignore__, __ignore__ = build(string)
+        root = build(string)
         dump(root, indent=2)
 
         print("\nAll suffixes:")

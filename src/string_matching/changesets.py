@@ -8,24 +8,46 @@ from string_matching.suffix_automaton import build, find_lcs
 
 @dataclass
 class Changeset:
-    before: Changeset | None = None
+    prefix: Changeset | LeafChangeset
+    suffix: Changeset | LeafChangeset
     common: str = ""
-    after: Changeset | None = None
+
+    def __str__(self) -> str:
+        return str(self.prefix) + self.common + str(self.suffix)
 
 
-def compute_changesets(s1: str, s2: str):
-    if s1 == "" or s2 == "":
-        changeset = Changeset()
+@dataclass
+class LeafChangeset:
+    original: str = ""
+    modified: str = ""
 
+    def __str__(self) -> str:
+        result = ""
+        if self.original:
+            result += f"<DELETE>{self.original}</DELETE>"
+        if self.modified:
+            result += f"<INSERT>{self.modified}</INSERT>"
+        return result
+
+
+def compute_changesets(original: str, modified: str) -> Changeset | LeafChangeset:
+    original_automaton = build(original)
+    original_position, modified_position, length = find_lcs(
+        original_automaton, modified
+    )
+
+    if length == 0:
+        changeset = LeafChangeset(original=original, modified=modified)
     else:
-        s1_automaton = build(s1)
-        s1_position, s2_position, length = find_lcs(s1_automaton, s2)
-
-        before = compute_changesets(s1[:s1_position], s2[:s2_position])
-        common = s1[s1_position : s1_position + length]
-        after = compute_changesets(s1[s1_position + length :], s2[s2_position + length])
-
-        changeset = Changeset(before=before, common=common, after=after)
+        common = original[original_position : original_position + length]
+        prefix = compute_changesets(
+            original[:original_position], modified[:modified_position]
+        )
+        suffix = compute_changesets(
+            original[original_position + length :],
+            modified[modified_position + length :],
+        )
+        changeset = Changeset(prefix=prefix, common=common, suffix=suffix)
 
     return changeset
 
@@ -37,6 +59,6 @@ if __name__ == "__main__":
         s1 = file1.read()
         s2 = file2.read()
 
-    change_sets = compute_change_sets(s1, s2)
+    changesets = compute_changesets(s1, s2)
 
-    "Done"
+    print(changesets)

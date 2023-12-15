@@ -1,15 +1,15 @@
-C Correct\sspelling\serrors\sused\sfor\san\sexperiment.
-D 2023-12-15T14:12:42.536
+C Add\sinitial\sversion\sof\scompute_changesets().
+D 2023-12-15T14:13:23.892
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 0933b0030a2fc21be23f0eb9453fb9e93086dd71ba689bc166435e1e0002dce4
 F pyproject.toml f7e7dedfd11e9ab80434b7cae54bc01638a996f428572056eb58ba14cf4a92da
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/changesets.py 95f804cec1e86177d1c75236ad2318206432956da9bcd86ff891c025fa07ca5e
+F src/string_matching/changesets.py 48b760c185ea9f3be4b193201426d22880c7c7bcc261ce7be8326576af3f7066
 F src/string_matching/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
 F src/string_matching/suffix_automaton.py 4ca432837cc46500ef27e21292e7e1fafdec8d942e2cd729a5b1d8aab3d99623
 F tests/test_suffix_automaton.py edc25420b6b00030a10cfb8590197cdced1cce53bb85f70ce88a096687ef3969
-P 1163d55e7b8220d753d98b4445f3ba6bd76aca30630e74fde0fb3d17fb471a33
-R 728e54d30acb3b2f1aa683f8ce79b3ad
+P f66fd8f52eb69024bede79098b3c99bb07cc4ed4265a101a6f073e81f6ba100d
+R 1f11415ac95813e7f1ad7a99e2dc6c9a
 U mwicks
-Z 3addf7b16b028ba0333ae109dcbdf4f2
+Z 917f36c2b3fb1f34b8f7095e4390eeab
 # Remove this line to create a well-formed Fossil manifest.

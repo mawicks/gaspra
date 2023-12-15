@@ -1,15 +1,15 @@
-C Add\smore\sedge\scases\sto\ssuffix\sautomaton\stests.
-D 2023-12-15T13:20:07.325
+C Correct\sspelling\serrors\sused\sfor\san\sexperiment.
+D 2023-12-15T14:12:42.536
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 0933b0030a2fc21be23f0eb9453fb9e93086dd71ba689bc166435e1e0002dce4
 F pyproject.toml f7e7dedfd11e9ab80434b7cae54bc01638a996f428572056eb58ba14cf4a92da
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F src/string_matching/changesets.py 95f804cec1e86177d1c75236ad2318206432956da9bcd86ff891c025fa07ca5e
 F src/string_matching/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
-F src/string_matching/suffix_automaton.py 6bd7e3985d537291fd74602b9bc96b4ac277c2c6fa797a24ea4d177318e41b3f
+F src/string_matching/suffix_automaton.py 4ca432837cc46500ef27e21292e7e1fafdec8d942e2cd729a5b1d8aab3d99623
 F tests/test_suffix_automaton.py edc25420b6b00030a10cfb8590197cdced1cce53bb85f70ce88a096687ef3969
-P 0bcfe63be8e43f3fbd24cee1bca85f3b817eb34cc1786186cbe01192cea8e964
-R 5cbb3b5b9af3a0c56b5127a879114e41
+P 1163d55e7b8220d753d98b4445f3ba6bd76aca30630e74fde0fb3d17fb471a33
+R 728e54d30acb3b2f1aa683f8ce79b3ad
 U mwicks
-Z 93375ecfef9e9e3bab009a18500ff2f8
+Z 3addf7b16b028ba0333ae109dcbdf4f2
 # Remove this line to create a well-formed Fossil manifest.

@@ -1,13 +1,18 @@
-C Only\sreturn\sroot\sin\sbuild().
-D 2023-12-15T03:49:32.299
+C Commit\swork\son\schangesets.
+D 2023-12-15T03:52:24.536
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock f942489157e402e149b832bee739159b8c3451bbbe27fd6fd1ee2ce3316a2956
 F pyproject.toml a0ac5fa50f3e26b7e4bd410df05d462edacb04a916c1a19375ceea6f3c603e8b
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
+F src/string_matching/changesets.py 95f804cec1e86177d1c75236ad2318206432956da9bcd86ff891c025fa07ca5e w src/string_matching/change_sets.py
+F src/string_matching/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
 F src/string_matching/suffix_automaton.py acdd1e1922fb8563a0441233ab0f33ed8925b887ff17bb62e53db9eed9bbbe6e
 F tests/test_suffix_automaton.py 6ec151c936aa276b707cbab5a15a606bb2e448cb6257a6ebb758778e485074b9
-P 3f107881360eb2a6c9a8d3bd14d8c89d7596763c33dbb2ae8f89818254963895
-R 037f97d6322aea7fbf757f167ecfb160
+P d6b458510a645c486e2bd727032e57da4927353253d57275af3e0e7b3a18082c
+R 39cf42004f30837767e6c1419fcd9586
+T *branch * wip
+T *sym-wip *
+T -sym-trunk *
 U mwicks
-Z c48b016a9f796d88aaeb0c8196393fd7
+Z f5916e3fcfb1fa2aeb767586b4aa1a20
 # Remove this line to create a well-formed Fossil manifest.

@@ -19,7 +19,7 @@ def escape(s):
 class Changeset:
     prefix: Changeset | LeafChangeset
     suffix: Changeset | LeafChangeset
-    common: str = ""
+    common: str
 
     def __str__(self) -> str:
         return str(self.prefix) + escape(self.common) + str(self.suffix)
@@ -27,8 +27,10 @@ class Changeset:
 
 @dataclass
 class LeafChangeset:
-    original: str = ""
-    modified: str = ""
+    original: str
+    modified: str
+    original_position: int
+    modified_position: int
 
     def __str__(self) -> str:
         result = ""
@@ -41,22 +43,34 @@ class LeafChangeset:
         return result
 
 
-def compute_changesets(original: str, modified: str) -> Changeset | LeafChangeset:
+def compute_changesets(
+    original: str, modified: str, original_position: int = 0, modified_position: int = 0
+) -> Changeset | LeafChangeset:
     original_automaton = build(original)
-    original_position, modified_position, length = find_lcs(
+    lcs_position_original, lcs_position_modified, length = find_lcs(
         original_automaton, modified
     )
 
     if length == 0:
-        changeset = LeafChangeset(original=original, modified=modified)
+        changeset = LeafChangeset(
+            original=original,
+            modified=modified,
+            original_position=original_position,
+            modified_position=modified_position,
+        )
     else:
-        common = original[original_position : original_position + length]
+        common = original[lcs_position_original : lcs_position_original + length]
         prefix = compute_changesets(
-            original[:original_position], modified[:modified_position]
+            original[:lcs_position_original],
+            modified[:lcs_position_modified],
+            original_position=original_position,
+            modified_position=modified_position,
         )
         suffix = compute_changesets(
-            original[original_position + length :],
-            modified[modified_position + length :],
+            original[lcs_position_original + length :],
+            modified[lcs_position_modified + length :],
+            original_position=original_position + lcs_position_original + length,
+            modified_position=modified_position + lcs_position_modified + length,
         )
         changeset = Changeset(prefix=prefix, common=common, suffix=suffix)
 

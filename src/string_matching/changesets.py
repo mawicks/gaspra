@@ -2,8 +2,17 @@ from __future__ import annotations
 from dataclasses import dataclass
 import os
 
+from rich.console import Console
+
 from string_matching.common import DATA_DIR
 from string_matching.suffix_automaton import build, find_lcs
+
+console = Console(highlight=False)
+
+
+def escape(s):
+    return s.replace("[", r"\[")
+    # return s
 
 
 @dataclass
@@ -13,7 +22,7 @@ class Changeset:
     common: str = ""
 
     def __str__(self) -> str:
-        return str(self.prefix) + self.common + str(self.suffix)
+        return str(self.prefix) + escape(self.common) + str(self.suffix)
 
 
 @dataclass
@@ -24,9 +33,11 @@ class LeafChangeset:
     def __str__(self) -> str:
         result = ""
         if self.original:
-            result += f"<DELETE>{self.original}</DELETE>"
+            result += f"[red strike]{escape(self.original)}[/]"
+            # result += f"[delete]{escape(self.original)}[/delete]"
         if self.modified:
-            result += f"<INSERT>{self.modified}</INSERT>"
+            result += f"[green]{escape(self.modified)}[/]"
+            # result += f"[insert]{escape(self.original)}[/insert]"
         return result
 
 
@@ -61,4 +72,5 @@ if __name__ == "__main__":
 
     changesets = compute_changesets(s1, s2)
 
-    print(changesets)
+    console.print(str(changesets))
+    # print(str(changesets))

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from dataclasses import dataclass, field
-from typing import Callable
 import random
 
 
@@ -156,7 +155,7 @@ def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
 
 def all_suffixes(current: Node) -> Iterator[str]:
     """
-    Iterate over every suffixes in the automation.  The
+    Iterate over every suffix in the automaton.  The
     only purpose
     for this is in a test that ensures the automaton produces all suffixes
     and only suffixes.

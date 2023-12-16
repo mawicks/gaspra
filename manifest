@@ -1,15 +1,15 @@
-C Store\sslices\srather\sthan\sstrings.
-D 2023-12-16T19:49:28.437
+C Add\sapply_forward()\sand\sapply_reverse().\sAbandon\susing\sslices\sin\sleaf\snodes.
+D 2023-12-16T23:14:21.843
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 09238e413ef8f1240cde89ec19d5ebb89741624c78385c84f1d80635b1954e78
 F pyproject.toml fd38b33150957a242bc7af609cbc3eda99b607fef60364815512b07742e4b59e
 F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
-F src/string_matching/changesets.py 4f37752a754e8c1ebc4ee096a83a7d98f19291a8bacab031e5e867f00fae48ac
+F src/string_matching/changesets.py 31fba0094d757cdef633af08deced9bf200bee7ba4c17888171c61cf658f9141
 F src/string_matching/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
 F src/string_matching/suffix_automaton.py 4ca432837cc46500ef27e21292e7e1fafdec8d942e2cd729a5b1d8aab3d99623
 F tests/test_suffix_automaton.py edc25420b6b00030a10cfb8590197cdced1cce53bb85f70ce88a096687ef3969
-P cc15f48e91e5724bfd45e55aa7bd56e86125fbfb23a5530264e5547850c0480b
-R f8e2fb23db169f28d584a39799432a91
+P 8bcb6e2a58f691ed91455b914ed31d72deb7db1683ea9c365d0431a1d3f7b6b6
+R 9055127914ef0eb6f77fc8f7c92d2edc
 U mwicks
-Z d1608a5682fe31f32afd0c27d5c2ee87
+Z 2ae701c52fcd2626edc513a9cd3805c8
 # Remove this line to create a well-formed Fossil manifest.

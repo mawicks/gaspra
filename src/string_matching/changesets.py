@@ -16,33 +16,40 @@ def escape(s):
 
 
 @dataclass
-class LeafChangeset:
-    original: slice
-    modified: slice
+class ChangesetLeaf:
+    original: str
+    modified: str
+
+    original_slice: slice
+    modified_slice: slice
 
     def changes(self):
         yield self
 
-    def show(self, original, modified) -> str:
+    def apply_forward(self, __ignored__: str):
+        yield self.modified
+
+    def apply_reverse(self, __ignored__: str):
+        yield self.original
+
+    def show(self, __original__: str, __modified__: str) -> str:
         result = ""
 
-        original_slice = original[self.original]
-        modified_slice = modified[self.modified]
+        if self.original:
+            result += f"[red strike]{escape(self.original)}[/]"
+            # result += f"[delete]{escape(self.original_str)}[/delete]"
+        if self.modified:
+            result += f"[green]{escape(self.modified)}[/]"
+        # result += f"[insert]{escape(self.modified_str)}[/insert]"
 
-        if original_slice:
-            result += f"[red strike]{escape(original_slice)}[/]"
-            # result += f"[delete]{escape(self.original)}[/delete]"
-        if modified_slice:
-            result += f"[green]{escape(modified_slice)}[/]"
-        # result += f"[insert]{escape(self.original)}[/insert]"
         return result
 
     def __str__(self):
         result = ""
-        if self.original.stop is None or self.original.stop > self.original.start:
-            result += f"original[{self.original.start}:{self.original.stop}]\n"
-        if self.modified.stop is None or self.modified.stop > self.modified.start:
-            result += f"modified[{self.modified.start}:{self.modified.stop}]\n"
+        if self.original:
+            result += f"original: {self.original}\n"
+        if self.modified:
+            result += f"modified: {self.modified}\n"
         return result
 
 
@@ -51,8 +58,8 @@ class Changeset:
     common_original: slice
     common_modified: slice
 
-    prefix: Changeset | LeafChangeset
-    suffix: Changeset | LeafChangeset
+    prefix: Changeset | ChangesetLeaf
+    suffix: Changeset | ChangesetLeaf
 
     def changes(self):
         for change in self.prefix.changes():
@@ -63,7 +70,25 @@ class Changeset:
         for change in self.suffix.changes():
             yield change
 
-    def show(self, original, modified):
+    def apply_forward(self, original: str):
+        for fragment in self.prefix.apply_forward(original):
+            yield fragment
+
+        yield original[self.common_original]
+
+        for fragment in self.suffix.apply_forward(original):
+            yield fragment
+
+    def apply_reverse(self, modified: str):
+        for fragment in self.prefix.apply_reverse(modified):
+            yield fragment
+
+        yield modified[self.common_modified]
+
+        for fragment in self.suffix.apply_reverse(modified):
+            yield fragment
+
+    def show(self, original: str, modified: str):
         return (
             self.prefix.show(original, modified)
             + escape(original[self.common_original])
@@ -81,7 +106,7 @@ def compute_changesets(
     modified: str,
     original_slice: slice = slice(0, None),
     modified_slice: slice = slice(0, None),
-) -> Changeset | LeafChangeset:
+) -> Changeset | ChangesetLeaf:
     automaton_original = build(original[original_slice])
 
     common_offset_original, common_offset_modified, common_length = find_lcs(
@@ -89,9 +114,11 @@ def compute_changesets(
     )
 
     if common_length == 0:
-        changeset = LeafChangeset(
-            original=original_slice,
-            modified=modified_slice,
+        changeset = ChangesetLeaf(
+            original=original[original_slice],
+            modified=modified[modified_slice],
+            original_slice=original_slice,
+            modified_slice=modified_slice,
         )
     else:
         common_original = slice(
@@ -134,11 +161,12 @@ if __name__ == "__main__":
 
     changesets = compute_changesets(original, modified)
 
-    for changeset in changesets.changes():
-        print(str(changeset))
-
     markup = changesets.show(original, modified)
 
-    console.print(markup)
+    patched_original = "".join(changesets.apply_forward(original))
+    reverse_patched_modified = "".join(changesets.apply_reverse(modified))
 
-    # print(str(changesets))
+    assert patched_original == modified
+    assert reverse_patched_modified == original
+
+    console.print(markup)

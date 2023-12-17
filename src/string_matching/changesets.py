@@ -16,75 +16,167 @@ def escape(s):
 
 
 @dataclass
-class Changeset:
-    prefix: Changeset | LeafChangeset
-    suffix: Changeset | LeafChangeset
-    common: str
-
-    def __str__(self) -> str:
-        return str(self.prefix) + escape(self.common) + str(self.suffix)
-
-
-@dataclass
-class LeafChangeset:
+class ChangesetLeaf:
     original: str
     modified: str
-    original_position: int
-    modified_position: int
 
-    def __str__(self) -> str:
+    original_slice: slice
+    modified_slice: slice
+
+    def changes(self):
+        yield self
+
+    def apply_forward(self, __ignored__: str):
+        yield self.modified
+
+    def apply_reverse(self, __ignored__: str):
+        yield self.original
+
+    def show(self, __original__: str, __modified__: str) -> str:
         result = ""
+
         if self.original:
             result += f"[red strike]{escape(self.original)}[/]"
-            # result += f"[delete]{escape(self.original)}[/delete]"
+            # result += f"[delete]{escape(self.original_str)}[/delete]"
         if self.modified:
             result += f"[green]{escape(self.modified)}[/]"
-            # result += f"[insert]{escape(self.original)}[/insert]"
+        # result += f"[insert]{escape(self.modified_str)}[/insert]"
+
+        return result
+
+    def __str__(self):
+        result = ""
+        if self.original:
+            result += f"original: {self.original}\n"
+        if self.modified:
+            result += f"modified: {self.modified}\n"
         return result
 
 
-def compute_changesets(
-    original: str, modified: str, original_position: int = 0, modified_position: int = 0
-) -> Changeset | LeafChangeset:
-    original_automaton = build(original)
-    lcs_position_original, lcs_position_modified, length = find_lcs(
-        original_automaton, modified
+@dataclass
+class Changeset:
+    common_original: slice
+    common_modified: slice
+
+    prefix: Changeset | ChangesetLeaf
+    suffix: Changeset | ChangesetLeaf
+
+    def changes(self):
+        for change in self.prefix.changes():
+            yield change
+
+        yield self
+
+        for change in self.suffix.changes():
+            yield change
+
+    def apply_forward(self, original: str):
+        for fragment in self.prefix.apply_forward(original):
+            yield fragment
+
+        yield original[self.common_original]
+
+        for fragment in self.suffix.apply_forward(original):
+            yield fragment
+
+    def apply_reverse(self, modified: str):
+        for fragment in self.prefix.apply_reverse(modified):
+            yield fragment
+
+        yield modified[self.common_modified]
+
+        for fragment in self.suffix.apply_reverse(modified):
+            yield fragment
+
+    def show(self, original: str, modified: str):
+        return (
+            self.prefix.show(original, modified)
+            + escape(original[self.common_original])
+            + self.suffix.show(original, modified)
+        )
+
+    def __str__(self):
+        s_original = f"{self.common_original.start}:{self.common_original.stop}"
+        s_modified = f"{self.common_modified.start}:{self.common_modified.stop}"
+        return f"original[{s_original}]/modified[{s_modified}]\n"
+
+
+def find_changeset(
+    original: str,
+    modified: str,
+    original_slice: slice = slice(0, None),
+    modified_slice: slice = slice(0, None),
+) -> Changeset | ChangesetLeaf:
+    automaton_original = build(original[original_slice])
+
+    common_offset_original, common_offset_modified, common_length = find_lcs(
+        automaton_original, modified[modified_slice]
     )
 
-    if length == 0:
-        changeset = LeafChangeset(
-            original=original,
-            modified=modified,
-            original_position=original_position,
-            modified_position=modified_position,
+    if common_length == 0:
+        changeset = ChangesetLeaf(
+            original=original[original_slice],
+            modified=modified[modified_slice],
+            original_slice=original_slice,
+            modified_slice=modified_slice,
         )
     else:
-        common = original[lcs_position_original : lcs_position_original + length]
-        prefix = compute_changesets(
-            original[:lcs_position_original],
-            modified[:lcs_position_modified],
-            original_position=original_position,
-            modified_position=modified_position,
+        common_original = slice(
+            original_slice.start + common_offset_original,
+            original_slice.start + common_offset_original + common_length,
         )
-        suffix = compute_changesets(
-            original[lcs_position_original + length :],
-            modified[lcs_position_modified + length :],
-            original_position=original_position + lcs_position_original + length,
-            modified_position=modified_position + lcs_position_modified + length,
+        common_modified = slice(
+            modified_slice.start + common_offset_modified,
+            modified_slice.start + common_offset_modified + common_length,
         )
-        changeset = Changeset(prefix=prefix, common=common, suffix=suffix)
+
+        prefix = find_changeset(
+            original,
+            modified,
+            slice(original_slice.start, common_original.start),
+            slice(modified_slice.start, common_modified.start),
+        )
+        suffix = find_changeset(
+            original,
+            modified,
+            slice(common_original.stop, original_slice.stop),
+            slice(common_modified.stop, modified_slice.stop),
+        )
+        changeset = Changeset(
+            prefix=prefix,
+            suffix=suffix,
+            common_original=common_original,
+            common_modified=common_modified,
+        )
 
     return changeset
+
+
+def apply_forward(changeset, original: str):
+    patched_original = "".join(changeset.apply_forward(original))
+    return patched_original
+
+
+def apply_reverse(changeset, modified: str):
+    reverse_patched_modified = "".join(changeset.apply_reverse(modified))
+    return reverse_patched_modified
 
 
 if __name__ == "__main__":
     with open(os.path.join(DATA_DIR, "file1")) as file1, open(
         os.path.join(DATA_DIR, "file2")
     ) as file2:
-        s1 = file1.read()
-        s2 = file2.read()
+        original = file1.read()
+        modified = file2.read()
 
-    changesets = compute_changesets(s1, s2)
+    changeset = find_changeset(original, modified)
 
-    console.print(str(changesets))
-    # print(str(changesets))
+    markup = changeset.show(original, modified)
+
+    patched_original = apply_forward(changeset, original)
+    reverse_patched_modified = apply_reverse(changeset, modified)
+
+    assert patched_original == modified
+    assert reverse_patched_modified == original
+
+    console.print(markup)

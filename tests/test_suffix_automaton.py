@@ -1,8 +1,5 @@
 import pytest
-import random
 import time
-
-random.seed(42)
 
 from string_matching.suffix_automaton import (
     build,
@@ -10,6 +7,8 @@ from string_matching.suffix_automaton import (
     find_substring,
     find_lcs,
 )
+
+from helpers.random_strings import random_string
 
 
 def test_build_empty_string():
@@ -24,7 +23,7 @@ def test_build_empty_string():
 BUILD_AND_SEARCH_TEST_STRINGS = [
     "bananas",
     "abcbc",
-    "".join(random.choices("ABC", k=20)),
+    random_string("abc", 20),
 ]
 
 
@@ -80,8 +79,8 @@ def test_construction_time_is_approximately_linear():
     algorithm that makes it quadratic and this test should catch that.
     It takes some time to run, however.
     """
-    string_1 = "".join(random.choices("ABCDEFG", k=10_000))
-    string_2 = "".join(random.choices("ABCDEFG", k=100_000))
+    string_1 = random_string("abcdefg", 10_000)
+    string_2 = random_string("abcdefg", 100_000)
     start = time.perf_counter_ns()
     build(string_1)
     end_1 = time.perf_counter_ns()
@@ -131,7 +130,7 @@ def test_find_substring_is_correct_on_random_letters(string):
     root = build(string)
 
     for k in range(len(string)):
-        candidate = "".join(random.choices(string, k=k + 1))
+        candidate = random_string(string, k + 1)
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
 
@@ -168,9 +167,9 @@ def test_find_returns_0_on_empty_query_string():
     assert find_substring(root, "") == 0
 
 
-COMMON = "".join(random.choices("ABC", k=17))
-NOT_COMMON1 = "".join(random.choices("ABC", k=13))
-NOT_COMMON2 = "".join(random.choices("ABC", k=13))
+COMMON = random_string("abc", 17)
+NOT_COMMON1 = random_string("abc", 13)
+NOT_COMMON2 = random_string("abc", 13)
 S1 = NOT_COMMON1[:3] + COMMON + NOT_COMMON1[3:]
 S2 = NOT_COMMON2[:6] + COMMON + NOT_COMMON1[6:]
 

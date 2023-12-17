@@ -101,7 +101,7 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
-def compute_changesets(
+def find_changeset(
     original: str,
     modified: str,
     original_slice: slice = slice(0, None),
@@ -130,13 +130,13 @@ def compute_changesets(
             modified_slice.start + common_offset_modified + common_length,
         )
 
-        prefix = compute_changesets(
+        prefix = find_changeset(
             original,
             modified,
             slice(original_slice.start, common_original.start),
             slice(modified_slice.start, common_modified.start),
         )
-        suffix = compute_changesets(
+        suffix = find_changeset(
             original,
             modified,
             slice(common_original.stop, original_slice.stop),
@@ -152,6 +152,16 @@ def compute_changesets(
     return changeset
 
 
+def apply_forward(changeset, original: str):
+    patched_original = "".join(changeset.apply_forward(original))
+    return patched_original
+
+
+def apply_reverse(changeset, modified: str):
+    reverse_patched_modified = "".join(changeset.apply_reverse(modified))
+    return reverse_patched_modified
+
+
 if __name__ == "__main__":
     with open(os.path.join(DATA_DIR, "file1")) as file1, open(
         os.path.join(DATA_DIR, "file2")
@@ -159,12 +169,12 @@ if __name__ == "__main__":
         original = file1.read()
         modified = file2.read()
 
-    changesets = compute_changesets(original, modified)
+    changeset = find_changeset(original, modified)
 
-    markup = changesets.show(original, modified)
+    markup = changeset.show(original, modified)
 
-    patched_original = "".join(changesets.apply_forward(original))
-    reverse_patched_modified = "".join(changesets.apply_reverse(modified))
+    patched_original = apply_forward(changeset, original)
+    reverse_patched_modified = apply_reverse(changeset, modified)
 
     assert patched_original == modified
     assert reverse_patched_modified == original

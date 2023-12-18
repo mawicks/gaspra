@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 import random
+from typing import Callable
 
 
 @dataclass
@@ -31,11 +32,35 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def build(input_string: Iterable[str | int]) -> Node:
-    # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
-    node_factory = Node.get_factory()
-    root = node_factory()
+def wrap_node_factory(node_factory, node_list):
+    """
+    Wrap a node_factory() so that it always appends to a node_list
 
+    Args:
+       node_factory: Callable[..., Node] - Node factory to wrap
+       nost_list: List[Node] - List to append to when a node gets created
+    """
+
+    def wrapped_node_factory(**kwargs):
+        new_node = node_factory(**kwargs)
+        node_list.append(new_node)
+        return new_node
+
+    return wrapped_node_factory
+
+
+def build(input_string: Iterable[str | int]) -> Node:
+    # Create a list to capture all created nodes to make it easier to
+    # iterate over them later.
+    node_list = []
+
+    # Decorate node factory so that node_list is updated on every call.
+    node_factory = wrap_node_factory(Node.get_factory(), node_list)
+
+    # Implemention mostly follows description at
+    # https://cp-algorithms.com/string/suffix-automaton.html
+
+    root = node_factory()
     current = root
 
     for character in input_string:
@@ -46,7 +71,7 @@ def build(input_string: Iterable[str | int]) -> Node:
     return root
 
 
-def extend(character: str | int, last: Node, node_factory):
+def extend(character: str | int, last: Node, node_factory: Callable[..., Node]):
     new_node = node_factory(
         length=last.length + 1,
         first_endpos=last.length + 1,
@@ -71,7 +96,9 @@ def extend(character: str | int, last: Node, node_factory):
     return new_node
 
 
-def insert_node(character: str, p: Node, q: Node, node_factory):
+def insert_node(
+    character: str | int, p: Node, q: Node, node_factory: Callable[..., Node]
+):
     clone = node_factory(
         length=p.length + 1,
         first_endpos=q.first_endpos,
@@ -92,7 +119,7 @@ def insert_node(character: str, p: Node, q: Node, node_factory):
     return clone
 
 
-def mark_terminals(final_node):
+def mark_terminals(final_node: Node):
     current = final_node
     while current is not None:
         current.is_terminal = True
@@ -153,7 +180,7 @@ def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
     )
 
 
-def all_suffixes(current: Node) -> Iterator[str]:
+def all_suffixes(current: Node) -> Iterator[str | bytes]:
     """
     Iterate over every suffix in the automaton.  The
     only purpose
@@ -165,7 +192,12 @@ def all_suffixes(current: Node) -> Iterator[str]:
 
     for character, node in current.transitions.items():
         for substring in all_suffixes(node):
-            yield character + substring
+            if isinstance(character, str) and isinstance(substring, str):
+                yield character + substring
+            elif isinstance(substring, str):
+                yield bytes([character]) + substring.encode("utf-8")
+            else:
+                yield bytes([character]) + substring
 
 
 def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):

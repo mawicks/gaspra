@@ -14,6 +14,7 @@ class Node:
     first_endpos: int = 0  # First possible ending position of substring.
     is_terminal: bool = False  # Is this a terminal state?
     link: Node | None = None
+    reverse_links: list[Node] = field(default_factory=list)
 
     @staticmethod
     def get_factory():
@@ -66,7 +67,8 @@ def build(input_string: Iterable[str | int]) -> Node:
     for character in input_string:
         current = extend(character, current, node_factory)
 
-    mark_terminals(current)
+    # mark_terminals(current)
+    # add_reverse_links(node_list)
 
     return root
 
@@ -124,6 +126,13 @@ def mark_terminals(final_node: Node):
     while current is not None:
         current.is_terminal = True
         current = current.link
+    return
+
+
+def add_reverse_links(node_list: list[Node]):
+    for node in node_list:
+        if node.link is not None:
+            node.link.reverse_links.append(node)
     return
 
 

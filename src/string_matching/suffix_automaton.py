@@ -161,13 +161,57 @@ def add_reverse_links(node_list: list[Node]):
     return
 
 
-def find_substring(root: Node, s: str):
+def find_substring(root: Node, s: str) -> int | None:
+    current = _find_match_node(root, s)
+    if current is None:
+        return None
+    return current.first_endpos - len(s)
+
+
+def find_substring_all(root: Node, s: str) -> Iterable[int]:
+    current = _find_match_node(root, s)
+    if current is None:
+        return ()
+
+    return _get_all_start_positions(current, len(s))
+
+
+def _get_all_start_positions(current, length):
+    candidates = sorted(
+        node.first_endpos - length for node in follow_reverse_links(current)
+    )
+
+    positions = dedup_sorted(candidates)
+    return positions
+
+
+def _find_match_node(root: Node, s: str) -> Node | None:
     current = root
     for character in s:
         current = current.transitions.get(character)
         if current is None:
             return None
-    return current.first_endpos - len(s)
+    return current
+
+
+def follow_reverse_links(current):
+    # Use a non-resursive solution
+    to_do = [current]
+    all = []
+    while len(to_do) > 0:
+        current = to_do.pop()
+        all.append(current)
+        for child in current.reverse_links:
+            to_do.append(child)
+    return all
+
+
+def dedup_sorted(sequence: Iterable[int]) -> list[int]:
+    deduped = []
+    for candidate in sequence:
+        if len(deduped) == 0 or candidate != deduped[-1]:
+            deduped.append(candidate)
+    return deduped
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int, int]:

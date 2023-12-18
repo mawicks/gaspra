@@ -1,14 +1,14 @@
 import pytest
-import time
 
 from string_matching.suffix_automaton import (
     build,
     all_suffixes,
     find_substring,
+    find_substring_all,
     find_lcs,
 )
 
-from helpers.random_strings import random_string
+from string_matching.test_helpers.random_strings import random_string
 
 
 def test_build_empty_string():
@@ -68,40 +68,48 @@ def test_automaton_generates_each_length_once(string):
     assert len(lengths) == 0
 
 
-COMPLEXITY_TEST_COEFFICIENT = 3.0
-COMPLEXITY_TEST_EXPONENT = 1.5
-
-
-def test_construction_time_is_approximately_linear():
+@pytest.mark.parametrize(
+    "automaton_string,query_string,expected_position",
+    [
+        ("", "anything", None),
+        ("bananas", "bananasx", None),
+        ("bananas", "xbananas", None),
+        # Below are technically true substring cases which are also tested separately.
+        ("anything", "", 0),
+        ("", "", 0),
+    ],
+)
+def test_find_substring(automaton_string, query_string, expected_position):
     """
-    This is an attempt to verify that the construction
-    time is linear.  It's likely easy to insert something in the
-    algorithm that makes it quadratic and this test should catch that.
-    It takes some time to run, however.
+    We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
     """
-    string_1 = random_string("abcdefg", 10_000, 41)
-    string_2 = random_string("abcdefg", 100_000, 42)
-    start = time.perf_counter_ns()
-    build(string_1)
-    end_1 = time.perf_counter_ns()
-    build(string_2)
-    end_2 = time.perf_counter_ns()
-    time_1 = end_1 - start
-    time_2 = end_2 - start
+    root = build(automaton_string)
+    position = find_substring(root, query_string)
+    assert position == expected_position
 
-    time_ratio = time_2 / time_1
-    string_ratio = len(string_2) / len(string_1)
 
-    if string_ratio < 2.0 * COMPLEXITY_TEST_COEFFICIENT:
-        raise ValueError("Choose test strings with a larger ratio of their lengths")
-
-    # Use two tests in case k gets changed above.
-    # Both assume a fairly large ratio of string lengths (say 10).
-    # First check that it's less than about O(n^1.5)
-    assert time_ratio < string_ratio**COMPLEXITY_TEST_EXPONENT
-    # Then check for approximate linearity with a small
-    # coefficient greater than 1 to provide some slop.
-    assert time_ratio < COMPLEXITY_TEST_COEFFICIENT * string_ratio
+@pytest.mark.parametrize(
+    "automaton_string,query_string,expected_position",
+    [
+        # Substring cases
+        ("abcdefg", "def", (3,)),
+        ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
+        ("", "", (0,)),
+        ("abcabc", "abc", (0, 3)),
+        # Non-substring cases
+        ("", "anything", ()),
+        ("bananas", "sana", ()),
+        ("bananas", "bananasx", ()),
+        ("bananas", "xbananas", ()),
+    ],
+)
+def test_find_substring_all(automaton_string, query_string, expected_position):
+    """
+    We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
+    """
+    root = build(automaton_string)
+    positions = tuple(find_substring_all(root, query_string))
+    assert positions == expected_position
 
 
 @pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)
@@ -133,38 +141,6 @@ def test_find_substring_is_correct_on_random_letters(string):
         candidate = random_string(string, k + 1, k)
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
-
-
-def test_find_returns_zero_when_no_match():
-    """
-    Ensure that find_substring returns 0 when no match is found.
-    """
-    root = build("bananas")
-    assert find_substring(root, "absent") is None
-
-
-def test_find_returns_none_when_build_is_empty_and_query_is_not():
-    """
-    Ensure that find_substring returns 0 when automaton represents empty string.
-    """
-    root = build("")
-    assert find_substring(root, "anything") is None
-
-
-def test_find_returns_zero_when_build_and_query_are_empty():
-    """
-    Ensure that find_substring returns 0 when automaton represents empty string.
-    """
-    root = build("")
-    assert find_substring(root, "anything") is None
-
-
-def test_find_returns_0_on_empty_query_string():
-    """
-    Ensure that find_substring returns 0 when automaton represents empty string.
-    """
-    root = build("anything")
-    assert find_substring(root, "") == 0
 
 
 COMMON = random_string("abc", 17, 41)

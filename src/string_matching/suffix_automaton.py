@@ -171,11 +171,29 @@ def find_substring(root: Node, s: str) -> int | None:
 
 
 def find_substring_all(root: Node, s: str) -> Iterable[int]:
-    result = find_substring(root, s)
-    if result is not None:
-        return (result,)
-    else:
-        return ()
+    current = root
+    for character in s:
+        current = current.transitions.get(character)
+        if current is None:
+            return ()
+
+    # Temporarily use a recursive solution.
+    def get_all_reverse_links(node: Node):
+        yield node
+
+        for child in node.reverse_links:
+            for descendent in get_all_reverse_links(child):
+                yield descendent
+
+    candidates = sorted(
+        node.first_endpos - len(s) for node in get_all_reverse_links(current)
+    )
+
+    positions = []
+    for candidate in candidates:
+        if len(positions) == 0 or candidate != positions[-1]:
+            positions.append(candidate)
+    return positions
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int, int]:

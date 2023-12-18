@@ -94,7 +94,7 @@ def test_find_substring(automaton_string, query_string, expected_position):
     [
         # Substring cases
         ("abcdefg", "def", (3,)),
-        ("anything", "", (0,)),
+        ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
         ("", "", (0,)),
         ("abcabc", "abc", (0, 3)),
         # Non-substring cases

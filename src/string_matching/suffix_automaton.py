@@ -161,13 +161,21 @@ def add_reverse_links(node_list: list[Node]):
     return
 
 
-def find_substring(root: Node, s: str):
+def find_substring(root: Node, s: str) -> int | None:
     current = root
     for character in s:
         current = current.transitions.get(character)
         if current is None:
             return None
     return current.first_endpos - len(s)
+
+
+def find_substring_all(root: Node, s: str) -> Iterable[int]:
+    result = find_substring(root, s)
+    if result is not None:
+        return (result,)
+    else:
+        return ()
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int, int]:

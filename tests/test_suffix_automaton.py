@@ -5,6 +5,7 @@ from string_matching.suffix_automaton import (
     build,
     all_suffixes,
     find_substring,
+    find_substring_all,
     find_lcs,
 )
 
@@ -86,6 +87,30 @@ def test_find_substring(automaton_string, query_string, expected_position):
     root = build(automaton_string)
     position = find_substring(root, query_string)
     assert position == expected_position
+
+
+@pytest.mark.parametrize(
+    "automaton_string,query_string,expected_position",
+    [
+        # Substring cases
+        ("abcdefg", "def", (3,)),
+        ("anything", "", (0,)),
+        ("", "", (0,)),
+        ("abcabc", "abc", (0, 3)),
+        # Non-substring cases
+        ("", "anything", ()),
+        ("bananas", "sana", ()),
+        ("bananas", "bananasx", ()),
+        ("bananas", "xbananas", ()),
+    ],
+)
+def test_find_substring_all(automaton_string, query_string, expected_position):
+    """
+    We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
+    """
+    root = build(automaton_string)
+    positions = tuple(find_substring_all(root, query_string))
+    assert positions == expected_position
 
 
 @pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)

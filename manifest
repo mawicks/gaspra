@@ -1,5 +1,5 @@
-C Consolidate\ssimple\sfind_string()\stests.
-D 2023-12-18T12:50:51.806
+C Add\sa\sbreaking\stest.
+D 2023-12-18T13:02:45.648
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 09238e413ef8f1240cde89ec19d5ebb89741624c78385c84f1d80635b1954e78
 F pyproject.toml 0d26ed87a39e25dc62389adc5f28903904b5e9e380dfbc0eece8fb892ff57565
@@ -11,9 +11,9 @@ F src/string_matching/suffix_automaton.py 63f10082d9a8ee0f98c0569ace8d3213c1e2d4
 F tests/helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
 F tests/test_changesets.py b1ed9d33873e2ee7b325e5617da95cf5c4b425900de506078133c4db34ab32d7
 F tests/test_multiple_strings.py c9146005403e64b69083582b2ef574790fa9ccfdda7ce9b892b33387505122fb
-F tests/test_suffix_automaton.py f514977a3123b8e0029d4ea24d6682dc119c55f92d5665963c62a1830f6ea049
-P 126dd7387b867b39f524d8a90c8468ef0e872dfccb9812dd24485d31ff481d0c
-R eaa31024325a9573ee6d335c67f788d9
+F tests/test_suffix_automaton.py 5297dee22552bee7b4c54dda4cff3400c1d8d2305f26009cce806c1076b2e98b
+P 958d9b3aff0bf00242c44b6cb71c6f695097f0aa15c2a3b0b259a82898394891
+R fbd5b909b58cdb6c6d2d0b5aed05dfc8
 U mwicks
-Z 7880c1267fc0e235808d85565b490ec3
+Z d81e5499a00964aab1597599dab4621c
 # Remove this line to create a well-formed Fossil manifest.

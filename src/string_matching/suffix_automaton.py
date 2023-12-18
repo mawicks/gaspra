@@ -67,8 +67,8 @@ def build(input_string: Iterable[str | int]) -> Node:
     for character in input_string:
         current = extend(character, current, node_factory)
 
-    # mark_terminals(current)
-    # add_reverse_links(node_list)
+    mark_terminals(current)
+    add_reverse_links(node_list)
 
     return root
 

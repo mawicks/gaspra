@@ -41,7 +41,7 @@ def test_automaton_generates_only_suffixes(string):
     automaton = build(string)
     for string in all_suffixes(automaton):
         # Assert that string is indeed a suffix
-        assert string.endswith(string)
+        assert isinstance(string, str) and string.endswith(string)
 
 
 @pytest.mark.parametrize(

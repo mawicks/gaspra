@@ -33,13 +33,14 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def wrap_node_factory(node_factory, node_list):
-    """
-    Wrap a node_factory() so that it always appends to a node_list
+def wrap_node_factory(node_factory: Callable[..., Node], node_list: list[Node]):
+    """Wrap a node_factory() so that it always appends to a node_list
 
-    Args:
-       node_factory: Callable[..., Node] - Node factory to wrap
-       nost_list: List[Node] - List to append to when a node gets created
+    Arguments:
+        node_factory: Callable[..., Node]
+            Node factory to wrap
+        node_list: List[Node]
+            List to append to when a node gets created
     """
 
     def wrapped_node_factory(**kwargs):
@@ -50,7 +51,22 @@ def wrap_node_factory(node_factory, node_list):
     return wrapped_node_factory
 
 
-def build(input_string: Iterable[str | int]) -> Node:
+def build(
+    input_string: Iterable[str | int], reverse_links=True, mark_terminals=True
+) -> Node:
+    """Build a suffix automaton from `input_string`.
+
+    Arguments:
+        input_string:  Iterable[str | int]
+            Character or byte sequence representing the input.
+        reverse_links: bool
+            If true, construct reverse_links (needed to find *all*
+            occurrences of a string.
+        mark_terminals: bool
+            If true, flag terminal nodes as such (needed to read suffixes
+            back from automaton).  This is typically very fast.
+
+    """
     # Create a list to capture all created nodes to make it easier to
     # iterate over them later.
     node_list = []
@@ -67,13 +83,22 @@ def build(input_string: Iterable[str | int]) -> Node:
     for character in input_string:
         current = extend(character, current, node_factory)
 
-    mark_terminals(current)
-    add_reverse_links(node_list)
+    if mark_terminals:
+        mark_terminal_nodes(current)
+
+    if reverse_links:
+        add_reverse_links(node_list)
 
     return root
 
 
 def extend(character: str | int, last: Node, node_factory: Callable[..., Node]):
+    """Extend a partially constructed automaton by one additional character
+
+    Given a suffix automaton that recognizes the suffixes of some
+    string "s", extend that automoton to recognize the suffixes of `s + character`
+
+    """
     new_node = node_factory(
         length=last.length + 1,
         first_endpos=last.length + 1,
@@ -121,7 +146,7 @@ def insert_node(
     return clone
 
 
-def mark_terminals(final_node: Node):
+def mark_terminal_nodes(final_node: Node):
     current = final_node
     while current is not None:
         current.is_terminal = True
@@ -146,20 +171,26 @@ def find_substring(root: Node, s: str):
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
-    """
-    Return the starting and ending (Python style) of a longest common
-    substring of the automaton rooted at root and the string s.
-    The starting and ending positions are with respect to s.
+    """Return the starting positions and length of an LCS.
+
+    The LCS is the longest common substring of the
+    string used to construct the automaton rooted at `root`
+    and the passed string `s`.
 
     Arguments:
-        root: Node - Root node of a suffix automaton for one of the strings
-        s: str - The string for finding common substrings with the automaton
-        string
+        root: Node
+            Root node of a suffix automaton for one of the strings
+        s: str
+            The string searched for substrings in common with the
+            automaton string
 
     Returns:
-        int - The starting position of the match in the automaton string
-        int - The starting position of the match in `s`
-        int - The length of the common string
+        int
+            The starting position of the match in the automaton string
+        int
+            The starting position of the match in `s`
+        int
+            The length of the common substring
 
     """
     longest_match_length = current_match_length = 0
@@ -190,11 +221,10 @@ def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
 
 
 def all_suffixes(current: Node) -> Iterator[str | bytes]:
-    """
-    Iterate over every suffix in the automaton.  The
-    only purpose
-    for this is in a test that ensures the automaton produces all suffixes
-    and only suffixes.
+    """Iterate over every suffix in the automaton.
+
+    The only purpose for this is in a test that ensures the automaton
+    produces all suffixes and only suffixes.
     """
     if current.is_terminal:
         yield ""

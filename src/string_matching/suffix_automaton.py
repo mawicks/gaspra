@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
+from collections.abc import Iterator, Iterable
 from dataclasses import dataclass, field
 import random
 
@@ -9,7 +9,7 @@ import random
 class Node:
     id: int
     length: int = 0
-    transitions: dict[str, Node] = field(default_factory=dict)
+    transitions: dict[str | int, Node] = field(default_factory=dict)
     first_endpos: int = 0  # First possible ending position of substring.
     is_terminal: bool = False  # Is this a terminal state?
     link: Node | None = None
@@ -31,7 +31,7 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def build(input_string: str) -> Node:
+def build(input_string: Iterable[str | int]) -> Node:
     # Implement as described at https://cp-algorithms.com/string/suffix-automaton.html
     node_factory = Node.get_factory()
     root = node_factory()
@@ -46,7 +46,7 @@ def build(input_string: str) -> Node:
     return root
 
 
-def extend(character: str, last: Node, node_factory):
+def extend(character: str | int, last: Node, node_factory):
     new_node = node_factory(
         length=last.length + 1,
         first_endpos=last.length + 1,

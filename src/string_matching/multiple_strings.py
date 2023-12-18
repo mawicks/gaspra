@@ -64,37 +64,37 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
         if top.id in shared_strings:
             stack.pop()
         # If we don't know the shared_strings for the top of the stack...
+        elif all([node.id in shared_strings for node in top.transitions.values()]):
+            shared_strings[top.id] = set()
+            for token, child_node in top.transitions.items():
+                # If any of the transitions are end of string tokens,
+                # then we know the parent state represents a substring
+                # associated with that token
+                if isinstance(token, int):
+                    shared_strings[top.id].add(token)
+                # If any of the transitions are regular charactrers
+                # then the parent inherits the child's memberships
+                elif isinstance(token, str):
+                    child_memberships = shared_strings[child_node.id]
+                    shared_strings[top.id] = shared_strings[top.id].union(
+                        child_memberships
+                    )
+
+                else:
+                    raise RuntimeError(f"Unexpected branch token: {token}")
+            if (
+                len(shared_strings[top.id]) == len(string_set)
+                and top.length > max_length
+            ):
+                max_length = top.length
+                best_endpos = top.first_endpos
+
+            stack.pop()
+
+        # Or add the unknown children to the stack so they get computed.
         else:
-            # Compute it, if all of its children are known...
-            if all([node.id in shared_strings for node in top.transitions.values()]):
-                shared_strings[top.id] = set()
-                for token, child_node in top.transitions.items():
-                    # If any of the transitions are end of string tokens,
-                    # then we know the parent state represents a substring
-                    # associated with that token
-                    if isinstance(token, int):
-                        shared_strings[top.id].add(token)
-                    # If any of the transitions are regular charactrers
-                    # then the parent inherits the child's memberships
-                    elif isinstance(token, str):
-                        child_memberships = shared_strings[child_node.id]
-                        shared_strings[top.id] = shared_strings[top.id].union(
-                            child_memberships
-                        )
-
-                    else:
-                        raise RuntimeError(f"Unexpected branch token: {token}")
-                if (
-                    len(shared_strings[top.id]) == len(string_set)
-                    and top.length > max_length
-                ):
-                    max_length = top.length
-                    best_endpos = top.first_endpos
-
-            # Or add the unknown children to the stack so they get computed.
-            else:
-                for next_node in top.transitions.values():
-                    if next_node.id not in shared_strings:
-                        stack.append(next_node)
+            for next_node in top.transitions.values():
+                if next_node.id not in shared_strings:
+                    stack.append(next_node)
 
     return best_endpos - max_length, max_length

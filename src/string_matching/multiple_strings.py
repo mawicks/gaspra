@@ -2,7 +2,12 @@ from itertools import chain
 
 from collections.abc import Sequence
 
-from string_matching.suffix_automaton import build
+from string_matching.suffix_automaton import (
+    build,
+    dedup_sorted,
+    follow_reverse_links,
+    _get_all_start_positions,
+)
 
 
 def concatenate_strings(string_set: Sequence[str]):
@@ -18,7 +23,7 @@ def concatenate_strings(string_set: Sequence[str]):
     return chain(*chainlets)
 
 
-def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
+def find_lcs(string_set: Sequence[str]) -> tuple[tuple[int, ...], int | None]:
     """
     Given a sequence of strings, find the longest substring common
     to all members of the sequence.
@@ -60,9 +65,12 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
     shared_strings = {}
 
     root = build(concatenate_strings(string_set))
+    if len(string_set) == 0:
+        return (), None
+
     stack = [root]
     max_length = 0
-    best_endpos = 0
+    best_node = root
 
     while len(stack) > 0:
         top = stack[-1]
@@ -80,7 +88,7 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
                 and top.length > max_length
             ):
                 max_length = top.length
-                best_endpos = top.first_endpos
+                best_node = top
 
             stack.pop()
 
@@ -90,7 +98,23 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
                 if next_node.id not in shared_strings:
                     stack.append(next_node)
 
-    return best_endpos - max_length, max_length
+    raw_positions = _get_all_start_positions(best_node, max_length)
+
+    string_positions = get_string_offsets(raw_positions, string_set)
+
+    return tuple(string_positions), max_length
+
+
+def get_string_offsets(positions, string_set):
+    adjusted_positions = []
+    next_string_start_pos = 0
+    for s in string_set:
+        for position in positions:
+            if position >= next_string_start_pos:
+                adjusted_positions.append(position - next_string_start_pos)
+                break
+        next_string_start_pos += len(s) + 1  # + 1 is for the separator.
+    return adjusted_positions
 
 
 def update_shared_strings(shared_strings, top):

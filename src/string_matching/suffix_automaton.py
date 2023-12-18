@@ -173,12 +173,15 @@ def find_substring_all(root: Node, s: str) -> Iterable[int]:
     if current is None:
         return ()
 
+    return _get_all_start_positions(current, len(s))
+
+
+def _get_all_start_positions(current, length):
     candidates = sorted(
-        node.first_endpos - len(s) for node in follow_reverse_links(current)
+        node.first_endpos - length for node in follow_reverse_links(current)
     )
 
     positions = dedup_sorted(candidates)
-
     return positions
 
 

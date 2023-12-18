@@ -23,7 +23,7 @@ def test_build_empty_string():
 BUILD_AND_SEARCH_TEST_STRINGS = [
     "bananas",
     "abcbc",
-    random_string("abc", 20),
+    random_string("abc", 20, 42),
 ]
 
 
@@ -41,7 +41,7 @@ def test_automaton_generates_only_suffixes(string):
     automaton = build(string)
     for string in all_suffixes(automaton):
         # Assert that string is indeed a suffix
-        assert string.endswith(string)
+        assert isinstance(string, str) and string.endswith(string)
 
 
 @pytest.mark.parametrize(
@@ -79,8 +79,8 @@ def test_construction_time_is_approximately_linear():
     algorithm that makes it quadratic and this test should catch that.
     It takes some time to run, however.
     """
-    string_1 = random_string("abcdefg", 10_000)
-    string_2 = random_string("abcdefg", 100_000)
+    string_1 = random_string("abcdefg", 10_000, 41)
+    string_2 = random_string("abcdefg", 100_000, 42)
     start = time.perf_counter_ns()
     build(string_1)
     end_1 = time.perf_counter_ns()
@@ -130,7 +130,7 @@ def test_find_substring_is_correct_on_random_letters(string):
     root = build(string)
 
     for k in range(len(string)):
-        candidate = random_string(string, k + 1)
+        candidate = random_string(string, k + 1, k)
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
 
@@ -167,9 +167,9 @@ def test_find_returns_0_on_empty_query_string():
     assert find_substring(root, "") == 0
 
 
-COMMON = random_string("abc", 17)
-NOT_COMMON1 = random_string("abc", 13)
-NOT_COMMON2 = random_string("abc", 13)
+COMMON = random_string("abc", 17, 41)
+NOT_COMMON1 = random_string("abc", 13, 42)
+NOT_COMMON2 = random_string("abc", 13, 43)
 S1 = NOT_COMMON1[:3] + COMMON + NOT_COMMON1[3:]
 S2 = NOT_COMMON2[:6] + COMMON + NOT_COMMON1[6:]
 

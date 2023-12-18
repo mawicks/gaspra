@@ -25,9 +25,7 @@ from helpers.random_strings import random_string
         ),
     ],
 )
-def test_find_changesets_and_apply_reproduces_string(
-    s1: Literal["abcabcabc"], s2: Literal["abxybcabcx"]
-):
+def test_find_changesets_and_apply_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
 
     assert s2 == apply_forward(changeset, s1)

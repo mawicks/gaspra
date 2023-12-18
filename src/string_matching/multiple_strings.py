@@ -6,7 +6,14 @@ from string_matching.suffix_automaton import build
 
 
 def concatenate_strings(string_set: Sequence[str]):
-    chainlets = [chain(string, (index,)) for index, string in enumerate(string_set)]
+    # Concatenate the members of string_set with end of string "tokens"
+    # to separate them. End of string "tokens" are represented by
+    # strings of length 2, e.g. "$0", "$1", etc., so there's no
+    # possibility of them matching any single unicode character.
+
+    chainlets = [
+        chain(string, (f"${index}",)) for index, string in enumerate(string_set)
+    ]
 
     return chain(*chainlets)
 
@@ -20,12 +27,6 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
        int - position of occurence in first string
        length - length of common substring
     """
-    root = build(concatenate_strings(string_set))
-
-    # The values in `shared_strings` are sets that represent the set of
-    # strings in `string_set` that share a given node's state.  The
-    # key is the node's id.
-    shared_strings = {}
 
     # The suffix automaton can be very deep so we must use an
     # interative solution rather than a recursion solution.
@@ -53,6 +54,12 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
     # have in common.  As we're computing the common strings for each
     # state, we'll record the maximal state with *all* strings in common.
 
+    # The values in `shared_strings` are sets that represent the set of
+    # strings in `string_set` that share a given node's state.  The
+    # key is the node's id.
+    shared_strings = {}
+
+    root = build(concatenate_strings(string_set))
     stack = [root]
     max_length = 0
     best_endpos = 0
@@ -63,25 +70,11 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
         # stack, simply remove it.
         if top.id in shared_strings:
             stack.pop()
+
         # If we don't know the shared_strings for the top of the stack...
         elif all([node.id in shared_strings for node in top.transitions.values()]):
-            shared_strings[top.id] = set()
-            for token, child_node in top.transitions.items():
-                # If any of the transitions are end of string tokens,
-                # then we know the parent state represents a substring
-                # associated with that token
-                if isinstance(token, int):
-                    shared_strings[top.id].add(token)
-                # If any of the transitions are regular charactrers
-                # then the parent inherits the child's memberships
-                elif isinstance(token, str):
-                    child_memberships = shared_strings[child_node.id]
-                    shared_strings[top.id] = shared_strings[top.id].union(
-                        child_memberships
-                    )
+            update_shared_strings(shared_strings, top)
 
-                else:
-                    raise RuntimeError(f"Unexpected branch token: {token}")
             if (
                 len(shared_strings[top.id]) == len(string_set)
                 and top.length > max_length
@@ -98,3 +91,21 @@ def find_lcs(string_set: Sequence[str]) -> tuple[int, int]:
                     stack.append(next_node)
 
     return best_endpos - max_length, max_length
+
+
+def update_shared_strings(shared_strings, top):
+    shared_strings[top.id] = set()
+    for token, child_node in top.transitions.items():
+        # If any of the transitions are end of string tokens, then
+        # we know the parent state represents a substring associated
+        #  with that token. End of string "tokens" are represented by
+        # strings of length 2, e.g. "$0", "$1", etc., so there's no
+        # possibility of them matching any single unicode character.
+        if len(token) > 1:
+            shared_strings[top.id].add(token)
+
+        # If any of the transitions are regular charactrers
+        # then the parent inherits the child's memberships
+        else:
+            child_memberships = shared_strings[child_node.id]
+            shared_strings[top.id] = shared_strings[top.id].union(child_memberships)

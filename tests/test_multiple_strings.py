@@ -25,4 +25,4 @@ def test_find_lcs_of_multiple_strings(
 def test_concatenate_strings():
     concatenation = list(concatenate_strings(["ab", "cd", "ef"]))
 
-    assert concatenation == ["a", "b", 0, "c", "d", 1, "e", "f", 2]
+    assert concatenation == ["a", "b", "$0", "c", "d", "$1", "e", "f", "$2"]

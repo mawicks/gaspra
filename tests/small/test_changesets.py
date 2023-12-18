@@ -7,7 +7,7 @@ import pytest
 
 from string_matching.changesets import apply_forward, apply_reverse, find_changeset
 
-from helpers.random_strings import random_string
+from string_matching.test_helpers.random_strings import random_string
 
 
 @pytest.mark.parametrize(

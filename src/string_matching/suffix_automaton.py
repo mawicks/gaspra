@@ -177,23 +177,33 @@ def find_substring_all(root: Node, s: str) -> Iterable[int]:
         if current is None:
             return ()
 
-    # Temporarily use a recursive solution.
-    def get_all_reverse_links(node: Node):
-        yield node
-
-        for child in node.reverse_links:
-            for descendent in get_all_reverse_links(child):
-                yield descendent
-
     candidates = sorted(
-        node.first_endpos - len(s) for node in get_all_reverse_links(current)
+        node.first_endpos - len(s) for node in follow_reverse_links(current)
     )
 
-    positions = []
-    for candidate in candidates:
-        if len(positions) == 0 or candidate != positions[-1]:
-            positions.append(candidate)
+    positions = dedup_sorted(candidates)
+
     return positions
+
+
+def follow_reverse_links(current):
+    # Use a non-resursive solution
+    to_do = [current]
+    all = []
+    while len(to_do) > 0:
+        current = to_do.pop()
+        all.append(current)
+        for child in current.reverse_links:
+            to_do.append(child)
+    return all
+
+
+def dedup_sorted(sequence: Iterable[int]) -> list[int]:
+    deduped = []
+    for candidate in sequence:
+        if len(deduped) == 0 or candidate != deduped[-1]:
+            deduped.append(candidate)
+    return deduped
 
 
 def find_lcs(root: Node, s: str) -> tuple[int, int, int]:

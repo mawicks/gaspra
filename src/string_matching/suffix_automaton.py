@@ -162,20 +162,16 @@ def add_reverse_links(node_list: list[Node]):
 
 
 def find_substring(root: Node, s: str) -> int | None:
-    current = root
-    for character in s:
-        current = current.transitions.get(character)
-        if current is None:
-            return None
+    current = _find_match_node(root, s)
+    if current is None:
+        return None
     return current.first_endpos - len(s)
 
 
 def find_substring_all(root: Node, s: str) -> Iterable[int]:
-    current = root
-    for character in s:
-        current = current.transitions.get(character)
-        if current is None:
-            return ()
+    current = _find_match_node(root, s)
+    if current is None:
+        return ()
 
     candidates = sorted(
         node.first_endpos - len(s) for node in follow_reverse_links(current)
@@ -184,6 +180,15 @@ def find_substring_all(root: Node, s: str) -> Iterable[int]:
     positions = dedup_sorted(candidates)
 
     return positions
+
+
+def _find_match_node(root: Node, s: str) -> Node | None:
+    current = root
+    for character in s:
+        current = current.transitions.get(character)
+        if current is None:
+            return None
+    return current
 
 
 def follow_reverse_links(current):

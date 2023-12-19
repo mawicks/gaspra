@@ -114,7 +114,29 @@ def change_change(
     output: list[OutputType],
 ):
     insert_length, delete_length = common_head_of_change(fragment0, fragment1)
-    if insert_length > 0 or delete_length > 0:
+
+    # This is an edge case that showed up in testing.
+    # If one change is a pure insertion (no deletion) and the other
+    # is a pure deletion (no insertion), they can be combined into a single
+    # conflict-free change.  It needs to be pushed back onto
+    # the input list to be processed properly
+    # One input sequence was [insert x/delete nothing][s]
+    # The other input sequence was [insert nothing/delete s]
+    # These are transformed to the sequences
+    # 1) [s] and 2) [insert x/delete s]
+    # by pushing [insert x/delete s] back onto the input queue
+    # which has the affect of inserting 's' at position
+    # where 's' was.
+
+    if fragment0.length == 0 and fragment1.insert == "":
+        change = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
+        fragments1.append(change)
+
+    elif fragment0.insert == "" and fragment1.length == 0:
+        change = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
+        fragments0.append(change)
+
+    elif insert_length > 0 or delete_length > 0:
         head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
         if head0:
             output.append(head0)

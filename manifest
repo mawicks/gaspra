@@ -1,5 +1,5 @@
-C Rewrite\sdo_merge()\susing\scombined\sinsert/delete\sfragments.
-D 2023-12-19T14:01:02.711
+C Use\sPython's\sbuilt-in\scommonprefix()\sfunction
+D 2023-12-19T21:22:49.030
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 09238e413ef8f1240cde89ec19d5ebb89741624c78385c84f1d80635b1954e78
 F pyproject.toml 1d9c9a86843870c111b84b11c606c783e2808acb7ba3c1b04cba28e4629e32d5
@@ -7,7 +7,7 @@ F src/string_matching/__init__.py a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49
 F src/string_matching/changesets.py 8d84862457deee7f72dc5c4322dc0eeb406c127ccc795b99785b4b4ee739f91b
 F src/string_matching/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
 F src/string_matching/dot_dump.py 07c40884ee05690b052ad0e43d07f1e5706cd7a9a2038de8a1d2d2f7c41c05ba
-F src/string_matching/merge.py dbcfc927df5561e118d28adeda55deb4a82194d53b12f76469a997690817dd51
+F src/string_matching/merge.py df16e9b412c2e3a44d09c1fe68738254812a5c973f76cac6897935896ec8dcac
 F src/string_matching/multiple_strings.py 8bcee6c674709128e1070726900615929f257f0f36c9cac9d84c4cc265b4dfe8
 F src/string_matching/suffix_automaton.py 74cfb2252194da7484683949e2006b2a15c8c8113b7d9c950cf0ef4c56049705
 F src/string_matching/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
@@ -16,8 +16,8 @@ F tests/small/test_changesets.py 181348eea49598ddb0ce5a5908ae4e0574db38c10601773
 F tests/small/test_merge.py d36dc5dae32922f6b3225f9a321e1761c3d7e78d6e2038e098b6405b936590a5
 F tests/small/test_multiple_strings.py 20c8cd055af1c4bd1988c07d1227b67f437902922f51383bd6b73509e3e43fbc
 F tests/small/test_suffix_automaton.py 935e808a334aa635aa4cd0c656a1cacf36ff1d6af22d54f259ab6e271422c68c
-P fcb91858e709392063eeff9ff3c0e4a5455eae605ad09ee4dcc0e3aa2d5c301d
-R 1571c4e35338f78a601afbc64b2c2ea5
+P cdfc3e65e02b0d3c1778330f2b32150b49a1c7d96807457788aceab827d83bef
+R 864ed288b3d494698ab79d3f18aea810
 U mwicks
-Z e37293698b60b308fb5ed1bcd468b872
+Z 581675abc568439012b2432a073f89d8
 # Remove this line to create a well-formed Fossil manifest.

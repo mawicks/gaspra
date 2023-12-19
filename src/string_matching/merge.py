@@ -1,4 +1,5 @@
 from dataclasses import replace
+from os.path import commonprefix
 
 from string_matching.changesets import (
     find_changeset,
@@ -145,19 +146,8 @@ def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
     return head, tail
 
 
-def common_length(s1, s2):
-    length = 0
-    max_length = min(len(s1), len(s2))
-    for length, (c1, c2) in enumerate(zip(s1, s2)):
-        if c1 != c2:
-            break
-    else:
-        length = max_length
-    return length
-
-
 def common_head_of_change(change1: ChangeFragment, change2: ChangeFragment):
-    insert_length = common_length(change1.insert, change2.insert)
-    delete_length = common_length(change1.delete, change2.delete)
+    insert_length = len(commonprefix((change1.insert, change2.insert)))
+    delete_length = len(commonprefix((change1.delete, change2.delete)))
 
     return insert_length, delete_length

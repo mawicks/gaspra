@@ -43,9 +43,12 @@ class ChangesetLeaf:
         yield self
 
     def fragments(self, __ignored__):
-        yield ChangeFragment(
-            insert=self.modified, delete=self.original, length=len(self.original)
-        )
+        # Construction of the tree creates "empty" changesets.
+        # Omit those from the output stream.
+        if self.modified or self.original:
+            yield ChangeFragment(
+                insert=self.modified, delete=self.original, length=len(self.original)
+            )
 
     def apply_forward(self, __ignored__: str):
         yield self.modified

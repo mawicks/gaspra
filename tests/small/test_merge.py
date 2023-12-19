@@ -6,8 +6,12 @@ from string_matching.merge import do_merge
 @pytest.mark.parametrize(
     ["parent", "branch1", "branch2", "merge"],
     [
-        ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
+        ("", "", "", ""),
+        ("", "a", "a", "a"),
+        ("a", "", "", ""),
+        ("a", "xa", "ay", "xay"),
         ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
+        ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
     ],
 )
 def test_merge(parent, branch1, branch2, merge):

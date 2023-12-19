@@ -1,6 +1,15 @@
 from dataclasses import replace
+from os.path import commonprefix
 
-from string_matching.changesets import find_changeset, FragmentType
+from string_matching.changesets import (
+    find_changeset,
+    CopyFragment,
+    ChangeFragment,
+    ConflictFragment,
+)
+
+OutputType = CopyFragment | ChangeFragment | ConflictFragment
+InputType = CopyFragment | ChangeFragment
 
 
 def do_merge(parent: str, branch0: str, branch1: str):
@@ -10,35 +19,34 @@ def do_merge(parent: str, branch0: str, branch1: str):
     fragments0 = list(reversed(list(changeset0.fragments(parent))))
     fragments1 = list(reversed(list(changeset1.fragments(parent))))
 
-    output = []
+    output: list[OutputType] = []
     while fragments0 and fragments1:
         fragment0 = fragments0.pop()
         fragment1 = fragments1.pop()
 
-        if (
-            fragment0.fragment_type == fragment1.fragment_type == FragmentType.COPY
-            or fragment0.fragment_type == fragment1.fragment_type == FragmentType.SKIP
-        ):
-            # Marching inserts and matching copies are treated exactly the same.
+        if isinstance(fragment0, CopyFragment) and isinstance(fragment1, CopyFragment):
             copy_copy(fragment0, fragment1, fragments0, fragments1, output)
 
-        elif (
-            fragment0.fragment_type == FragmentType.COPY
-            and fragment1.fragment_type == FragmentType.SKIP
+        elif isinstance(fragment0, ChangeFragment) and isinstance(
+            fragment1, ChangeFragment
         ):
-            copy_skip(fragment0, fragment1, fragments0, fragments1, output)
-        elif (
-            fragment0.fragment_type == FragmentType.SKIP
-            and fragment1.fragment_type == FragmentType.COPY
-        ):
-            copy_skip(fragment1, fragment0, fragments1, fragments0, output)
+            change_change(fragment0, fragment1, fragments0, fragments1, output)
 
-        elif fragment0.fragment_type == FragmentType.INSERT != fragment1.fragment_type:
-            insert_other(fragment0, fragment1, fragments1, output)
-        elif fragment1.fragment_type == FragmentType.INSERT != fragment0.fragment_type:
-            insert_other(fragment1, fragment0, fragments0, output)
-        elif fragment0.fragment_type == fragment1.fragment_type == FragmentType.INSERT:
-            insert_insert(fragment0, fragment1, output)
+        elif isinstance(fragment0, CopyFragment) and isinstance(
+            fragment1, ChangeFragment
+        ):
+            copy_change(fragment0, fragment1, fragments0, fragments1, output)
+
+        elif isinstance(fragment0, ChangeFragment) and isinstance(
+            fragment1, CopyFragment
+        ):
+            copy_change(fragment1, fragment0, fragments1, fragments0, output)
+
+        else:
+            raise RuntimeError(
+                f"Unexpected types: {type(fragment0)} or {type(fragment1)}"
+            )
+
         continue
 
     if fragments0 or fragments1:
@@ -47,15 +55,21 @@ def do_merge(parent: str, branch0: str, branch1: str):
 
     result = "".join(
         [
-            fragment.content
+            fragment.insert
             for fragment in output
-            if fragment.fragment_type != FragmentType.SKIP
+            if not isinstance(fragment, ConflictFragment)
         ]
     )
     return result
 
 
-def copy_copy(fragment0, fragment1, fragment0_queue, fragment1_queue, output):
+def copy_copy(
+    fragment0: CopyFragment,
+    fragment1: CopyFragment,
+    fragment0_queue,
+    fragment1_queue,
+    output: list[OutputType],
+):
     if fragment0.length < fragment1.length:
         shorter, longer = fragment0, fragment1
         long_queue = fragment1_queue
@@ -65,48 +79,116 @@ def copy_copy(fragment0, fragment1, fragment0_queue, fragment1_queue, output):
 
     output.append(shorter)
     if shorter.length != longer.length:
-        longer = replace(
-            longer,
-            content=longer.content[shorter.length :],
-            length=longer.length - shorter.length,
-        )
-        long_queue.append(longer)
+        __ignored__, tail = split_copy_fragment(longer, shorter.length)
+        long_queue.append(tail)
     return
 
 
-def copy_skip(
-    copy_fragment, skip_fragment, copy_fragment_queue, skip_fragment_queue, output
+def copy_change(
+    copy_fragment, change_fragment, copy_fragment_queue, change_fragment_queue, output
 ):
-    smaller_length = min(copy_fragment.length, skip_fragment.length)
-
-    skip_head, skip_tail = split_fragment(skip_fragment, smaller_length)
-    __ignored__, copy_tail = split_fragment(copy_fragment, smaller_length)
-
-    output.append(skip_head)
-
-    if skip_tail.length > 0:
-        skip_fragment_queue.append(skip_tail)
-    if copy_tail.length > 0:
-        copy_fragment_queue.append(copy_tail)
-
-
-def insert_other(insert_fragment, other_fragment, other_fragment_queue, output):
-    output.append(insert_fragment)
-    other_fragment_queue.append(other_fragment)
-
-
-# This is the primary place that collisions occur.
-# This is really just a stub to be replaced with a more extensive function.
+    smaller_length = min(copy_fragment.length, change_fragment.length)
+    if change_fragment.length == smaller_length:
+        output.append(change_fragment)
+        # Anything left over?
+        if copy_fragment.length > smaller_length:
+            __ignored__, copy_tail = split_copy_fragment(copy_fragment, smaller_length)
+            copy_fragment_queue.append(copy_tail)
+    else:  # Change is longer than copy implies a conflict.
+        head0, head1 = split_change_fragment(
+            change_fragment, len(change_fragment.insert), smaller_length
+        )
+        if head0:
+            output.append(
+                ConflictFragment(head0.insert, copy_fragment.insert, smaller_length)
+            )
+        if head1:
+            change_fragment_queue.append(head1)
 
 
-def insert_insert(fragment0, fragment1, output):
-    output.append(fragment0)
-    output.append(fragment1)
+def change_change(
+    fragment0: ChangeFragment,
+    fragment1: ChangeFragment,
+    fragments0: list[InputType],
+    fragments1: list[InputType],
+    output: list[OutputType],
+):
+    insert_length, delete_length = common_head_of_change(fragment0, fragment1)
+
+    # This is an edge case that showed up in testing.
+    # If one change is a pure insertion (no deletion) and the other
+    # is a pure deletion (no insertion), they can be combined into a single
+    # conflict-free change.  It needs to be pushed back onto
+    # the input list to be processed properly
+    # One input sequence was [insert x/delete nothing][s]
+    # The other input sequence was [insert nothing/delete s]
+    # These are transformed to the sequences
+    # 1) [s] and 2) [insert x/delete s]
+    # by pushing [insert x/delete s] back onto the input queue
+    # which has the affect of inserting 's' at position
+    # where 's' was.
+
+    if fragment0.length == 0 and fragment1.insert == "":
+        change = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
+        fragments1.append(change)
+
+    elif fragment0.insert == "" and fragment1.length == 0:
+        change = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
+        fragments0.append(change)
+
+    elif insert_length > 0 or delete_length > 0:
+        head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
+        if head0:
+            output.append(head0)
+        if tail0:
+            fragments0.append(tail0)
+        __x__, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
+        if tail1:
+            fragments1.append(tail1)
+    else:
+        length = min(fragment0.length, fragment1.length)
+        head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
+        head1, tail1 = split_change_fragment(fragment1, len(fragment1.insert), length)
+        if head0 and head1:
+            output.append(ConflictFragment(head0.insert, head1.insert, length))
+        if tail0:
+            fragments0.append(tail0)
+        if tail1:
+            fragments1.append(tail1)
 
 
-def split_fragment(fragment, length):
-    head = replace(fragment, content=fragment.content[:length], length=length)
-    tail = replace(
-        fragment, content=fragment.content[length:], length=fragment.length - length
-    )
+def split_copy_fragment(fragment: CopyFragment, length: int):
+    head = tail = None
+    if length > 0:
+        head = replace(fragment, insert=fragment.insert[:length], length=length)
+    if length < fragment.length:
+        tail = replace(
+            fragment, insert=fragment.insert[length:], length=fragment.length - length
+        )
     return head, tail
+
+
+def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
+    head = tail = None
+    if length > 0 or insert_length > 0:
+        head = replace(
+            fragment,
+            insert=fragment.insert[:insert_length],
+            delete=fragment.delete[:length],
+            length=length,
+        )
+    if length < fragment.length or insert_length < len(fragment.insert):
+        tail = replace(
+            fragment,
+            insert=fragment.insert[insert_length:],
+            delete=fragment.delete[length:],
+            length=fragment.length - length,
+        )
+    return head, tail
+
+
+def common_head_of_change(change1: ChangeFragment, change2: ChangeFragment):
+    insert_length = len(commonprefix((change1.insert, change2.insert)))
+    delete_length = len(commonprefix((change1.delete, change2.delete)))
+
+    return insert_length, delete_length

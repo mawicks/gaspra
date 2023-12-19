@@ -11,16 +11,23 @@ from string_matching.suffix_automaton import build, find_lcs
 console = Console(highlight=False)
 
 
-class FragmentType(Enum):
-    COPY = auto()
-    INSERT = auto()
-    SKIP = auto()
+@dataclass
+class CopyFragment:
+    insert: str
+    length: int
 
 
 @dataclass
-class Fragment:
-    fragment_type: FragmentType
-    content: str
+class ChangeFragment:
+    insert: str
+    delete: str
+    length: int
+
+
+@dataclass
+class ConflictFragment:
+    version1: str
+    version2: str
     length: int
 
 
@@ -36,11 +43,9 @@ class ChangesetLeaf:
         yield self
 
     def fragments(self, __ignored__):
-        if self.modified:
-            yield Fragment(FragmentType.INSERT, self.modified, len(self.modified))
-
-        if self.original:
-            yield Fragment(FragmentType.SKIP, self.original, len(self.original))
+        yield ChangeFragment(
+            insert=self.modified, delete=self.original, length=len(self.original)
+        )
 
     def apply_forward(self, __ignored__: str):
         yield self.modified
@@ -85,7 +90,7 @@ class Changeset:
     def fragments(self, original):
         yield from self.prefix.fragments(original)
         copy = original[self.common_original]
-        yield Fragment(FragmentType.COPY, copy, len(copy))
+        yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix.fragments(original)
 
     def apply_forward(self, original: str):

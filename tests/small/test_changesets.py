@@ -11,7 +11,7 @@ from string_matching.test_helpers.random_strings import random_string
 
 
 @pytest.mark.parametrize(
-    "s1,s2",
+    ["s1", "s2"],
     [
         ("", ""),
         ("abcabcabc", ""),

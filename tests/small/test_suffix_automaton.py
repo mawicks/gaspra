@@ -20,7 +20,7 @@ def test_build_empty_string():
         assert string == ""
 
 
-BUILD_AND_SEARCH_TEST_STRINGS = [
+BUILD_AND_EXTRACT_TEST_STRINGS = [
     "bananas",
     "abcbc",
     random_string("abc", 20, 42),
@@ -29,7 +29,7 @@ BUILD_AND_SEARCH_TEST_STRINGS = [
 
 @pytest.mark.parametrize(
     "string",
-    BUILD_AND_SEARCH_TEST_STRINGS,
+    BUILD_AND_EXTRACT_TEST_STRINGS,
 )
 def test_automaton_generates_only_suffixes(string):
     """
@@ -46,7 +46,7 @@ def test_automaton_generates_only_suffixes(string):
 
 @pytest.mark.parametrize(
     "string",
-    BUILD_AND_SEARCH_TEST_STRINGS,
+    BUILD_AND_EXTRACT_TEST_STRINGS,
 )
 def test_automaton_generates_each_length_once(string):
     """
@@ -69,7 +69,7 @@ def test_automaton_generates_each_length_once(string):
 
 
 @pytest.mark.parametrize(
-    "automaton_string,query_string,expected_position",
+    ["automaton_string", "query_string", "position"],
     [
         ("", "anything", None),
         ("bananas", "bananasx", None),
@@ -79,40 +79,15 @@ def test_automaton_generates_each_length_once(string):
         ("", "", 0),
     ],
 )
-def test_find_substring(automaton_string, query_string, expected_position):
+def test_find_substring(automaton_string, query_string, position):
     """
     We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
     """
     root = build(automaton_string)
-    position = find_substring(root, query_string)
-    assert position == expected_position
+    assert position == find_substring(root, query_string)
 
 
-@pytest.mark.parametrize(
-    "automaton_string,query_string,expected_position",
-    [
-        # Substring cases
-        ("abcdefg", "def", (3,)),
-        ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
-        ("", "", (0,)),
-        ("abcabc", "abc", (0, 3)),
-        # Non-substring cases
-        ("", "anything", ()),
-        ("bananas", "sana", ()),
-        ("bananas", "bananasx", ()),
-        ("bananas", "xbananas", ()),
-    ],
-)
-def test_find_substring_all(automaton_string, query_string, expected_position):
-    """
-    We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
-    """
-    root = build(automaton_string)
-    positions = tuple(find_substring_all(root, query_string))
-    assert positions == expected_position
-
-
-@pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)
+@pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_STRINGS)
 def test_find_substring_is_true_on_all_substrings(string):
     """
     Build automaton for "string" and check that every non-trivial
@@ -128,7 +103,7 @@ def test_find_substring_is_true_on_all_substrings(string):
             assert string[position : position + len(substring)] == substring
 
 
-@pytest.mark.parametrize("string", BUILD_AND_SEARCH_TEST_STRINGS)
+@pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_STRINGS)
 def test_find_substring_is_correct_on_random_letters(string):
     """
     Build automaton for "string" and check that non-trivial
@@ -141,6 +116,29 @@ def test_find_substring_is_correct_on_random_letters(string):
         candidate = random_string(string, k + 1, k)
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
+
+
+@pytest.mark.parametrize(
+    ["automaton_string", "query_string", "positions"],
+    [
+        # Substring cases
+        ("abcdefg", "def", (3,)),
+        ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
+        ("", "", (0,)),
+        ("abcabc", "abc", (0, 3)),
+        # Non-substring cases
+        ("", "anything", ()),
+        ("bananas", "sana", ()),
+        ("bananas", "bananasx", ()),
+        ("bananas", "xbananas", ()),
+    ],
+)
+def test_find_substring_all(automaton_string, query_string, positions):
+    """
+    We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
+    """
+    root = build(automaton_string)
+    assert positions == tuple(find_substring_all(root, query_string))
 
 
 COMMON = random_string("abc", 17, 41)
@@ -159,8 +157,8 @@ LCS_TEST_STRINGS = [
 ]
 
 
-@pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
-def test_longest_common_string_finds_a_common_string(s1: str, s2: str, lcs_length: int):
+@pytest.mark.parametrize(["s1", "s2", "ignored"], LCS_TEST_STRINGS)
+def test_longest_common_string_finds_a_common_string(s1: str, s2: str, ignored: int):
     """
     Since some test strings are generated randomly,
     the parameter lcs_legnth is a lower bound on the lcs.
@@ -175,7 +173,7 @@ def test_longest_common_string_finds_a_common_string(s1: str, s2: str, lcs_lengt
     assert s1[start1 : start1 + length] == s2[start2 : start2 + length]
 
 
-@pytest.mark.parametrize("s1,s2,lcs_length", LCS_TEST_STRINGS)
+@pytest.mark.parametrize(["s1", "s2", "lcs_length"], LCS_TEST_STRINGS)
 def test_longest_common_string_finds_a_maximal_common_string(
     s1: str, s2: str, lcs_length: int
 ):
@@ -205,7 +203,7 @@ def test_longest_common_string_finds_a_maximal_common_string(
 
 
 @pytest.mark.parametrize(
-    "build_string,query_string",
+    ["build_string", "query_string"],
     (
         ("abc", "xyz"),
         ("", "xyz"),

@@ -7,7 +7,7 @@ from string_matching.multiple_strings import find_lcs, concatenate_strings
 
 
 @pytest.mark.parametrize(
-    "string_set,expected_start_positions,expected_length",
+    ["string_set", "start_positions", "length"],
     [
         ((), (), None),
         (("", ""), (0, 0), 0),
@@ -21,12 +21,9 @@ from string_matching.multiple_strings import find_lcs, concatenate_strings
     ],
 )
 def test_find_lcs_of_multiple_strings(
-    string_set: Sequence[str], expected_start_positions, expected_length
+    string_set: Sequence[str], start_positions, length
 ):
-    start_positions, length = find_lcs(string_set)
-
-    assert start_positions == expected_start_positions
-    assert length == expected_length
+    assert (start_positions, length) == find_lcs(string_set)
 
 
 def test_concatenate_strings():

@@ -1,5 +1,6 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from enum import Enum, auto
+from dataclasses import dataclass, replace
 import os
 
 from rich.console import Console
@@ -10,9 +11,17 @@ from string_matching.suffix_automaton import build, find_lcs
 console = Console(highlight=False)
 
 
-def escape(s):
-    return s.replace("[", r"\[")
-    # return s
+class FragmentType(Enum):
+    COPY = auto()
+    INSERT = auto()
+    SKIP = auto()
+
+
+@dataclass
+class Fragment:
+    fragment_type: FragmentType
+    content: str
+    length: int
 
 
 @dataclass
@@ -25,6 +34,13 @@ class ChangesetLeaf:
 
     def changes(self):
         yield self
+
+    def fragments(self, __ignored__):
+        if self.modified:
+            yield Fragment(FragmentType.INSERT, self.modified, len(self.modified))
+
+        if self.original:
+            yield Fragment(FragmentType.SKIP, self.original, len(self.original))
 
     def apply_forward(self, __ignored__: str):
         yield self.modified
@@ -62,31 +78,25 @@ class Changeset:
     suffix: Changeset | ChangesetLeaf
 
     def changes(self):
-        for change in self.prefix.changes():
-            yield change
-
+        yield from self.prefix.changes()
         yield self
+        yield from self.suffix.changes()
 
-        for change in self.suffix.changes():
-            yield change
+    def fragments(self, original):
+        yield from self.prefix.fragments(original)
+        copy = original[self.common_original]
+        yield Fragment(FragmentType.COPY, copy, len(copy))
+        yield from self.suffix.fragments(original)
 
     def apply_forward(self, original: str):
-        for fragment in self.prefix.apply_forward(original):
-            yield fragment
-
+        yield from self.prefix.apply_forward(original)
         yield original[self.common_original]
-
-        for fragment in self.suffix.apply_forward(original):
-            yield fragment
+        yield from self.suffix.apply_forward(original)
 
     def apply_reverse(self, modified: str):
-        for fragment in self.prefix.apply_reverse(modified):
-            yield fragment
-
+        yield from self.prefix.apply_reverse(modified)
         yield modified[self.common_modified]
-
-        for fragment in self.suffix.apply_reverse(modified):
-            yield fragment
+        yield from self.suffix.apply_reverse(modified)
 
     def show(self, original: str, modified: str):
         return (
@@ -99,6 +109,11 @@ class Changeset:
         s_original = f"{self.common_original.start}:{self.common_original.stop}"
         s_modified = f"{self.common_modified.start}:{self.common_modified.stop}"
         return f"original[{s_original}]/modified[{s_modified}]\n"
+
+
+def escape(s):
+    return s.replace("[", r"\[")
+    # return s
 
 
 def find_changeset(

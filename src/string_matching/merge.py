@@ -8,6 +8,9 @@ from string_matching.changesets import (
     ConflictFragment,
 )
 
+OutputType = CopyFragment | ChangeFragment | ConflictFragment
+InputType = CopyFragment | ChangeFragment
+
 
 def do_merge(parent: str, branch0: str, branch1: str):
     changeset0 = find_changeset(parent, branch0)
@@ -16,7 +19,7 @@ def do_merge(parent: str, branch0: str, branch1: str):
     fragments0 = list(reversed(list(changeset0.fragments(parent))))
     fragments1 = list(reversed(list(changeset1.fragments(parent))))
 
-    output = []
+    output: list[OutputType] = []
     while fragments0 and fragments1:
         fragment0 = fragments0.pop()
         fragment1 = fragments1.pop()
@@ -50,7 +53,13 @@ def do_merge(parent: str, branch0: str, branch1: str):
         remaining = fragments0 or fragments1
         output.extend(reversed(remaining))
 
-    result = "".join([fragment.insert for fragment in output])
+    result = "".join(
+        [
+            fragment.insert
+            for fragment in output
+            if not isinstance(fragment, ConflictFragment)
+        ]
+    )
     return result
 
 
@@ -59,7 +68,7 @@ def copy_copy(
     fragment1: CopyFragment,
     fragment0_queue,
     fragment1_queue,
-    output,
+    output: list[OutputType],
 ):
     if fragment0.length < fragment1.length:
         shorter, longer = fragment0, fragment1
@@ -98,15 +107,22 @@ def copy_change(
 
 
 def change_change(
-    fragment0: ChangeFragment, fragment1: ChangeFragment, fragments0, fragments1, output
+    fragment0: ChangeFragment,
+    fragment1: ChangeFragment,
+    fragments0: list[InputType],
+    fragments1: list[InputType],
+    output: list[OutputType],
 ):
     insert_length, delete_length = common_head_of_change(fragment0, fragment1)
     if insert_length > 0 or delete_length > 0:
         head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
-        output.append(head0)
-        fragments0.append(tail0)
+        if head0:
+            output.append(head0)
+        if tail0:
+            fragments0.append(tail0)
         __x__, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
-        fragments1.append(tail1)
+        if tail1:
+            fragments1.append(tail1)
     else:
         length = min(fragment0.length, fragment1.length)
         head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
@@ -120,23 +136,26 @@ def change_change(
 
 
 def split_copy_fragment(fragment: CopyFragment, length: int):
-    head = replace(fragment, insert=fragment.insert[:length], length=length)
-    tail = replace(
-        fragment, insert=fragment.insert[length:], length=fragment.length - length
-    )
+    head = tail = None
+    if length > 0:
+        head = replace(fragment, insert=fragment.insert[:length], length=length)
+    if length < fragment.length:
+        tail = replace(
+            fragment, insert=fragment.insert[length:], length=fragment.length - length
+        )
     return head, tail
 
 
 def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
     head = tail = None
-    if length > 0:
+    if length > 0 or insert_length > 0:
         head = replace(
             fragment,
             insert=fragment.insert[:insert_length],
             delete=fragment.delete[:length],
             length=length,
         )
-    if length < fragment.length:
+    if length < fragment.length or insert_length < len(fragment.insert):
         tail = replace(
             fragment,
             insert=fragment.insert[insert_length:],

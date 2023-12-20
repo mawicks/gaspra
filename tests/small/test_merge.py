@@ -1,10 +1,10 @@
 import pytest
-from string_matching.merge import do_merge
+from string_matching.merge import merge
 
 
 # @pytest.mark.xfail
 @pytest.mark.parametrize(
-    ["parent", "branch1", "branch2", "merge"],
+    ["parent", "branch1", "branch2", "merged"],
     [
         # No changes, all empty
         ("", "", "", ""),
@@ -55,10 +55,42 @@ from string_matching.merge import do_merge
         # to be "insert 'x' after the '.', then remove 'a'
         (".a", ".xa", ".", ".x"),
         #
+        # This is another edge case.  The correct interpretation is
+        # Branch0: Insert "b" after "a"
+        # Branch1: Change "a" -> "x"
+        # Result "xb"
+        ("a", "ab", "x", "xb"),
+        #
+        #
         ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
         #
         ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
     ],
 )
-def test_merge(parent, branch1, branch2, merge):
-    assert do_merge(parent, branch1, branch2) == merge
+def test_merge(parent, branch1, branch2, merged):
+    assert merge(parent, branch1, branch2)[0] == merged
+
+
+@pytest.mark.parametrize(
+    ["parent", "branch1", "branch2", "merged"],
+    [
+        ("", "a", "b", [("a", "b")]),
+        #
+        # Another questionable case:
+        # One interpretation is
+        # Branch0: Delete "a"
+        # Branch1: Delete "a", then insert "b"
+        # Result: Branches both want to delete "a" so accept that.
+        # An alternate interpretation is
+        # Branch0: "a" -> ""
+        # Branch1: "a" -> "b" so conflict!
+        # We're going with the second interpretation
+        # and testing for this being a conflict.
+        ("a", "", "b", [("", "b")]),
+    ],
+)
+def test_merge_conflict(parent, branch1, branch2, merged):
+    # For now, we only testing that the test cases have
+    # some kind of merge conflict, not specifically what that is.
+    result = merge(parent, branch1, branch2)
+    assert tuple(merged) == tuple(result)

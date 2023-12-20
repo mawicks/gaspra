@@ -12,7 +12,7 @@ OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
 
 
-def do_merge(parent: str, branch0: str, branch1: str):
+def merge(parent: str, branch0: str, branch1: str):
     changeset0 = find_changeset(parent, branch0)
     changeset1 = find_changeset(parent, branch1)
 
@@ -53,13 +53,22 @@ def do_merge(parent: str, branch0: str, branch1: str):
         remaining = fragments0 or fragments1
         output.extend(reversed(remaining))
 
-    result = "".join(
-        [
-            fragment.insert
-            for fragment in output
-            if not isinstance(fragment, ConflictFragment)
-        ]
-    )
+    return accumulate_result(output)
+
+
+def accumulate_result(output):
+    result = []
+    conflict_free = ""
+    for fragment in output:
+        if isinstance(fragment, ConflictFragment):
+            if conflict_free:
+                result.append(conflict_free)
+                conflict_free = ""
+            result.append((fragment.version1, fragment.version2))
+        else:
+            conflict_free += fragment.insert
+    if conflict_free or len(result) == 0:
+        result.append(conflict_free)
     return result
 
 
@@ -113,6 +122,8 @@ def change_change(
     fragments1: list[InputType],
     output: list[OutputType],
 ):
+    """Handle two change blocks appearing at the same location"""
+
     insert_length, delete_length = common_head_of_change(fragment0, fragment1)
 
     # This is an edge case that showed up in testing.
@@ -136,7 +147,15 @@ def change_change(
         change = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
         fragments0.append(change)
 
-    elif insert_length > 0 or delete_length > 0:
+    # Exactly the same changeset can be reesolved without conflict.  Just pass
+    # it along.
+    elif (len(fragment0.insert) == len(fragment1.insert) == insert_length) and (
+        fragment0.length == fragment1.length == delete_length
+    ):
+        output.append(fragment0)
+
+    # Handle the case where the two changesets have non-empty common prefix.
+    elif insert_length > 0 and delete_length > 0:
         head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
         if head0:
             output.append(head0)
@@ -145,6 +164,7 @@ def change_change(
         __x__, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
         if tail1:
             fragments1.append(tail1)
+
     else:
         length = min(fragment0.length, fragment1.length)
         head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)

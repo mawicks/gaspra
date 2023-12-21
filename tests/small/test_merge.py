@@ -68,7 +68,7 @@ from string_matching.merge import merge
     ],
 )
 def test_merge(parent, branch1, branch2, merged):
-    assert merge(parent, branch1, branch2)[0] == merged
+    assert tuple(merge(parent, branch1, branch2)) == (merged,)
 
 
 @pytest.mark.parametrize(

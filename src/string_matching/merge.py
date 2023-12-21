@@ -88,11 +88,11 @@ def copy_copy(
         shorter, longer = fragment1, fragment0
         long_queue = fragment0_queue
 
+    yield shorter
+
     if shorter.length != longer.length:
         __ignored__, tail = split_copy_fragment(longer, shorter.length)
         long_queue.append(tail)
-
-    yield shorter
 
 
 def copy_change(

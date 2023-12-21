@@ -93,7 +93,6 @@ def copy_copy(
         long_queue.append(tail)
 
     yield shorter
-    return
 
 
 def copy_change(
@@ -101,21 +100,22 @@ def copy_change(
 ):
     smaller_length = min(copy_fragment.length, change_fragment.length)
     if change_fragment.length == smaller_length:
+        yield change_fragment
+
         # Anything left over?
         if copy_fragment.length > smaller_length:
             __ignored__, copy_tail = split_copy_fragment(copy_fragment, smaller_length)
             copy_fragment_queue.append(copy_tail)
-        yield change_fragment
 
     else:  # Change is longer than copy implies a conflict.
         head0, head1 = split_change_fragment(
             change_fragment, len(change_fragment.insert), smaller_length
         )
-        if head1:
-            change_fragment_queue.append(head1)
-
         if head0:
             yield ConflictFragment(head0.insert, copy_fragment.insert, smaller_length)
+
+        if head1:
+            change_fragment_queue.append(head1)
 
 
 def change_change(
@@ -159,14 +159,14 @@ def change_change(
     # Handle the case where the two changesets have non-empty common prefix.
     elif insert_length > 0 and delete_length > 0:
         head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
+        if head0:
+            yield head0
+
         if tail0:
             fragments0.append(tail0)
         __x__, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
         if tail1:
             fragments1.append(tail1)
-
-        if head0:
-            yield head0
 
     else:
         length = min(fragment0.length, fragment1.length)

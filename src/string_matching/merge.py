@@ -156,8 +156,17 @@ def change_change(
     ):
         yield fragment0
 
-    # Handle the case where the two changesets have non-empty common prefix.
-    elif insert_length > 0 and delete_length > 0:
+    # Handle the case where the two changesets have a non-empty common prefix.
+    # If it isn't non-empty, there's nothing to do.
+    # Also, the part of the insertion that's factored out cannot be the full
+    # insertion for either string.
+    # If it is, the conflict can't be detected in the tail.
+    # This elif used to be more restrictive: just insert_length > 0 and delete_length > 0:
+    elif (
+        (insert_length > 0 or delete_length > 0)
+        and insert_length < len(fragment0.insert)
+        and insert_length < len(fragment1.insert)
+    ):
         head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
         if head0:
             yield head0

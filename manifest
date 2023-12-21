@@ -1,5 +1,5 @@
-C Add\sanother\sedge\scase\swith\sa\sconflict\swith\slots\sof\sexplanation.
-D 2023-12-21T15:04:32.825
+C Add\smore\sconflict\stest\scases.
+D 2023-12-21T17:47:20.751
 F README.md a7ffc6f8bf1ed76651c14756a061d662f580ff4de43b49fa82d80a4b80f8434a
 F poetry.lock 09238e413ef8f1240cde89ec19d5ebb89741624c78385c84f1d80635b1954e78
 F pyproject.toml 1d9c9a86843870c111b84b11c606c783e2808acb7ba3c1b04cba28e4629e32d5
@@ -13,11 +13,11 @@ F src/string_matching/suffix_automaton.py 74cfb2252194da7484683949e2006b2a15c8c8
 F src/string_matching/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
 F tests/medium/test_suffix_automaton_long.py 05374b0790d51399277030f84a2d847a954c8af48d243c2049637b69d34da2a7
 F tests/small/test_changesets.py 181348eea49598ddb0ce5a5908ae4e0574db38c10601773e7230acefcd99d5e3
-F tests/small/test_merge.py 2d39214c7839dc5340423c49166402ddfaca94d460db60207d3157ccbfb93906
+F tests/small/test_merge.py 8d1663bd9e5676861ef456aa0f44d85e7e51261ef966f67ef75ce48cc54c78ab
 F tests/small/test_multiple_strings.py 20c8cd055af1c4bd1988c07d1227b67f437902922f51383bd6b73509e3e43fbc
 F tests/small/test_suffix_automaton.py 935e808a334aa635aa4cd0c656a1cacf36ff1d6af22d54f259ab6e271422c68c
-P 28c25123761c8466a667d68b8318631fd2aab31ce27d2822c7118e62b7592084
-R f4a5635e6d3a8c6756af2855640cf9b9
+P 6faf1a0b9ac80746db4484b002a8293092f487ebca2261a9fd38ec7d8b685cfb
+R 337abb06fbdcecdca346ef8bad7629d0
 U mwicks
-Z 579a2b9b101cb6fb5c17261f4cef529d
+Z d346368c3ca0ba3e5170dbb7497a4caa
 # Remove this line to create a well-formed Fossil manifest.

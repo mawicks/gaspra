@@ -66,7 +66,6 @@ from string_matching.merge import merge
         # Resolution: Insert "x" before "a" then delete "a".
         ("ab", "b", "xab", "xb"),
         #
-        #
         ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
         #
         ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
@@ -101,6 +100,32 @@ def test_merge(parent, branch1, branch2, merged):
         ),
         ("ab", "xb", "yb", [("x", "y"), "b"]),
         ("ab", "b", "xb", [("", "x"), "b"]),
+        #
+        # This next set of tests focuses on factoring out common parts
+        # of changes.
+        # One interpretation of next case:
+        # Branch0: spqe -> sxqe -> sxyqe (insert "y" between "x" and "q")
+        # Branch1: spqe -> sxqe -> sxze (change "q" -> "z")
+        # You could intrepet this as conflict-free resulting in "sxyze",
+        # but that assumes the branch0 change came before the branch1
+        # change.  They don't commute.  Reverseing the order, Where should
+        # "y" go if "q" is absent?
+        # The interpretation here is to accept branch1's
+        # change: q->z, but to record a conflict in the order of "y" and "z"
+        # since branch1 didn't see "y".  This conflict is clear if you
+        # view q->z as non-atomic.  Consider it as two steps: deletion
+        # of "q" followed by insertion of "z".  The branch1 author might
+        # have removed "q" first to produce "sxe".  Merging this change
+        # alone with branch0 would produce "sxye".  Now, branch1 inserts
+        # "z" between "x" and "e", but should it come before or after "y"
+        # in the merge? No doubt this is a conflict.
+        # One could argue that "q" should also included in the
+        # conflict, but we're taking the position that the replacement
+        # q->z is conflict-free (i.e., "q" is gone).  The branch1 author
+        # has enough context to make the decision to remove q, i.e., remove
+        # "q" immediately before "e". It's only a question of where to
+        # place "z".
+        ("spqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

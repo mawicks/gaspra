@@ -60,6 +60,11 @@ from string_matching.merge import merge
         # Branch1: Change "a" -> "x"
         # Result "xb"
         ("a", "ab", "x", "xb"),
+        # Yet another edge case.
+        # Branch0: Delete "a"
+        # Branch1: Insert "x" before "a"
+        # Resolution: Insert "x" before "a" then delete "a".
+        ("ab", "b", "xab", "xb"),
         #
         #
         ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
@@ -81,12 +86,21 @@ def test_merge(parent, branch1, branch2, merged):
         # Branch0: Delete "a"
         # Branch1: Delete "a", then insert "b"
         # Result: Branches both want to delete "a" so accept that.
+        #         Then accept insertion of "b" on Branch1
         # An alternate interpretation is
         # Branch0: "a" -> ""
         # Branch1: "a" -> "b" so conflict!
         # We're going with the second interpretation
         # and testing for this being a conflict.
         ("a", "", "b", [("", "b")]),
+        (
+            "abcdefg",
+            "axdpefg",
+            "abcdqey",
+            ["axd", ("p", "q"), "ey"],
+        ),
+        ("ab", "xb", "yb", [("x", "y"), "b"]),
+        ("ab", "b", "xb", [("", "x"), "b"]),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

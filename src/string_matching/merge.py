@@ -54,8 +54,7 @@ def _merge(parent: str, branch0: str, branch1: str):
 
 
 def merge(parent: str, branch0: str, branch1: str):
-    output = _merge(parent, branch0, branch1)
-    return accumulate_result(output)
+    return accumulate_result(_merge(parent, branch0, branch1))
 
 
 def accumulate_result(output):
@@ -64,13 +63,14 @@ def accumulate_result(output):
     for fragment in output:
         if isinstance(fragment, ConflictFragment):
             if conflict_free:
-                conflict_free = ""
                 yield conflict_free
+                conflict_free = ""
 
             yield (fragment.version1, fragment.version2)
             no_output_yet = False
         else:
             conflict_free += fragment.insert
+
     if conflict_free or no_output_yet:
         yield conflict_free
 

@@ -1,10 +1,10 @@
-C Add\sfind_lcs_multiple()\sexample\sto\sREADME.
-D 2023-12-22T13:38:05.163
+C Add\sdescription\sto\sreadme;\sclean\sup\sdependencies.
+D 2023-12-22T13:41:11.072
 F .github/workflows/python-app.yml 7642d2e87662ddde62283c78bb3530fcf6f11354e7ffc211a9e6f0b856ca36c9
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 843e6d47fc136b834bdb7819f0d7cb1dfb59a988731f468497263404c9c3ea19
 F poetry.lock b7ccfaefd08efa122d8f1886b3381398e4579a4615f7d7ad3a1c8c0f640a8ce1
-F pyproject.toml 7a50b6fb510e1a35189dcd84d0e1a5a82a77f65f3789da4efad85b99b34bf216
+F pyproject.toml 18d6e474772f33f4f743b72afa42e36ab49307a13e4d83d0bc7825c5d367a7d5
 F src/difftools/__init__.py db6483fc699613b76b0a40a2ec64e671e6c855420d7606461c71cb0af880f4ac
 F src/difftools/changesets.py 655a90fd8c366da3a3d191697cc533054cfeda5f93c71535ad4cc62fc247df64
 F src/difftools/common.py 05f51eee167d6e537ca3ed2b947d6bd60c917c0070459e2a656b9246785b8f86
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 4dca42bdd353143afd525124034e38fc19d52929a98e3c47087e
 F tests/small/test_multiple_strings.py 00e3d9e35abdee75a9a989961e75402db99755a3c2df4a948640198e16100287
 F tests/small/test_suffix_automaton.py 85714af389e38324e73ec5a6f45302cdd3091dbb5513c266b2d800a2e34f0392
 F tests/small/test_wrappers.py 1f934e72426b1a96240b4c1ab9aff5ba58ff71ca7376480290171f7accaa6208
-P 76b0b1521389bc92add5b796c469a439477eb9f5e0b427e7ce3fcdcb16977efc
-R 3202f99a600402d777a16880e46d0e22
+P 4641a31cef96a3bda1ddb58e27236d90519af5e371514b81106ac86e10e07d3d
+R 9c4c41a6b8959b6a5865f41043fb5b20
 U mwicks
-Z e1dbb1e5d5651a911e00e394a6bb2145
+Z f574bdf4dde6e3d1ae2a230e899275d1
 # Remove this line to create a well-formed Fossil manifest.

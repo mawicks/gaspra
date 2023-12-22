@@ -1,6 +1,6 @@
-C Adjust\sgithub\saction\spermissions.
-D 2023-12-22T11:48:29.971
-F .github/workflows/python-app.yml 72fa3a0fad5481b6b622cee55656598c4dcb6dfdf156f39fa40ff30b8984dff7
+C Remove\spublishing\sworkflow.
+D 2023-12-22T11:52:38.546
+F .github/workflows/python-app.yml 7642d2e87662ddde62283c78bb3530fcf6f11354e7ffc211a9e6f0b856ca36c9
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 2dc5ee94272f0aa7c536be0a1ba80ac992362fc49bbc8f2b8d248bef53328192
 F poetry.lock b7ccfaefd08efa122d8f1886b3381398e4579a4615f7d7ad3a1c8c0f640a8ce1
@@ -21,8 +21,8 @@ F tests/small/test_merge.py 4dca42bdd353143afd525124034e38fc19d52929a98e3c47087e
 F tests/small/test_multiple_strings.py 00e3d9e35abdee75a9a989961e75402db99755a3c2df4a948640198e16100287
 F tests/small/test_suffix_automaton.py 85714af389e38324e73ec5a6f45302cdd3091dbb5513c266b2d800a2e34f0392
 F tests/small/test_wrappers.py 1f934e72426b1a96240b4c1ab9aff5ba58ff71ca7376480290171f7accaa6208
-P 93a65248309b16878238d90a04157b7533d61e7bcc604334a1e607e3a424b266
-R b655a37b722733e554c6b8586ea79f1a
+P 05aae07c0509802830aff62260545d64d19c9c701ab20c42b2cc14b47ffa19c6
+R 755c33cd2a1b4294a8e16593f9cdb314
 U mwicks
-Z f1d0140f3d846306af892896659a40a8
+Z 4171caf1f64714b69a481ea0cd8f176b
 # Remove this line to create a well-formed Fossil manifest.

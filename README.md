@@ -71,6 +71,19 @@ comparison only."
 'd nothing '
 ```
 
+
+There's also `find_lcs_multiple()` for n-way common strings:
+
+```
+>>> a="The quick brown fox jumps over the lazy dog near the riverbank."
+>>> b="The quick brown fox leaps over the lazy dogs near the river."
+>>> c="The quick, clever fox jumps across the lazy dogs by the riverbank."
+>>> difftools.find_lcs_multiple(a, b, c)
+((30, 30, 34), 13)
+>>> a[30:30+13]
+' the lazy dog'
+```
+
 ## Finding Diffs
 
 Given an original string and a modified string, the function

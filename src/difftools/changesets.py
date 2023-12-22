@@ -1,5 +1,5 @@
 from __future__ import annotations
-from enum import Enum, auto
+from collections.abc import Iterable
 from dataclasses import dataclass, replace
 import os
 
@@ -42,13 +42,19 @@ class ChangesetLeaf:
     def changes(self):
         yield self
 
-    def fragments(self, __ignored__):
+    def _fragments(self, __ignored__):
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
             yield ChangeFragment(
                 insert=self.modified, delete=self.original, length=len(self.original)
             )
+
+    def fragments(self, __ignored__) -> Iterable[str | tuple[str, str]]:
+        # Construction of the tree creates "empty" changesets.
+        # Omit those from the output stream.
+        if self.modified or self.original:
+            yield (self.modified, self.original)
 
     def apply_forward(self, __ignored__: str):
         yield self.modified
@@ -90,10 +96,15 @@ class Changeset:
         yield self
         yield from self.suffix.changes()
 
-    def fragments(self, original):
-        yield from self.prefix.fragments(original)
+    def _fragments(self, original):
+        yield from self.prefix._fragments(original)
         copy = original[self.common_original]
         yield CopyFragment(insert=copy, length=len(copy))
+        yield from self.suffix._fragments(original)
+
+    def fragments(self, original) -> Iterable[str | tuple[str, str]]:
+        yield from self.prefix.fragments(original)
+        yield original[self.common_original]
         yield from self.suffix.fragments(original)
 
     def apply_forward(self, original: str):

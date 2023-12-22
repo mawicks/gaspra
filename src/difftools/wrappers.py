@@ -1,6 +1,7 @@
 from typing import Iterable
 
 import difftools.suffix_automaton as sa
+from difftools.changesets import find_changeset
 
 
 def find_substring(search_in: str, search_for: str) -> Iterable[int]:
@@ -45,3 +46,37 @@ def find_lcs(a: str, b: str):
     root = sa.build(a)
     pa, pb, length = sa.find_lcs(root, b)
     return pa, pb, length
+
+
+def changes(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
+    """Returns the changes between a and b.
+
+    Arguments:
+        original: str
+            The "original" tring
+        modified: str
+            The "modified" string
+
+    Returns:
+        Iterable[str]
+            The changes between a and b.  Each item in the sequence
+            is either a string or a tuple of two strings.  If the item
+            is a string, it is unchanged test between `original` and
+            ``modified`.  If the item is a tuple, the first string is the
+            string inserted at that point in `original` to get `modified`
+            and the second string is the string that was deleted.
+
+    """
+    changeset = find_changeset(original, modified)
+    yield from changeset.fragments(original)
+
+
+if __name__ == "__main__":
+    print(
+        list(
+            changes(
+                "The quick brown fox jumps over the lazy dog near the riverbank.",
+                "The quick brown fox leaps over the lazy dogs near the river",
+            )
+        )
+    )

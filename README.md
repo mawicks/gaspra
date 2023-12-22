@@ -25,7 +25,8 @@ strings for `difflib` compared to this package. The strings are
 equal-length, random sequences of the letters a, b, and c.
 The lengths shown in the table are the combined length of
 the two strings.
-The quadratic complexity of 'difflib' is obvious.
+The quadratic complexity of 'difflib' is obvious.  Even though it's a pure
+Python solution, `difftools` is quite fast by comparison.
 
 | Length   |   Match Length |   Difflib (ms) |   Difftools (ms) |
 |----------|----------------|----------------|------------------|
@@ -40,5 +41,52 @@ The quadratic complexity of 'difflib' is obvious.
 
 # Examples.
 
+## Finding Longest Common Substrings
+
+The function `difftools.find_lcs()` returns the starting positions and the
+length of common substring of two strings with maximal length:
+
+```
+>>> import difftools                                                                                               
+>>> a="Call me Ishmael. Some years ago—never mind how long \
+precisely—having little or no money in my purse, and nothing \
+particular to interest me on shore, I thought I would sail \
+about a little and see the watery part of the world"                                                                                                                  
+>>> b="It was the best of times, it was the worst of times, \
+it was the age of wisdom, it was the age of foolishness, \
+it was the epoch of belief, it was the epoch of incredulity, \
+it was the season of Light, it was the season of Darkness, \
+it was the spring of hope, it was the winter of despair, we \
+had everything before us, we had nothing before us, we were \
+all going direct to Heaven, we were all going direct the other \
+way – in short, the period was so far like the present period, \
+that some of its noisiest authorities insisted on its being \
+received, for good or for evil, in the superlative degree of \
+comparison only."
+>>> difftools.find_lcs(a,b)
+(103, 321, 10)
+>>> a[103:103+10]
+'d nothing '
+>>> b[321:321+10]
+'d nothing '
+>>> 
+```
+
+## Finding Diffs
+
+Given an original string and a modified string, the function
+`difftools.changes()` returns the sequence of changes represented
+interspersed with fragments from the original string.  The sequence is
+a sequence of strings (fragments from the original) and tuples of two strings
+representing an insertion/deletion pair.  Note that an insertion is a tuple
+where the deletion string is empty, and vice versa.
+
+```
+>>> import difftools
+>>> original="The quick brown fox jumps over the lazy dog near the riverbank."
+>>> modified="The quick brown fox leaps over the lazy dogs near the river"
+>>> list(difftools.changes(original, modified))
+['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank.')]
+```
 
 

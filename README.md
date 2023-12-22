@@ -89,4 +89,32 @@ where the deletion string is empty, and vice versa.
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank.')]
 ```
 
+# Merging
+
+Here's an example of two different revisions of the same sentence that can be
+resolved without any conflicts.
+
+``` 
+>>> original = "The quick brown fox jumps over the lazy dog near the riverbank."
+>>> editor1 = "The quick brown fox leaps over the lazy dogs near the river."
+>>> editor2 = "The quick, clever fox jumps across the lazy dogs by the riverbank."
+>>> list(difftools.changes(original, editor1))
+['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank'), '.']
+>>> list(difftools.changes(original, editor2))
+['The quick', (',', ''), ' ', ('cleve', 'b'), 'r', ('', 'own'), ' fox jumps ', ('ac', 'ove'), 'r', ('oss', ''), ' the lazy dog', ('s', ''), ' ', ('by', 'near'), ' the riverbank.']
+>>> list(difftools.merge(original, editor1, editor2))
+['The quick, clever fox leaps across the lazy dogs by the river.']
+```
+
+Here's the same example but with a different revision by editor2 that *does*
+conflict with editor1.  The conflicts are represented as a tuple with two
+alternate versions of the merged text.
+
+```
+>>> conflicts_with_1 = "The swift, agile fox leaps over the sleepy dog near the riverside."
+>>> list(difftools.changes(original, conflicts_with_1))
+['The ', ('s', 'quick bro'), 'w', ('ift, agile', 'n'), ' fox ', ('lea', 'jum'), 'ps over the ', ('s', ''), 'l', ('eep', 'az'), 'y dog near the river', ('side', 'bank'), '.']
+>>> list(difftools.merge(original, branch1, conflicts_with_1))
+['The swift, agile fox leaps over the sleepy dogs near the river', ('', 'side'), '.']
+```
 

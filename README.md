@@ -114,7 +114,7 @@ alternate versions of the merged text.
 >>> conflicts_with_1 = "The swift, agile fox leaps over the sleepy dog near the riverside."
 >>> list(difftools.changes(original, conflicts_with_1))
 ['The ', ('s', 'quick bro'), 'w', ('ift, agile', 'n'), ' fox ', ('lea', 'jum'), 'ps over the ', ('s', ''), 'l', ('eep', 'az'), 'y dog near the river', ('side', 'bank'), '.']
->>> list(difftools.merge(original, branch1, conflicts_with_1))
+>>> list(difftools.merge(original, editor1, conflicts_with_1))
 ['The swift, agile fox leaps over the sleepy dogs near the river', ('', 'side'), '.']
 ```
 

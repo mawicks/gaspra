@@ -1,6 +1,6 @@
-C Add\spython-app.yml\sGithub\sworkflow
-D 2023-12-22T11:33:20.862
-F .github/workflows/python-app.yml c5f774b0db55159bec28f2302401306870a81fc230def9706fd92a07ad171d3e
+C Add\sxml\soutput\sto\spytest
+D 2023-12-22T11:40:26.952
+F .github/workflows/python-app.yml 7642d2e87662ddde62283c78bb3530fcf6f11354e7ffc211a9e6f0b856ca36c9
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 2dc5ee94272f0aa7c536be0a1ba80ac992362fc49bbc8f2b8d248bef53328192
 F poetry.lock b7ccfaefd08efa122d8f1886b3381398e4579a4615f7d7ad3a1c8c0f640a8ce1
@@ -21,8 +21,8 @@ F tests/small/test_merge.py 4dca42bdd353143afd525124034e38fc19d52929a98e3c47087e
 F tests/small/test_multiple_strings.py 00e3d9e35abdee75a9a989961e75402db99755a3c2df4a948640198e16100287
 F tests/small/test_suffix_automaton.py 85714af389e38324e73ec5a6f45302cdd3091dbb5513c266b2d800a2e34f0392
 F tests/small/test_wrappers.py 1f934e72426b1a96240b4c1ab9aff5ba58ff71ca7376480290171f7accaa6208
-P 386e702f4a9dbb66e88dad3895e43ce3469d0c612a48ab911668305b689e472f
-R 826c838d5cc0dc8d8e2bd6f215c5f04a
+P b729ddc01e01770f44adf3a92a15b9fd21196f3f167f470bc3c33f7f408d2279
+R 755c33cd2a1b4294a8e16593f9cdb314
 U mwicks
-Z 7e5ceed3c972884a8eedb957be19a517
+Z 11375e671981cbd158819068c5d0640d
 # Remove this line to create a well-formed Fossil manifest.

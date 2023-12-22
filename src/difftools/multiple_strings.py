@@ -2,10 +2,8 @@ from itertools import chain
 
 from collections.abc import Sequence
 
-from string_matching.suffix_automaton import (
+from difftools.suffix_automaton import (
     build,
-    dedup_sorted,
-    follow_reverse_links,
     _get_all_start_positions,
 )
 
@@ -23,14 +21,20 @@ def concatenate_strings(string_set: Sequence[str]):
     return chain(*chainlets)
 
 
-def find_lcs(string_set: Sequence[str]) -> tuple[tuple[int, ...], int | None]:
+def find_lcs(*string_set: str) -> tuple[tuple[int, ...], int | None]:
     """
     Given a sequence of strings, find the longest substring common
     to all members of the sequence.
 
+    Arguments:
+       *string_set: Sequence[str]
+          Sequence of strings on which to compute the LCS.
+
     Returns:
-       int - position of occurence in first string
-       length - length of common substring
+       tuple[int, ...]:
+          Tuple with the positions of the first occurence in each string
+       length:
+          Length of the common substring
     """
 
     # The suffix automaton can be very deep so we must use an

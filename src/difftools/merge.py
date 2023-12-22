@@ -1,7 +1,7 @@
 from dataclasses import replace
 from os.path import commonprefix
 
-from string_matching.changesets import (
+from difftools.changesets import (
     find_changeset,
     CopyFragment,
     ChangeFragment,
@@ -16,8 +16,8 @@ def _merge(parent: str, branch0: str, branch1: str):
     changeset0 = find_changeset(parent, branch0)
     changeset1 = find_changeset(parent, branch1)
 
-    fragments0 = list(reversed(list(changeset0.fragments(parent))))
-    fragments1 = list(reversed(list(changeset1.fragments(parent))))
+    fragments0 = list(reversed(list(changeset0._fragments(parent))))
+    fragments1 = list(reversed(list(changeset1._fragments(parent))))
 
     while fragments0 and fragments1:
         fragment0 = fragments0.pop()

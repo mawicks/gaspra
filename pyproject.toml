@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "string-matching"
+name = "difftools"
 version = "0.1.0"
 description = ""
 authors = ["Mark Wicks <mawicks@gmail.com>"]
@@ -9,10 +9,12 @@ readme = "README.md"
 python = "^3.11"
 pytest-cov = "^4.1.0"
 rich = "^13.7.0"
+tabulate = "^0.9.0"
 
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
+jupyter = "^1.0.0"
 
 [build-system]
 requires = ["poetry-core"]

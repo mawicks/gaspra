@@ -1,5 +1,5 @@
 import pytest
-from string_matching.merge import merge
+from difftools.merge import merge
 
 
 # @pytest.mark.xfail
@@ -126,6 +126,12 @@ def test_merge(parent, branch1, branch2, merged):
         # "q" immediately before "e". It's only a question of where to
         # place "z".
         ("spqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
+        # Same case with null "p"
+        ("sqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
+        # Same case with null "x" (making it a slightly different case)
+        ("spqe", "syqe", "sze", ("s", ("y", "z"), "e")),
+        # Same case with null "y" -- CHECK THIS!!!
+        ("spqe", "sqe", "sze", ("s", ("", "z"), "e")),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

@@ -1,8 +1,8 @@
 import time
-from string_matching.suffix_automaton import build, find_substring_all
+from difftools.suffix_automaton import build, find_substring_all
 
 
-from string_matching.test_helpers.random_strings import random_string
+from difftools.test_helpers.random_strings import random_string
 
 COMPLEXITY_TEST_COEFFICIENT = 3.0
 COMPLEXITY_TEST_EXPONENT = 1.5

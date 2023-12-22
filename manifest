@@ -1,8 +1,8 @@
-C Rename\svariable\sin\sREADME.
-D 2023-12-22T13:16:46.671
+C Remove\sempty\s>>>\sin\sREADME.
+D 2023-12-22T13:17:55.674
 F .github/workflows/python-app.yml 7642d2e87662ddde62283c78bb3530fcf6f11354e7ffc211a9e6f0b856ca36c9
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
-F README.md ab1b7c11f60479435c7740c0181af309bbeab07065737586d515c0b38b32112b
+F README.md 52f1bccb2ecc91319bcec6073545f5715001bc51cdb47f19dccb26b6d8308cb0
 F poetry.lock b7ccfaefd08efa122d8f1886b3381398e4579a4615f7d7ad3a1c8c0f640a8ce1
 F pyproject.toml 7a50b6fb510e1a35189dcd84d0e1a5a82a77f65f3789da4efad85b99b34bf216
 F src/difftools/__init__.py db6483fc699613b76b0a40a2ec64e671e6c855420d7606461c71cb0af880f4ac
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 4dca42bdd353143afd525124034e38fc19d52929a98e3c47087e
 F tests/small/test_multiple_strings.py 00e3d9e35abdee75a9a989961e75402db99755a3c2df4a948640198e16100287
 F tests/small/test_suffix_automaton.py 85714af389e38324e73ec5a6f45302cdd3091dbb5513c266b2d800a2e34f0392
 F tests/small/test_wrappers.py 1f934e72426b1a96240b4c1ab9aff5ba58ff71ca7376480290171f7accaa6208
-P 0a2f598787bbf1ecc290fccd2bc25ff7872703fab54e6b627f56bc0086dde063
-R 9a3c9013bfb428b401eef6ad225d8a36
+P 3196e0f4d9603959feda13410f83f77f8a9ad71a420b6efe3f9078b024453aeb
+R 5f0ffc0409287d0859256d1d7185d82f
 U mwicks
-Z 93fae7e290c67b0f164785561fe6bf27
+Z 3a8f77c41ded2fce64e91947df0454ad
 # Remove this line to create a well-formed Fossil manifest.

@@ -69,7 +69,6 @@ comparison only."
 'd nothing '
 >>> b[321:321+10]
 'd nothing '
->>> 
 ```
 
 ## Finding Diffs

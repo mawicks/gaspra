@@ -1,6 +1,6 @@
-C Add\sgithub\sworkflow\ssteps\sto\sinstall\spoetry\sand\sbuild.
-D 2023-12-22T18:05:12.316
-F .github/workflows/python-app.yml 8c0737a26705efdeb85b8c189ea20aeeb3d7681c4861ea1f600b69f4beb3514e
+C Add\sgithub\sstep\sto\sshow\sinstalled\spackages.
+D 2023-12-22T18:07:44.903
+F .github/workflows/python-app.yml 022bc6bc08ab3b52d50755bf46bcec18639692cdf273ea14a23ba04dcf0088d5
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 843e6d47fc136b834bdb7819f0d7cb1dfb59a988731f468497263404c9c3ea19
 F poetry.lock ed8df40f918a2592ed4bf4bb981d44eb8edf606054f03a19ff6b52b27b6c06ef
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 4dca42bdd353143afd525124034e38fc19d52929a98e3c47087e
 F tests/small/test_multiple_strings.py 00e3d9e35abdee75a9a989961e75402db99755a3c2df4a948640198e16100287
 F tests/small/test_suffix_automaton.py 85714af389e38324e73ec5a6f45302cdd3091dbb5513c266b2d800a2e34f0392
 F tests/small/test_wrappers.py 1f934e72426b1a96240b4c1ab9aff5ba58ff71ca7376480290171f7accaa6208
-P 3fb5764ed2cf756edcfebf7750e690f9e07a8b0ddb3a1f3b9b4e657a35b6904d
-R 49f0ebdd16a7b97eeee9d7ab1ac1e72c
+P 0a877251ccc5e0a80f110ff96fa283a88b44871cb743804cae4779f0cbe4ccff
+R eb5ec0c1731f60e0e965900f3492d9e9
 U mwicks
-Z b4c7ef911147aedb3fe0be95d37a6d28
+Z ae81acf77ee1789b1d0158fd64195329
 # Remove this line to create a well-formed Fossil manifest.

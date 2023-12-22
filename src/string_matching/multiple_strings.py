@@ -28,9 +28,15 @@ def find_lcs(string_set: Sequence[str]) -> tuple[tuple[int, ...], int | None]:
     Given a sequence of strings, find the longest substring common
     to all members of the sequence.
 
+    Arguments:
+       string_set: Sequence[str]
+          Sequence of strings on which to compute the LCS.
+
     Returns:
-       int - position of occurence in first string
-       length - length of common substring
+       tuple[int, ...]:
+          Tuple with the positions of the first occurence in each string
+       length:
+          Length of the common substring
     """
 
     # The suffix automaton can be very deep so we must use an

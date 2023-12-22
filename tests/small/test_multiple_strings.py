@@ -3,7 +3,7 @@ from collections.abc import Sequence
 import pytest
 
 
-from string_matching.multiple_strings import find_lcs, concatenate_strings
+from difftools.multiple_strings import find_lcs, concatenate_strings
 
 
 @pytest.mark.parametrize(

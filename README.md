@@ -4,24 +4,27 @@ Recently, I became interested in string matching. In particular, I was
 interested in the Longest Common Substring (LCS) and similar problems. I
 discovered that efficient string matching is hard to find, especially in
 Python. Much of what you find on the internet is either slow, or in some
-cases, simply doesn't work.
+cases, simply doesn't work.  I wanted a pure Python solution that is
+reasonably fast to experiment with some string matching algorithms.
+
 
 Though implementations appear uncommon, efficient algorithms exist.
 The LCS problem is solvable in linear time, yet most online examples
 use a classical dynamic programming approach which is quadratic in
-both space and time. Even the venerable `difflib` that's included
-in the Python standard library uses
-quadratic times algorithms. This package uses efficient suffix automata
-which have linear time and space complexity. The difference is enormous.
-That's the same as the difference between a quicksort and a bubble sort.
-Nobody would use a bubble sort, which is universally recognized
-as a naive approach, yet somehow, using dynamic programming
-to solve text matching is widely accepted.
+both space and time. Even the venerable `difflib`, which is part of
+Python's standard library uses quadratic-time algorithms.
+`Difftools` uses efficient suffix automata
+with linear time and space complexity. The difference is dramatic.
+It's the same as the difference between a quicksort and a bubble sort.
+Because of this difference, nobody uses a bubble sort, which is
+universally recognized as a naive approach.  Yet somehow, using
+dynamic programming to solve text matching is widely accepted.
 `Difflib` is practically unusable on large, document-length
 strings. The table below shows the time to find the LCS in two
 strings for `difflib` compared to this package. The strings are
-equal-length and randomly generated using the letters a-c.  The
-length shown in the table is the combined length of the two strings.
+equal-length, random sequences of the letters a, b, and c.
+The lengths shown in the table are the combined length of
+the two strings.
 The quadratic complexity of 'difflib' is obvious.
 
 | Length   |   Match Length |   Difflib (ms) |   Difftools (ms) |
@@ -34,3 +37,8 @@ The quadratic complexity of 'difflib' is obvious.
 | 64k      |             18 |         33,314 |              121 |
 | 128k     |             19 |        135,413 |              341 |
 | 256k     |             23 |        554,665 |              690 |
+
+# Examples.
+
+
+

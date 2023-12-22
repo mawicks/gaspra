@@ -1,7 +1,7 @@
 from dataclasses import replace
 from os.path import commonprefix
 
-from string_matching.changesets import (
+from difftools.changesets import (
     find_changeset,
     CopyFragment,
     ChangeFragment,

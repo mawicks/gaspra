@@ -1,5 +1,5 @@
 import io
-from string_matching.suffix_automaton import build, Node
+from difftools.suffix_automaton import build, Node
 
 
 def dump(node: Node, f: io.TextIOWrapper):

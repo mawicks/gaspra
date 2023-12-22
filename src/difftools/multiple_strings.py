@@ -2,10 +2,8 @@ from itertools import chain
 
 from collections.abc import Sequence
 
-from string_matching.suffix_automaton import (
+from difftools.suffix_automaton import (
     build,
-    dedup_sorted,
-    follow_reverse_links,
     _get_all_start_positions,
 )
 

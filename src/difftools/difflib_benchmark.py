@@ -3,7 +3,7 @@ import difflib
 import time
 
 from tabulate import tabulate
-from string_matching.suffix_automaton import build, find_lcs
+from difftools.suffix_automaton import build, find_lcs
 
 
 def random_string(alphabet, length):

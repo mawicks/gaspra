@@ -1,5 +1,5 @@
 import pytest
-from string_matching.merge import merge
+from difftools.merge import merge
 
 
 # @pytest.mark.xfail

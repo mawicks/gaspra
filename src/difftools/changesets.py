@@ -5,8 +5,8 @@ import os
 
 from rich.console import Console
 
-from string_matching.common import DATA_DIR
-from string_matching.suffix_automaton import build, find_lcs
+from difftools.common import DATA_DIR
+from difftools.suffix_automaton import build, find_lcs
 
 console = Console(highlight=False)
 

@@ -1,6 +1,6 @@
 from typing import Iterable
 
-import string_matching.suffix_automaton as sa
+import difftools.suffix_automaton as sa
 
 
 def find_substring(search_in: str, search_for: str) -> Iterable[int]:
@@ -14,20 +14,21 @@ def find_substring(search_in: str, search_for: str) -> Iterable[int]:
 
     Returns
         Iterable[int]
-            Sequence of locations in search_in where search_for was found
+            Positions of every occurrence of `search_for` in `seach_in`.
     """
 
     root = sa.build(search_in)
     return sa.find_substring_all(root, search_for)
 
 
-def find_lcs(s1: str, s2: str):
-    """Returns the locations of the earliest occurences of the LCS of s1 and s2
+def find_lcs(a: str, b: str):
+    """Returns the locations of the first occurences of the LCS of s1 and s2 in
+    each string.
 
     Arguments:
-       s1: str
+       a: str
           - The first string
-       s2: str
+       a: str
           - The second string
 
     Returns:
@@ -37,7 +38,10 @@ def find_lcs(s1: str, s2: str):
            The position of the LCS in s2
         int:
            The length of the LCS.
+
+    Note that the empty string is always a common substring, occurring at the
+    beginning of both lists.
     """
-    root = sa.build(s1)
-    p1, p2, length = sa.find_lcs(root, s2)
-    return p1, p2, length
+    root = sa.build(a)
+    pa, pb, length = sa.find_lcs(root, b)
+    return pa, pb, length

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "string-matching"
+name = "difftools"
 version = "0.1.0"
 description = ""
 authors = ["Mark Wicks <mawicks@gmail.com>"]

@@ -23,13 +23,13 @@ def concatenate_strings(string_set: Sequence[str]):
     return chain(*chainlets)
 
 
-def find_lcs(string_set: Sequence[str]) -> tuple[tuple[int, ...], int | None]:
+def find_lcs(*string_set: str) -> tuple[tuple[int, ...], int | None]:
     """
     Given a sequence of strings, find the longest substring common
     to all members of the sequence.
 
     Arguments:
-       string_set: Sequence[str]
+       *string_set: Sequence[str]
           Sequence of strings on which to compute the LCS.
 
     Returns:

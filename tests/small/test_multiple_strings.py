@@ -23,7 +23,7 @@ from string_matching.multiple_strings import find_lcs, concatenate_strings
 def test_find_lcs_of_multiple_strings(
     string_set: Sequence[str], start_positions, length
 ):
-    assert (start_positions, length) == find_lcs(string_set)
+    assert (start_positions, length) == find_lcs(*string_set)
 
 
 def test_concatenate_strings():

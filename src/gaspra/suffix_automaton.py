@@ -33,7 +33,10 @@ def make_id_sequence() -> Iterator[int]:
         id += 1
 
 
-def wrap_node_factory(node_factory: Callable[..., Node], node_list: list[Node]):
+def wrap_node_factory(
+    node_factory: Callable[..., Node],
+    node_list: list[Node],
+):
     """Wrap a node_factory() so that it always appends to a node_list
 
     Arguments:
@@ -52,7 +55,9 @@ def wrap_node_factory(node_factory: Callable[..., Node], node_list: list[Node]):
 
 
 def build(
-    input_string: Iterable[str | int], reverse_links=True, mark_terminals=True
+    input_string: Iterable[str | int],
+    reverse_links=True,
+    mark_terminals=True,
 ) -> Node:
     """Build a suffix automaton from `input_string`.
 
@@ -92,11 +97,16 @@ def build(
     return root
 
 
-def extend(character: str | int, last: Node, node_factory: Callable[..., Node]):
+def extend(
+    character: str | int,
+    last: Node,
+    node_factory: Callable[..., Node],
+):
     """Extend a partially constructed automaton by one additional character
 
-    Given a suffix automaton that recognizes the suffixes of some
-    string "s", extend that automoton to recognize the suffixes of `s + character`
+    Given a suffix automaton that recognizes the suffixes of some string
+    "s", extend that automoton to recognize the suffixes of `s +
+    character`
 
     """
     new_node = node_factory(
@@ -124,7 +134,10 @@ def extend(character: str | int, last: Node, node_factory: Callable[..., Node]):
 
 
 def insert_node(
-    character: str | int, p: Node, q: Node, node_factory: Callable[..., Node]
+    character: str | int,
+    p: Node,
+    q: Node,
+    node_factory: Callable[..., Node],
 ):
     clone = node_factory(
         length=p.length + 1,
@@ -251,7 +264,8 @@ def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
         if next is not None:
             current_match_length += 1
             current = next
-        # This block can be indented by the sample implementation has it this way.
+        # This block can be indented but the sample implementation has
+        # it this way.
         if current_match_length > longest_match_length:
             longest_match_length = current_match_length
             longest_match_s1_endpos = current.first_endpos
@@ -291,7 +305,8 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
         return
 
     print(
-        f"{' '*indent}{root.id}: (length:{root.length}, is_terminal:{root.is_terminal})"
+        f"{' '*indent}{root.id}: (length:{root.length}, "
+        f"is_terminal:{root.is_terminal})"
     )
     if root.transitions.items():
         for character, node in root.transitions.items():

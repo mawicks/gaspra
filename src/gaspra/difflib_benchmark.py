@@ -32,7 +32,10 @@ def timeit(method, method_name, s1, s2, index=False):
 
     row = {}
     if index:
-        row = {"Length": f"{(len(s1) + len(s2)) // 1024}k", "Match Length": length}
+        row = {
+            "Length": f"{(len(s1) + len(s2)) // 1024}k",
+            "Match Length": length,
+        }
     the_rest = {f"{method_name} (ms)": duration_ms}
     row.update(the_rest)
     return row
@@ -61,7 +64,11 @@ def make_table(method, method_name, string_list, index=True):
 
 def render_table(table):
     return tabulate(
-        table, headers="keys", tablefmt="github", intfmt=",d", floatfmt=",.0f"
+        table,
+        headers="keys",
+        tablefmt="github",
+        intfmt=",d",
+        floatfmt=",.0f",
     )
 
 

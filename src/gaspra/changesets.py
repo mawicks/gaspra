@@ -43,7 +43,11 @@ class ChangesetLeaf:
         # Omit those from the output stream.
         if self.modified or self.original:
             yield ChangeFragment(
-                insert=self.modified, delete=self.original, length=len(self.original)
+                insert=self.modified,
+                delete=self.original,
+                length=len(
+                    self.original,
+                ),
             )
 
     def fragments(self, _: str) -> Iterable[str | tuple[str, str]]:

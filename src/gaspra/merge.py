@@ -59,8 +59,8 @@ def _merge(fragments0: list[InputType], fragments1):
         if output:
             yield output
 
-        # If the fragments weren't fully processed, push their tails back onto
-        # their respective stacks.
+        # If the fragments weren't fully processed, push their tails
+        # back onto their respective stacks.
 
         if tail0:
             fragments0.append(tail0)
@@ -160,14 +160,15 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
 
 
 def has_composable_changes(fragment0, fragment1):
-    # This is an edge case that showed up in testing. If one change is a pure
-    # insertion (no deletion) and the other is a pure deletion (no insertion),
-    # they can be combined into a single conflict-free change.  It needs to be
-    # pushed back onto the input list to be processed properly One input
-    # sequence was [insert x/delete nothing][s] The other input sequence was
-    # [insert nothing/delete s]. These are transformed to the sequences 1) [s]
-    # and 2) [insert x/delete s] by pushing [insert x/delete s] back onto the
-    # input queue which has the affect of inserting 's' at position where 's'
+    # This is an edge case that showed up in testing. If one change is a
+    # pure insertion (no deletion) and the other is a pure deletion (no
+    # insertion), they can be combined into a single conflict-free
+    # change.  It needs to be pushed back onto the input list to be
+    # processed properly One input sequence was [insert x/delete
+    # nothing][s] The other input sequence was [insert nothing/delete
+    # s]. These are transformed to the sequences 1) [s] and 2) [insert
+    # x/delete s] by pushing [insert x/delete s] back onto the input
+    # queue which has the affect of inserting 's' at position where 's'
     # was.  See compose_changes() for how the changes are composed.
 
     return (fragment0.length == 0 and fragment1.insert == "") or (
@@ -177,28 +178,46 @@ def has_composable_changes(fragment0, fragment1):
 
 def compose_changes(fragment0, fragment1):
     if fragment0.length == 0 and fragment1.insert == "":
-        tail1 = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
+        tail1 = ChangeFragment(
+            fragment0.insert,
+            fragment1.delete,
+            fragment1.length,
+        )
         return None, None, tail1
     elif fragment0.insert == "" and fragment1.length == 0:
-        tail0 = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
+        tail0 = ChangeFragment(
+            fragment1.insert,
+            fragment0.delete,
+            fragment0.length,
+        )
         return None, tail0, None
     else:
         raise ValueError("Changes are not composable")
 
 
-def are_identical_changes(fragment0, fragment1, insert_length, delete_length):
+def are_identical_changes(
+    fragment0,
+    fragment1,
+    insert_length,
+    delete_length,
+):
     return (len(fragment0.insert) == len(fragment1.insert) == insert_length) and (
         fragment0.length == fragment1.length == delete_length
     )
 
 
-def has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
+def has_factorable_common_prefix(
+    fragment0,
+    fragment1,
+    insert_length,
+    delete_length,
+):
     """Check for the case where the two changesets have a non-empty
     common prefix. If it isn't non-empty, there's nothing to do.  To
-    split/factor the fragment, the part of the insertion that's factored must be
-    a proper substring of both insertions.  Otherwise, the conflict can't be
-    detected in the tail.  This elif used to be more restrictive: just
-    insert_length > 0 and delete_length > 0:
+    split/factor the fragment, the part of the insertion that's factored
+    must be a proper substring of both insertions.  Otherwise, the
+    conflict can't be detected in the tail.  This elif used to be more
+    restrictive: just insert_length > 0 and delete_length > 0:
     """
     return (
         (insert_length > 0 or delete_length > 0)
@@ -208,10 +227,21 @@ def has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_len
 
 
 def factor_common_prefix(
-    fragment0: ChangeFragment, fragment1: ChangeFragment, insert_length, delete_length
+    fragment0: ChangeFragment,
+    fragment1: ChangeFragment,
+    insert_length,
+    delete_length,
 ):
-    output, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
-    *_, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
+    output, tail0 = split_change_fragment(
+        fragment0,
+        insert_length,
+        delete_length,
+    )
+    *_, tail1 = split_change_fragment(
+        fragment1,
+        insert_length,
+        delete_length,
+    )
     return output, tail0, tail1
 
 
@@ -219,8 +249,16 @@ def ordinary_conflict(fragment0, fragment1):
     output = None
 
     length = min(fragment0.length, fragment1.length)
-    head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
-    head1, tail1 = split_change_fragment(fragment1, len(fragment1.insert), length)
+    head0, tail0 = split_change_fragment(
+        fragment0,
+        len(fragment0.insert),
+        length,
+    )
+    head1, tail1 = split_change_fragment(
+        fragment1,
+        len(fragment1.insert),
+        length,
+    )
 
     if head0 and head1:
         output = ConflictFragment(head0.insert, head1.insert, length)
@@ -231,15 +269,25 @@ def ordinary_conflict(fragment0, fragment1):
 def split_copy_fragment(fragment: CopyFragment, length: int):
     head = tail = None
     if length > 0:
-        head = replace(fragment, insert=fragment.insert[:length], length=length)
+        head = replace(
+            fragment,
+            insert=fragment.insert[:length],
+            length=length,
+        )
     if length < fragment.length:
         tail = replace(
-            fragment, insert=fragment.insert[length:], length=fragment.length - length
+            fragment,
+            insert=fragment.insert[length:],
+            length=fragment.length - length,
         )
     return head, tail
 
 
-def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
+def split_change_fragment(
+    fragment: ChangeFragment,
+    insert_length,
+    length: int,
+):
     head = tail = None
     if length > 0 or insert_length > 0:
         head = replace(
@@ -258,7 +306,10 @@ def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
     return head, tail
 
 
-def common_prefix_lengths(change1: ChangeFragment, change2: ChangeFragment):
+def common_prefix_lengths(
+    change1: ChangeFragment,
+    change2: ChangeFragment,
+):
     insert_length = len(commonprefix((change1.insert, change2.insert)))
     delete_length = len(commonprefix((change1.delete, change2.delete)))
 

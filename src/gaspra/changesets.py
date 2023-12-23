@@ -3,12 +3,8 @@ from collections.abc import Iterable
 from dataclasses import dataclass
 import os
 
-from rich.console import Console
-
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
-
-console = Console(highlight=False)
 
 
 @dataclass
@@ -197,6 +193,10 @@ def apply_reverse(changeset, modified: str):
 
 
 if __name__ == "__main__":
+    from rich.console import Console
+
+    console = Console(highlight=False)
+
     with open(os.path.join(DATA_DIR, "file1")) as file1, open(
         os.path.join(DATA_DIR, "file2")
     ) as file2:

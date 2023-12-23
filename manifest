@@ -1,10 +1,10 @@
-C Use\sdifferent\sversion\snumber\sformat.
-D 2023-12-23T18:09:22.293
+C Change\sversion\sformat\sagain.
+D 2023-12-23T18:13:43.285
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 7bba4a59e9964b16be6aa82a9e340fe6a01f2a5378f4208a544f18e323aa8b8c
 F poetry.lock ed8df40f918a2592ed4bf4bb981d44eb8edf606054f03a19ff6b52b27b6c06ef
-F pyproject.toml 669994711287a6c7063816cdbd2719f7e38652d7d1f3300a0cdc773e7116e38c
+F pyproject.toml 67bedea41a00405db6d53004a1f9c69736400e7d215faf0283e0258e097dd471
 F src/gaspra/__init__.py db6483fc699613b76b0a40a2ec64e671e6c855420d7606461c71cb0af880f4ac
 F src/gaspra/changesets.py c361f39b30907981faebd4d56df34ed2234d7645444b0c71c7e88beb2a27a46c
 F src/gaspra/common.py 08cbe0a23071f9a6ceb68012956a75035fc47f956e200152c9caab97dee85b81
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 226f802ec35181d9163a0ee1b9d2c2326dd4b4f377f5f95aa9f0
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py 70612095bf2d7de354d61e3ec2f2414d440192e4a716cb20aad16ca8d92c1e3a
-P f7493fe0eb9b4f0d403a98769235c5f34320197178feab5d304ecf70fdc1ecc4
-R c875fad86f46154fb9e05e7db8896ab4
+P 0f86ac47f29f9c13ee8c563135f0598efebadcc9649e37c2146c38512bec9deb
+R 29e92afed05ae1da155d4c2b96debe8a
 U mwicks
-Z 6ada40d22aa93b065fce257c8e4c4cbb
+Z 8609fec4d10689c788624ef437b61439
 # Remove this line to create a well-formed Fossil manifest.

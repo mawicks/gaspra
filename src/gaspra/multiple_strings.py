@@ -37,35 +37,36 @@ def find_lcs(*string_set: str) -> tuple[tuple[int, ...], int | None]:
           Length of the common substring
     """
 
-    # The suffix automaton can be very deep so we must use an
-    # interative solution rather than a recursion solution.
-    # The python recursion limit is on the order of 1k and we want
-    # to handle strings in `string_set`` much larger than that.
+    # The suffix automaton can be very deep so we must use an interative
+    # solution rather than a recursion solution.  The python recursion
+    # limit is on the order of 1k and we want to handle strings in
+    # `string_set`` much larger than that.
 
-    # The algorithm works as follows: When we don't know which
-    # elements of `string_set` share a given node's state, we add
-    # that node to the queue of nodes to be processed.
+    # The algorithm works as follows: When we don't know which elements
+    # of `string_set` share a given node's state, we add that node to
+    # the queue of nodes to be processed.
 
-    # At each iteration, we examine the node on the top of
-    # the stack and attempt to compute the strings that share its state.
-    # That is possible if the shared strings are known for all of its
-    # children. If any of the chidren have unknown shared string
-    # membershiops, add those children to the stack so their shared
-    # strings will get computed.
+    # At each iteration, we examine the node on the top of the stack and
+    # attempt to compute the strings that share its state.  That is
+    # possible if the shared strings are known for all of its children.
+    # If any of the chidren have unknown shared string membershiops, add
+    # those children to the stack so their shared strings will get
+    # computed.
 
     # Initialize the stack with just the root node, for which string
-    # membership is assumed to be initially unknown (the root
-    # node is always shared by all of the strings, but setting it
-    # initially as unknown forces the algorithm to compute the shared
-    # strings for it and all of its descendents.)
+    # membership is assumed to be initially unknown (the root node is
+    # always shared by all of the strings, but setting it initially as
+    # unknown forces the algorithm to compute the shared strings for it
+    # and all of its descendents.)
 
     # We're interested in the deepest state that *all* of the strings
     # have in common.  As we're computing the common strings for each
-    # state, we'll record the maximal state with *all* strings in common.
+    # state, we'll record the maximal state with *all* strings in
+    # common.
 
     # The values in `shared_strings` are sets that represent the set of
-    # strings in `string_set` that share a given node's state.  The
-    # key is the node's id.
+    # strings in `string_set` that share a given node's state.  The key
+    # is the node's id.
     shared_strings = {}
 
     root = build(concatenate_strings(string_set))
@@ -78,8 +79,8 @@ def find_lcs(*string_set: str) -> tuple[tuple[int, ...], int | None]:
 
     while len(stack) > 0:
         top = stack[-1]
-        # If we already know the shared strings for the node on the top of the
-        # stack, simply remove it.
+        # If we already know the shared strings for the node on the top
+        # of the stack, simply remove it.
         if top.id in shared_strings:
             stack.pop()
 
@@ -124,16 +125,16 @@ def get_string_offsets(positions, string_set):
 def update_shared_strings(shared_strings, top):
     shared_strings[top.id] = set()
     for token, child_node in top.transitions.items():
-        # If any of the transitions are end of string tokens, then
-        # we know the parent state represents a substring associated
-        #  with that token. End of string "tokens" are represented by
-        # strings of length 2, e.g. "$0", "$1", etc., so there's no
-        # possibility of them matching any single unicode character.
+        # If any of the transitions are end of string tokens, then we
+        # know the parent state represents a substring associated with
+        #  that token. End of string "tokens" are represented by strings
+        # of length 2, e.g. "$0", "$1", etc., so there's no possibility
+        # of them matching any single unicode character.
         if len(token) > 1:
             shared_strings[top.id].add(token)
 
-        # If any of the transitions are regular charactrers
-        # then the parent inherits the child's memberships
+        # If any of the transitions are regular charactrers then the
+        # parent inherits the child's memberships
         else:
             child_memberships = shared_strings[child_node.id]
             shared_strings[top.id] = shared_strings[top.id].union(child_memberships)

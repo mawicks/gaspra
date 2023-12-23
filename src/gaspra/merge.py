@@ -12,7 +12,7 @@ OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
 
 
-def _merge(fragments0, fragments1):
+def _merge(fragments0: list[InputType], fragments1):
     """Process changes in fragments0 and fragments1 until
     they are empty.  Note, this function modifies the passed lists"""
 
@@ -20,28 +20,13 @@ def _merge(fragments0, fragments1):
         fragment0 = fragments0.pop()
         fragment1 = fragments1.pop()
 
-        if isinstance(fragment0, CopyFragment) and isinstance(fragment1, CopyFragment):
-            output, tail0, tail1 = copy_copy(fragment0, fragment1)
+        output, tail0, tail1 = process_fragments(fragment0, fragment1)
 
-        elif isinstance(fragment0, ChangeFragment) and isinstance(
-            fragment1, ChangeFragment
-        ):
-            output, tail0, tail1 = change_change(fragment0, fragment1)
+        if output:
+            yield output
 
-        elif isinstance(fragment0, CopyFragment) and isinstance(
-            fragment1, ChangeFragment
-        ):
-            output, tail0, tail1 = copy_change(fragment0, fragment1)
-
-        elif isinstance(fragment0, ChangeFragment) and isinstance(
-            fragment1, CopyFragment
-        ):
-            output, tail1, tail0 = copy_change(fragment1, fragment0)
-
-        else:
-            raise RuntimeError(
-                f"Unexpected types: {type(fragment0)} or {type(fragment1)}"
-            )
+        # If the fragments weren't fully processed, push their tails back onto
+        # their respective stacks.
 
         if tail0:
             fragments0.append(tail0)
@@ -49,14 +34,30 @@ def _merge(fragments0, fragments1):
         if tail1:
             fragments1.append(tail1)
 
-        if output:
-            yield output
-
-        continue
-
     if fragments0 or fragments1:
         remaining = fragments0 or fragments1
         yield from reversed(remaining)
+
+
+def process_fragments(fragment0, fragment1):
+    if isinstance(fragment0, CopyFragment) and isinstance(fragment1, CopyFragment):
+        output, tail0, tail1 = copy_copy(fragment0, fragment1)
+
+    elif isinstance(fragment0, ChangeFragment) and isinstance(
+        fragment1, ChangeFragment
+    ):
+        output, tail0, tail1 = change_change(fragment0, fragment1)
+
+    elif isinstance(fragment0, CopyFragment) and isinstance(fragment1, ChangeFragment):
+        output, tail0, tail1 = copy_change(fragment0, fragment1)
+
+    elif isinstance(fragment0, ChangeFragment) and isinstance(fragment1, CopyFragment):
+        output, tail1, tail0 = copy_change(fragment1, fragment0)
+
+    else:
+        raise RuntimeError(f"Unexpected types: {type(fragment0)} or {type(fragment1)}")
+
+    return output, tail0, tail1
 
 
 def merge(parent: str, branch0: str, branch1: str):
@@ -135,10 +136,28 @@ def copy_change(copy_fragment, change_fragment):
 
 def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     """Handle two change blocks appearing at the same location"""
-    output = tail0 = tail1 = None
-
     insert_length, delete_length = common_prefix_lengths(fragment0, fragment1)
 
+    # Exactly the same changeset can be reesolved without conflict.  Just pass
+    # it along.
+    if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
+        return fragment0, None, None
+
+    elif has_factorable_common_prefix(
+        fragment0, fragment1, insert_length, delete_length
+    ):
+        output, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
+        *_, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
+        return output, tail0, tail1
+
+    elif has_composable_changes(fragment0, fragment1):
+        return compose_changes(fragment0, fragment1)
+
+    else:
+        return ordinary_conflict(fragment0, fragment1)
+
+
+def has_composable_changes(fragment0, fragment1):
     # This is an edge case that showed up in testing. If one change is
     # a pure insertion (no deletion) and the other is a pure deletion
     # (no insertion), they can be combined into a single conflict-free
@@ -148,30 +167,28 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     # transformed to the sequences 1) [s] and 2) [insert x/delete s]
     # by pushing [insert x/delete s] back onto the input queue which
     # has the affect of inserting 's' at position where 's' was.
+    # See compose_changes() for how the changes are composed.
 
+    return (fragment0.length == 0 and fragment1.insert == "") or (
+        fragment0.insert == "" and fragment1.length == 0
+    )
+
+
+def compose_changes(fragment0, fragment1):
     if fragment0.length == 0 and fragment1.insert == "":
         tail1 = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
-
+        return None, None, tail1
     elif fragment0.insert == "" and fragment1.length == 0:
         tail0 = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
-
-    # Exactly the same changeset can be reesolved without conflict.  Just pass
-    # it along.
-    elif (len(fragment0.insert) == len(fragment1.insert) == insert_length) and (
-        fragment0.length == fragment1.length == delete_length
-    ):
-        output = fragment0
-
-    elif has_factorable_common_prefix(
-        fragment0, fragment1, insert_length, delete_length
-    ):
-        output, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
-        *_, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
-
+        return None, tail0, None
     else:
-        output, tail0, tail1 = ordinary_conflict(fragment0, fragment1)
+        raise ValueError("Changes are not composable")
 
-    return output, tail0, tail1
+
+def are_identical_changes(fragment0, fragment1, insert_length, delete_length):
+    return (len(fragment0.insert) == len(fragment1.insert) == insert_length) and (
+        fragment0.length == fragment1.length == delete_length
+    )
 
 
 def has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):

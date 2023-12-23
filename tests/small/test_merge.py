@@ -1,5 +1,5 @@
 import pytest
-from difftools.merge import merge
+from gaspra.merge import merge
 
 
 # @pytest.mark.xfail

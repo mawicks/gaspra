@@ -1,4 +1,4 @@
-# Why `difftools` exists
+# Why Gaspra exists
 
 Recently, I became interested in string matching. In particular, I was
 interested in the Longest Common Substring (LCS) and similar problems. I
@@ -13,7 +13,7 @@ The LCS problem is solvable in linear time, yet most online examples
 use a classical dynamic programming approach which is quadratic in
 both space and time. Even the venerable `difflib`, which is part of
 Python's standard library uses quadratic-time algorithms.
-`Difftools` uses efficient suffix automata
+Gaspra uses efficient suffix automata
 with linear time and space complexity. The difference is dramatic.
 It's the same as the difference between a quicksort and a bubble sort.
 Because of this difference, nobody uses a bubble sort, which is
@@ -26,9 +26,9 @@ equal-length, random sequences of the letters a, b, and c.
 The lengths shown in the table are the combined length of
 the two strings.
 The quadratic complexity of 'difflib' is obvious.  Even though it's a pure
-Python solution, `difftools` is quite fast by comparison.
+Python solution, Gaspra is quite fast by comparison.
 
-| Length   |   Match Length |   Difflib (ms) |   Difftools (ms) |
+| Length   |   Match Length |   Difflib (ms) |      Gaspra (ms) |
 |----------|----------------|----------------|------------------|
 | 2k       |             13 |             31 |                3 |
 | 4k       |             13 |            120 |                5 |
@@ -43,11 +43,11 @@ Python solution, `difftools` is quite fast by comparison.
 
 ## Finding Longest Common Substrings
 
-The function `difftools.find_lcs()` returns the starting positions and the
+The function `gaspra.find_lcs()` returns the starting positions and the
 length of common substring of two strings with maximal length:
 
 ```
->>> import difftools                                                                                               
+>>> import gaspra                                                                                               
 >>> a="Call me Ishmael. Some years ago—never mind how long \
 precisely—having little or no money in my purse, and nothing \
 particular to interest me on shore, I thought I would sail \
@@ -63,7 +63,7 @@ way – in short, the period was so far like the present period, \
 that some of its noisiest authorities insisted on its being \
 received, for good or for evil, in the superlative degree of \
 comparison only."
->>> difftools.find_lcs(a,b)
+>>> gaspra.find_lcs(a,b)
 (103, 321, 10)
 >>> a[103:103+10]
 'd nothing '
@@ -78,7 +78,7 @@ There's also `find_lcs_multiple()` for n-way common strings:
 >>> a="The quick brown fox jumps over the lazy dog near the riverbank."
 >>> b="The quick brown fox leaps over the lazy dogs near the river."
 >>> c="The quick, clever fox jumps across the lazy dogs by the riverbank."
->>> difftools.find_lcs_multiple(a, b, c)
+>>> gaspra.find_lcs_multiple(a, b, c)
 ((30, 30, 34), 13)
 >>> a[30:30+13]
 ' the lazy dog'
@@ -87,17 +87,17 @@ There's also `find_lcs_multiple()` for n-way common strings:
 ## Finding Diffs
 
 Given an original string and a modified string, the function
-`difftools.changes()` returns the sequence of changes represented
+`gaspra.changes()` returns the sequence of changes represented
 interspersed with fragments from the original string.  The sequence is
 a sequence of strings (fragments from the original) and tuples of two strings
 representing an insertion/deletion pair.  Note that an insertion is a tuple
 where the deletion string is empty, and vice versa.
 
 ```
->>> import difftools
+>>> import gaspra
 >>> original="The quick brown fox jumps over the lazy dog near the riverbank."
 >>> modified="The quick brown fox leaps over the lazy dogs near the river"
->>> list(difftools.changes(original, modified))
+>>> list(gaspra.changes(original, modified))
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank.')]
 ```
 
@@ -110,11 +110,11 @@ resolved without any conflicts.
 >>> original = "The quick brown fox jumps over the lazy dog near the riverbank."
 >>> editor1 = "The quick brown fox leaps over the lazy dogs near the river."
 >>> editor2 = "The quick, clever fox jumps across the lazy dogs by the riverbank."
->>> list(difftools.changes(original, editor1))
+>>> list(gaspra.changes(original, editor1))
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank'), '.']
->>> list(difftools.changes(original, editor2))
+>>> list(gaspra.changes(original, editor2))
 ['The quick', (',', ''), ' ', ('cleve', 'b'), 'r', ('', 'own'), ' fox jumps ', ('ac', 'ove'), 'r', ('oss', ''), ' the lazy dog', ('s', ''), ' ', ('by', 'near'), ' the riverbank.']
->>> list(difftools.merge(original, editor1, editor2))
+>>> list(gaspra.merge(original, editor1, editor2))
 ['The quick, clever fox leaps across the lazy dogs by the river.']
 ```
 
@@ -124,9 +124,9 @@ alternate versions of the merged text.
 
 ```
 >>> conflicts_with_1 = "The swift, agile fox leaps over the sleepy dog near the riverside."
->>> list(difftools.changes(original, conflicts_with_1))
+>>> list(gaspra.changes(original, conflicts_with_1))
 ['The ', ('s', 'quick bro'), 'w', ('ift, agile', 'n'), ' fox ', ('lea', 'jum'), 'ps over the ', ('s', ''), 'l', ('eep', 'az'), 'y dog near the river', ('side', 'bank'), '.']
->>> list(difftools.merge(original, editor1, conflicts_with_1))
+>>> list(gaspra.merge(original, editor1, conflicts_with_1))
 ['The swift, agile fox leaps over the sleepy dogs near the river', ('', 'side'), '.']
 ```
 

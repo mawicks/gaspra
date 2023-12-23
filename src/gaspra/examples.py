@@ -1,4 +1,4 @@
-import difftools
+import gaspra
 
 
 def merge_example():
@@ -11,15 +11,15 @@ def merge_example():
 
     print(f"Original:\n   {original}")
     print(f"Editor1:\n   {branch1}")
-    print(f"Changes:\n   {list(difftools.changes(original, branch1))}\n")
+    print(f"Changes:\n   {list(gaspra.changes(original, branch1))}\n")
 
     print(f"Editor2:\n   {branch2}")
-    print(f"Changes:\n   {list(difftools.changes(original, branch2))}")
-    print(f"Merge:   {list(difftools.merge(original, branch1, branch2))}\n")
+    print(f"Changes:\n   {list(gaspra.changes(original, branch2))}")
+    print(f"Merge:   {list(gaspra.merge(original, branch1, branch2))}\n")
 
     print(f"Editor2 (alt):\n   {conflicts_with_1}")
-    print(f"Changes:\n   {list(difftools.changes(original, conflicts_with_1))}")
-    print(f"Merge:   {list(difftools.merge(original, branch1, conflicts_with_1))}\n")
+    print(f"Changes:\n   {list(gaspra.changes(original, conflicts_with_1))}")
+    print(f"Merge:   {list(gaspra.merge(original, branch1, conflicts_with_1))}\n")
 
 
 if __name__ == "__main__":

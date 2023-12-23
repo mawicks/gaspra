@@ -1,7 +1,7 @@
 from dataclasses import replace
 from os.path import commonprefix
 
-from difftools.changesets import (
+from gaspra.changesets import (
     find_changeset,
     CopyFragment,
     ChangeFragment,

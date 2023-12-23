@@ -2,7 +2,7 @@ from itertools import chain
 
 from collections.abc import Sequence
 
-from difftools.suffix_automaton import (
+from gaspra.suffix_automaton import (
     build,
     _get_all_start_positions,
 )

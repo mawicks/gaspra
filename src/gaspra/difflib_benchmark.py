@@ -3,7 +3,7 @@ import difflib
 import time
 
 from tabulate import tabulate
-from difftools.suffix_automaton import build, find_lcs
+from gaspra.suffix_automaton import build, find_lcs
 
 
 def random_string(alphabet, length):
@@ -70,7 +70,7 @@ def render_tables():
     combined = []
     for r1, r2 in zip(
         make_table(difflib_lcs, "Difflib", string_list, True),
-        make_table(string_matching_lcs, "Difftools", string_list, False),
+        make_table(string_matching_lcs, "Gaspra", string_list, False),
     ):
         full_row = r1.copy()
         full_row.update(r2)

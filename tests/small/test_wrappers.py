@@ -1,6 +1,6 @@
 import pytest
 
-from difftools.wrappers import find_substring, find_lcs, changes
+from gaspra.wrappers import find_substring, find_lcs, changes
 
 # The `wrappers` module provides simple calls which are wrappers with
 # a simple interface that calls other functions in the package.

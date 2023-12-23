@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "difftools"
+name = "gaspra"
 version = "0.1.0-a1"
-description = "Fast tools for searching, diffing, and merging text."
+description = "A fast tool searching, diffing, and merging text."
 license = "BSD-3-Clause"
 classifiers = [
     "Development Status :: 2 - Pre-Alpha", 
@@ -13,7 +13,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries",
     "Topic :: Text Processing","Topic :: Utilities",
     ]
-repository = "https://github.com/mawicks/difftools"
+repository = "https://github.com/mawicks/gaspra"
 authors = ["Mark Wicks <mawicks@gmail.com>"]
 keywords = ["diff", "LCS", "merge", "search", "text-processing"]
 readme = "README.md"
@@ -22,7 +22,6 @@ include = ["src/**/*.py", "LICENSE", "README.md"]
 [tool.poetry.dependencies]
 python = "^3.10"
 rich = ">=10.0.0"
-
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

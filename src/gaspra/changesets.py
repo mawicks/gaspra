@@ -5,8 +5,8 @@ import os
 
 from rich.console import Console
 
-from difftools.common import DATA_DIR
-from difftools.suffix_automaton import build, find_lcs
+from gaspra.common import DATA_DIR
+from gaspra.suffix_automaton import build, find_lcs
 
 console = Console(highlight=False)
 

@@ -1,8 +1,8 @@
 import pytest
 
 
-from difftools.changesets import apply_forward, apply_reverse, find_changeset
-from difftools.test_helpers.random_strings import random_string
+from gaspra.changesets import apply_forward, apply_reverse, find_changeset
+from gaspra.test_helpers.random_strings import random_string
 
 
 @pytest.mark.parametrize(

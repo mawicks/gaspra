@@ -1,6 +1,6 @@
 import pytest
 
-from difftools.suffix_automaton import (
+from gaspra.suffix_automaton import (
     build,
     all_suffixes,
     find_substring,
@@ -8,7 +8,7 @@ from difftools.suffix_automaton import (
     find_lcs,
 )
 
-from difftools.test_helpers.random_strings import random_string
+from gaspra.test_helpers.random_strings import random_string
 
 
 def test_build_empty_string():

@@ -38,7 +38,7 @@ class ChangesetLeaf:
     def changes(self):
         yield self
 
-    def _fragments(self, __ignored__):
+    def _fragments(self, _: str):
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
@@ -46,16 +46,16 @@ class ChangesetLeaf:
                 insert=self.modified, delete=self.original, length=len(self.original)
             )
 
-    def fragments(self, __ignored__) -> Iterable[str | tuple[str, str]]:
+    def fragments(self, _: str) -> Iterable[str | tuple[str, str]]:
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
             yield (self.modified, self.original)
 
-    def apply_forward(self, __ignored__: str):
+    def apply_forward(self, _: str):
         yield self.modified
 
-    def apply_reverse(self, __ignored__: str):
+    def apply_reverse(self, _: str):
         yield self.original
 
     def show(self, __original__: str, __modified__: str) -> str:

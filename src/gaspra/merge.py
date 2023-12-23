@@ -92,15 +92,16 @@ def copy_copy(fragment0: CopyFragment, fragment1: CopyFragment):
 
     long_queue_tail = None
     if shorter.length != longer.length:
-        __ignored__, long_queue_tail = split_copy_fragment(longer, shorter.length)
+        *_, long_queue_tail = split_copy_fragment(longer, shorter.length)
 
-    fragment0_tail = fragment1_tail = None
+    tail0 = tail1 = None
+
     if fragment0 == longer:
-        fragment0_tail = long_queue_tail
+        tail0 = long_queue_tail
     else:
-        fragment1_tail = long_queue_tail
+        tail1 = long_queue_tail
 
-    return shorter, fragment0_tail, fragment1_tail
+    return shorter, tail0, tail1
 
 
 def copy_change(copy_fragment, change_fragment):
@@ -112,7 +113,7 @@ def copy_change(copy_fragment, change_fragment):
 
         # Anything left over?
         if copy_fragment.length > smaller_length:
-            __ignored__, copy_tail = split_copy_fragment(copy_fragment, smaller_length)
+            *_, copy_tail = split_copy_fragment(copy_fragment, smaller_length)
 
     else:  # Change is longer than copy implies a conflict.
         head0, head1 = split_change_fragment(
@@ -131,7 +132,7 @@ def copy_change(copy_fragment, change_fragment):
 
 def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     """Handle two change blocks appearing at the same location"""
-    output = fragment0_tail = fragment1_tail = None
+    output = tail0 = tail1 = None
 
     insert_length, delete_length = common_head_of_change(fragment0, fragment1)
 
@@ -150,11 +151,11 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
 
     if fragment0.length == 0 and fragment1.insert == "":
         change = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
-        fragment1_tail = change
+        tail1 = change
 
     elif fragment0.insert == "" and fragment1.length == 0:
         change = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
-        fragment0_tail = change
+        tail0 = change
 
     # Exactly the same changeset can be reesolved without conflict.  Just pass
     # it along.
@@ -164,39 +165,28 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
         output = fragment0
 
     elif (
-        # Handle the case where the two changesets have a non-empty common prefix.
-        # If it isn't non-empty, there's nothing to do.
+        # Handle the case where the two changesets have a non-empty
+        # common prefix. If it isn't non-empty, there's nothing to do.
         # To split/factor the fragment, the part of the insertion that's
         # factored must be a proper substring of both insertions.
         # Otherwise, the conflict can't be detected in the tail.
-        # This elif used to be more restrictive: just insert_length > 0 and delete_length > 0:
+        # This elif used to be more restrictive:
+        #    just insert_length > 0 and delete_length > 0:
         (insert_length > 0 or delete_length > 0)
         and insert_length < len(fragment0.insert)
         and insert_length < len(fragment1.insert)
     ):
-        head0, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
-        if head0:
-            output = head0
-
-        if tail0:
-            fragment0_tail = tail0
-        __x__, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
-        if tail1:
-            fragment1_tail = tail1
-
+        output, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
+        *_, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
     else:
         length = min(fragment0.length, fragment1.length)
         head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
         head1, tail1 = split_change_fragment(fragment1, len(fragment1.insert), length)
-        if tail0:
-            fragment0_tail = tail0
-        if tail1:
-            fragment1_tail = tail1
 
         if head0 and head1:
             output = ConflictFragment(head0.insert, head1.insert, length)
 
-    return output, fragment0_tail, fragment1_tail
+    return output, tail0, tail1
 
 
 def split_copy_fragment(fragment: CopyFragment, length: int):

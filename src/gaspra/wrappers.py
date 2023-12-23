@@ -1,7 +1,7 @@
 from typing import Iterable
 
-import difftools.suffix_automaton as sa
-from difftools.changesets import find_changeset
+import gaspra.suffix_automaton as sa
+from gaspra.changesets import find_changeset
 
 
 def find_substring(search_in: str, search_for: str) -> Iterable[int]:
@@ -69,14 +69,3 @@ def changes(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
     """
     changeset = find_changeset(original, modified)
     yield from changeset.fragments(original)
-
-
-if __name__ == "__main__":
-    print(
-        list(
-            changes(
-                "The quick brown fox jumps over the lazy dog near the riverbank.",
-                "The quick brown fox leaps over the lazy dogs near the river",
-            )
-        )
-    )

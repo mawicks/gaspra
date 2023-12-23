@@ -313,8 +313,7 @@ if __name__ == "__main__":
         dump(root, indent=2)
 
         print("\nAll suffixes:")
-        l = sorted(all_suffixes(root), key=len)
-        for item in l:
+        for item in sorted(all_suffixes(root), key=len):
             print(f"'{item}'")
         print()
 

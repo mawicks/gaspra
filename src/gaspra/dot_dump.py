@@ -1,5 +1,5 @@
 import io
-from difftools.suffix_automaton import build, Node
+from gaspra.suffix_automaton import build, Node
 
 
 def dump(node: Node, f: io.TextIOWrapper):

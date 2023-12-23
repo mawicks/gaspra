@@ -1,6 +1,6 @@
 import pytest
 
-from difftools.suffix_automaton import (
+from gaspra.suffix_automaton import (
     build,
     all_suffixes,
     find_substring,
@@ -8,7 +8,7 @@ from difftools.suffix_automaton import (
     find_lcs,
 )
 
-from difftools.test_helpers.random_strings import random_string
+from gaspra.test_helpers.random_strings import random_string
 
 
 def test_build_empty_string():
@@ -100,7 +100,8 @@ def test_find_substring_is_true_on_all_substrings(string):
             substring = string[start:end]
             position = find_substring(root, substring)
             assert position is not None
-            assert string[position : position + len(substring)] == substring
+            end_position = position + len(substring)
+            assert string[position:end_position] == substring
 
 
 @pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_STRINGS)
@@ -168,9 +169,10 @@ def test_longest_common_string_finds_a_common_string(s1: str, s2: str, ignored: 
     root = build(s1)
 
     start1, start2, length = find_lcs(root, s2)
-
+    end1 = start1 + length
+    end2 = start2 + length
     # Check that returned result is a common substring
-    assert s1[start1 : start1 + length] == s2[start2 : start2 + length]
+    assert s1[start1:end1] == s2[start2:end2]
 
 
 @pytest.mark.parametrize(["s1", "s2", "lcs_length"], LCS_TEST_STRINGS)
@@ -195,10 +197,14 @@ def test_longest_common_string_finds_a_maximal_common_string(
     # to be a common substring in at least one direction:
     pre_start1 = max(start1 - 1, 0)
     pre_start2 = max(start2 - 1, 0)
+    end1 = start1 + length
+    end2 = start2 + length
+    post_end1 = end1 + 1
+    post_end2 = end2 + 1
 
     assert (
-        s1[pre_start1 : start1 + length] != s2[pre_start2 : start2 + length]
-        or s1[start1 : start1 + length + 1] != s2[start2 : start2 + length + 1]
+        s1[pre_start1:end1] != s2[pre_start2:end2]
+        or s1[start1:post_end1] != s2[start2:post_end2]
     )
 
 

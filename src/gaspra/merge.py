@@ -12,45 +12,42 @@ OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
 
 
-def _merge(parent: str, branch0: str, branch1: str):
-    changeset0 = find_changeset(parent, branch0)
-    changeset1 = find_changeset(parent, branch1)
-
-    fragments0 = list(reversed(list(changeset0._fragments(parent))))
-    fragments1 = list(reversed(list(changeset1._fragments(parent))))
+def _merge(fragments0, fragments1):
+    """Process changes in fragments0 and fragments1 until
+    they are empty.  Note, this function modifies the passed lists"""
 
     while fragments0 and fragments1:
         fragment0 = fragments0.pop()
         fragment1 = fragments1.pop()
 
         if isinstance(fragment0, CopyFragment) and isinstance(fragment1, CopyFragment):
-            output, fragment0_tail, fragment1_tail = copy_copy(fragment0, fragment1)
+            output, tail0, tail1 = copy_copy(fragment0, fragment1)
 
         elif isinstance(fragment0, ChangeFragment) and isinstance(
             fragment1, ChangeFragment
         ):
-            output, fragment0_tail, fragment1_tail = change_change(fragment0, fragment1)
+            output, tail0, tail1 = change_change(fragment0, fragment1)
 
         elif isinstance(fragment0, CopyFragment) and isinstance(
             fragment1, ChangeFragment
         ):
-            output, fragment0_tail, fragment1_tail = copy_change(fragment0, fragment1)
+            output, tail0, tail1 = copy_change(fragment0, fragment1)
 
         elif isinstance(fragment0, ChangeFragment) and isinstance(
             fragment1, CopyFragment
         ):
-            output, fragment1_tail, fragment0_tail = copy_change(fragment1, fragment0)
+            output, tail1, tail0 = copy_change(fragment1, fragment0)
 
         else:
             raise RuntimeError(
                 f"Unexpected types: {type(fragment0)} or {type(fragment1)}"
             )
 
-        if fragment0_tail:
-            fragments0.append(fragment0_tail)
+        if tail0:
+            fragments0.append(tail0)
 
-        if fragment1_tail:
-            fragments1.append(fragment1_tail)
+        if tail1:
+            fragments1.append(tail1)
 
         if output:
             yield output
@@ -63,7 +60,13 @@ def _merge(parent: str, branch0: str, branch1: str):
 
 
 def merge(parent: str, branch0: str, branch1: str):
-    return accumulate_result(_merge(parent, branch0, branch1))
+    changeset0 = find_changeset(parent, branch0)
+    changeset1 = find_changeset(parent, branch1)
+
+    fragments0 = list(reversed(list(changeset0._fragments(parent))))
+    fragments1 = list(reversed(list(changeset1._fragments(parent))))
+
+    return accumulate_result(_merge(fragments0, fragments1))
 
 
 def accumulate_result(output):
@@ -134,28 +137,23 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     """Handle two change blocks appearing at the same location"""
     output = tail0 = tail1 = None
 
-    insert_length, delete_length = common_head_of_change(fragment0, fragment1)
+    insert_length, delete_length = common_prefix_lengths(fragment0, fragment1)
 
-    # This is an edge case that showed up in testing.
-    # If one change is a pure insertion (no deletion) and the other
-    # is a pure deletion (no insertion), they can be combined into a single
-    # conflict-free change.  It needs to be pushed back onto
-    # the input list to be processed properly
-    # One input sequence was [insert x/delete nothing][s]
-    # The other input sequence was [insert nothing/delete s]
-    # These are transformed to the sequences
-    # 1) [s] and 2) [insert x/delete s]
-    # by pushing [insert x/delete s] back onto the input queue
-    # which has the affect of inserting 's' at position
-    # where 's' was.
+    # This is an edge case that showed up in testing. If one change is
+    # a pure insertion (no deletion) and the other is a pure deletion
+    # (no insertion), they can be combined into a single conflict-free
+    # change.  It needs to be pushed back onto the input list to be
+    # processed properly One input sequence was [insert x/delete nothing][s]
+    # The other input sequence was [insert nothing/delete s]. These are
+    # transformed to the sequences 1) [s] and 2) [insert x/delete s]
+    # by pushing [insert x/delete s] back onto the input queue which
+    # has the affect of inserting 's' at position where 's' was.
 
     if fragment0.length == 0 and fragment1.insert == "":
-        change = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
-        tail1 = change
+        tail1 = ChangeFragment(fragment0.insert, fragment1.delete, fragment1.length)
 
     elif fragment0.insert == "" and fragment1.length == 0:
-        change = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
-        tail0 = change
+        tail0 = ChangeFragment(fragment1.insert, fragment0.delete, fragment0.length)
 
     # Exactly the same changeset can be reesolved without conflict.  Just pass
     # it along.
@@ -164,27 +162,43 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     ):
         output = fragment0
 
-    elif (
-        # Handle the case where the two changesets have a non-empty
-        # common prefix. If it isn't non-empty, there's nothing to do.
-        # To split/factor the fragment, the part of the insertion that's
-        # factored must be a proper substring of both insertions.
-        # Otherwise, the conflict can't be detected in the tail.
-        # This elif used to be more restrictive:
-        #    just insert_length > 0 and delete_length > 0:
-        (insert_length > 0 or delete_length > 0)
-        and insert_length < len(fragment0.insert)
-        and insert_length < len(fragment1.insert)
+    elif has_factorable_common_prefix(
+        fragment0, fragment1, insert_length, delete_length
     ):
         output, tail0 = split_change_fragment(fragment0, insert_length, delete_length)
         *_, tail1 = split_change_fragment(fragment1, insert_length, delete_length)
-    else:
-        length = min(fragment0.length, fragment1.length)
-        head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
-        head1, tail1 = split_change_fragment(fragment1, len(fragment1.insert), length)
 
-        if head0 and head1:
-            output = ConflictFragment(head0.insert, head1.insert, length)
+    else:
+        output, tail0, tail1 = ordinary_conflict(fragment0, fragment1)
+
+    return output, tail0, tail1
+
+
+def has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
+    """Check for the case where the two changesets have a non-empty
+    common prefix. If it isn't non-empty, there's nothing to do.
+    To split/factor the fragment, the part of the insertion that's
+    factored must be a proper substring of both insertions.
+    Otherwise, the conflict can't be detected in the tail.
+    This elif used to be more restrictive:
+    just insert_length > 0 and delete_length > 0:
+    """
+    return (
+        (insert_length > 0 or delete_length > 0)
+        and insert_length < len(fragment0.insert)
+        and insert_length < len(fragment1.insert)
+    )
+
+
+def ordinary_conflict(fragment0, fragment1):
+    output = None
+
+    length = min(fragment0.length, fragment1.length)
+    head0, tail0 = split_change_fragment(fragment0, len(fragment0.insert), length)
+    head1, tail1 = split_change_fragment(fragment1, len(fragment1.insert), length)
+
+    if head0 and head1:
+        output = ConflictFragment(head0.insert, head1.insert, length)
 
     return output, tail0, tail1
 
@@ -219,7 +233,7 @@ def split_change_fragment(fragment: ChangeFragment, insert_length, length: int):
     return head, tail
 
 
-def common_head_of_change(change1: ChangeFragment, change2: ChangeFragment):
+def common_prefix_lengths(change1: ChangeFragment, change2: ChangeFragment):
     insert_length = len(commonprefix((change1.insert, change2.insert)))
     delete_length = len(commonprefix((change1.delete, change2.delete)))
 

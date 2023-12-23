@@ -25,21 +25,25 @@ def merge(parent: str, branch0: str, branch1: str):
 
 
 def accumulate_result(output):
-    conflict_free = ""
-    no_output_yet = True
+    conflict_free_accumulation = ""
+    nothing_has_been_output = True
     for fragment in output:
         if isinstance(fragment, ConflictFragment):
-            if conflict_free:
-                yield conflict_free
-                conflict_free = ""
+            # Flush the conflict free string we've been accumulating.
+            if conflict_free_accumulation:
+                yield conflict_free_accumulation
+                conflict_free_accumulation = ""
 
             yield (fragment.version1, fragment.version2)
-            no_output_yet = False
+            nothing_has_been_output = False
         else:
-            conflict_free += fragment.insert
+            conflict_free_accumulation += fragment.insert
 
-    if conflict_free or no_output_yet:
-        yield conflict_free
+    # Flush the conflict free string we've been accumulating and
+    # return empty string if no output yet.
+
+    if conflict_free_accumulation or nothing_has_been_output:
+        yield conflict_free_accumulation or ""
 
 
 def _merge(fragments0: list[InputType], fragments1):
@@ -156,16 +160,15 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
 
 
 def has_composable_changes(fragment0, fragment1):
-    # This is an edge case that showed up in testing. If one change is
-    # a pure insertion (no deletion) and the other is a pure deletion
-    # (no insertion), they can be combined into a single conflict-free
-    # change.  It needs to be pushed back onto the input list to be
-    # processed properly One input sequence was [insert x/delete nothing][s]
-    # The other input sequence was [insert nothing/delete s]. These are
-    # transformed to the sequences 1) [s] and 2) [insert x/delete s]
-    # by pushing [insert x/delete s] back onto the input queue which
-    # has the affect of inserting 's' at position where 's' was.
-    # See compose_changes() for how the changes are composed.
+    # This is an edge case that showed up in testing. If one change is a pure
+    # insertion (no deletion) and the other is a pure deletion (no insertion),
+    # they can be combined into a single conflict-free change.  It needs to be
+    # pushed back onto the input list to be processed properly One input
+    # sequence was [insert x/delete nothing][s] The other input sequence was
+    # [insert nothing/delete s]. These are transformed to the sequences 1) [s]
+    # and 2) [insert x/delete s] by pushing [insert x/delete s] back onto the
+    # input queue which has the affect of inserting 's' at position where 's'
+    # was.  See compose_changes() for how the changes are composed.
 
     return (fragment0.length == 0 and fragment1.insert == "") or (
         fragment0.insert == "" and fragment1.length == 0
@@ -191,12 +194,11 @@ def are_identical_changes(fragment0, fragment1, insert_length, delete_length):
 
 def has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
     """Check for the case where the two changesets have a non-empty
-    common prefix. If it isn't non-empty, there's nothing to do.
-    To split/factor the fragment, the part of the insertion that's
-    factored must be a proper substring of both insertions.
-    Otherwise, the conflict can't be detected in the tail.
-    This elif used to be more restrictive:
-    just insert_length > 0 and delete_length > 0:
+    common prefix. If it isn't non-empty, there's nothing to do.  To
+    split/factor the fragment, the part of the insertion that's factored must be
+    a proper substring of both insertions.  Otherwise, the conflict can't be
+    detected in the tail.  This elif used to be more restrictive: just
+    insert_length > 0 and delete_length > 0:
     """
     return (
         (insert_length > 0 or delete_length > 0)

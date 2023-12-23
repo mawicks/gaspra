@@ -39,6 +39,13 @@ Python solution, Gaspra is quite fast by comparison.
 | 128k     |             19 |        135,413 |              341 |
 | 256k     |             23 |        554,665 |              690 |
 
+# Installation
+
+You can install Gaspra using `pip` (or similar compatible tools):
+
+```
+pip install gaspra
+```
 # Examples.
 
 ## Finding Longest Common Substrings

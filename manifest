@@ -1,8 +1,8 @@
-C Change\sversion\sformat\sagain.
-D 2023-12-23T18:13:43.285
+C Add\sinstallation\ssection\sto\sREADME
+D 2023-12-23T18:36:15.597
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
-F README.md 7bba4a59e9964b16be6aa82a9e340fe6a01f2a5378f4208a544f18e323aa8b8c
+F README.md a89c667873e43350bcfe0691c0f7e9016d0a45cc54fac861e81658a820f36384
 F poetry.lock ed8df40f918a2592ed4bf4bb981d44eb8edf606054f03a19ff6b52b27b6c06ef
 F pyproject.toml 67bedea41a00405db6d53004a1f9c69736400e7d215faf0283e0258e097dd471
 F src/gaspra/__init__.py db6483fc699613b76b0a40a2ec64e671e6c855420d7606461c71cb0af880f4ac
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 226f802ec35181d9163a0ee1b9d2c2326dd4b4f377f5f95aa9f0
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py 70612095bf2d7de354d61e3ec2f2414d440192e4a716cb20aad16ca8d92c1e3a
-P 0f86ac47f29f9c13ee8c563135f0598efebadcc9649e37c2146c38512bec9deb
-R 29e92afed05ae1da155d4c2b96debe8a
+P f59efdd4195ef26cc291ef9b69a06956ee48d0f317c693c50e3e66ad7d3b8527
+R 5987857897fceb2cc66f8aa7ca67c979
 U mwicks
-Z 8609fec4d10689c788624ef437b61439
+Z 05caee4e49eb30561c07e296ac342500
 # Remove this line to create a well-formed Fossil manifest.

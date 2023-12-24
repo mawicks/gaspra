@@ -22,44 +22,72 @@ def merge(parent: str, branch0: str, branch1: str):
 
     merged = _merge(fragments0, fragments1)
 
-    return accumulate_result(merged)
+    return consolidate_result(merged)
 
 
-def accumulate_result(output):
-    conflict_free_accumulation = ""
-    conflict_accumulation = ("", "")
-    nothing_has_been_output = True
-    for fragment in output:
-        if isinstance(fragment, ConflictFragment):
-            # Flush the conflict free string we've been accumulating.
-            if conflict_free_accumulation:
-                yield conflict_free_accumulation
-                nothing_has_been_output = False
-                conflict_free_accumulation = ""
+def consolidate_result(output):
+    """Consolidate consecutive fragments of similar types
+    into a single segment"""
 
-            c1, c2 = conflict_accumulation
-            conflict_accumulation = (c1 + fragment.version1, c2 + fragment.version2)
-        else:
-            if any(conflict_accumulation):
-                diff_sequence = diff(*reversed(conflict_accumulation))
-                yield from diff_sequence
-                nothing_has_been_output = False
-                conflict_accumulation = ("", "")
+    stack = list(reversed(list(output)))
+    something_has_been_output = False
 
-            conflict_free_accumulation += fragment.insert
+    # Make two passes though the output.  In the first
+    # past, conflicts and consolidated (and possibly expanded
+    # into copy and conflict fragments
+    # In the second pass, consolidate copy and conflict fragments
+    # with one another and don't expand the conflict fragments.
+    # The second pass is required because some of the copy fragments
+    # that get consolidated in the second pass are created from
+    # the conflict expansions in the first pass.
 
-    # Flush the conflict free string we've been accumulating and
-    # return empty string if no output yet.
-    if any(conflict_accumulation):
-        yield conflict_accumulation
-        nothing_has_been_output = False
+    staged = []
+    while stack:
+        conflict_segment = []
+        while stack and isinstance(stack[-1], ConflictFragment):
+            conflict_segment.append(stack.pop())
+        version1 = "".join(fragment.version1 for fragment in conflict_segment)
+        version2 = "".join(fragment.version2 for fragment in conflict_segment)
+        as_changeset = find_changeset(version2, version1)._fragments(version2)
+        for fragment in as_changeset:
+            if isinstance(fragment, CopyFragment):
+                staged.append(fragment)
+            elif isinstance(fragment, ChangeFragment):
+                staged.append(
+                    ConflictFragment(
+                        fragment.insert,
+                        fragment.delete,
+                        len(
+                            fragment.delete,
+                        ),
+                    )
+                )
+        while stack and isinstance(stack[-1], CopyFragment | ChangeFragment):
+            staged.append(stack.pop())
 
-    if conflict_free_accumulation:
-        yield conflict_free_accumulation
-        nothing_has_been_output = False
+    staged = list(reversed(staged))
+    while staged:
+        conflict_segment = []
+        while staged and isinstance(staged[-1], ConflictFragment):
+            conflict_segment.append(staged.pop())
+        version1 = "".join(fragment.version1 for fragment in conflict_segment)
+        version2 = "".join(fragment.version2 for fragment in conflict_segment)
+        if version1 or version2:
+            yield (version1, version2)
+            something_has_been_output = True
 
-    if nothing_has_been_output:
+        copy_and_change_segment = []
+        while staged and isinstance(staged[-1], CopyFragment | ChangeFragment):
+            copy_and_change_segment.append(staged.pop())
+        insert = "".join(fragment.insert for fragment in copy_and_change_segment)
+        if insert:
+            yield insert
+            something_has_been_output = True
+
+    if not something_has_been_output:
         yield ""
+
+    return
 
 
 def _merge(fragments0: list[InputType], fragments1):

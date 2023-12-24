@@ -1,5 +1,5 @@
-C Merge\strunk.
-D 2023-12-24T14:11:26.666
+C Rewrite\sand\srename\saccumulate_result()\s->\sconsolidate_result()
+D 2023-12-24T20:13:07.724
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -11,7 +11,7 @@ F src/gaspra/common.py 08cbe0a23071f9a6ceb68012956a75035fc47f956e200152c9caab97d
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py c26cbaee58d2244f4bcd1b2180f8ee1bd9b3ceb18a5bbd4551c2d4f9572efcf5
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
-F src/gaspra/merge.py 951e9a4bba30634d456264304cbc53264a296c4c034ddc0b4a8d597a16758a98
+F src/gaspra/merge.py 17f09d07fcd1b8a8af7455f1d23db492433b0dd1259289d92b25620e28cd2227
 F src/gaspra/multiple_strings.py f8caf8e0640112e7d4004d19e64039e834aaf242498735af4aacebbd7d9e13c0
 F src/gaspra/suffix_automaton.py 1cb12ea3afb24cf8d355142323bbd445d71c501a5bd0bc5e481ef11b1370239a
 F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 3b33c6f66b6c455a7591d05d595abd3d0b4ce034847ac383280c
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 33cd7ff2e984048d0e0d2643c6a60e88410c672cbf25f8342cff6fa8d3c1c5d8 c44a71af14ab141a5f25512a8a29d22e0416ee97be4570ff4b2e058b18553290
-R 6b22a59a5678d772ec86d07dbdcea762
+P b417f238d8977e909f4b052947527ccda8d2c8e4414eba5ea7e4967e861d79d5
+R dc881ba21bcaa61da47e6ccd64ef6b60
 U mwicks
-Z dd8d792a6e134aa0cb78d1f344e53a74
+Z 94d9520277ea16551c82e14875bfd432
 # Remove this line to create a well-formed Fossil manifest.

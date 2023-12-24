@@ -140,6 +140,14 @@ def test_merge(parent, branch1, branch2, merged):
             "sxbe",
             ("sx", ("a", ""), "b", ("c", ""), "e"),
         ),
+        # This test that common fragments can be extracted
+        # from the tail of conflicts.
+        (
+            "sye",
+            "sxabcde",
+            "sxbde",
+            ("sx", ("a", ""), "b", ("c", ""), "de"),
+        ),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

@@ -1,5 +1,5 @@
-C Rewrite\sand\srename\saccumulate_result()\s->\sconsolidate_result()
-D 2023-12-24T20:13:07.724
+C Add\stest\sfor\sfinding\scommon\sfragments\sat\stail\sof\sconflicts.
+D 2023-12-24T20:15:36.421
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -18,12 +18,12 @@ F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 2c827c815e834d5650b6944179c54448b6dc70e29085ca6d33103f87c5abe977
 F tests/small/test_changesets.py 602d13324931bb148af6adc78e7a10b6f273b6875e187b5d885c57c03cdc6d5c
-F tests/small/test_merge.py 3b33c6f66b6c455a7591d05d595abd3d0b4ce034847ac383280cde45d632b72e
+F tests/small/test_merge.py 13dce297da7676e4bf974b16882a0565ccf6a8a89051657ca390be6b04adfc5e
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P b417f238d8977e909f4b052947527ccda8d2c8e4414eba5ea7e4967e861d79d5
-R dc881ba21bcaa61da47e6ccd64ef6b60
+P f308e973db39082408f6fc7d82234a6e92868ff46c88dced94c51a94636f4c57
+R 4d91fec375f6f965c973bf223192d874
 U mwicks
-Z 94d9520277ea16551c82e14875bfd432
+Z 6e26864f8937cbaf54f311ee84ad7102
 # Remove this line to create a well-formed Fossil manifest.

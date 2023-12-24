@@ -22,15 +22,12 @@ def merge(parent: str, branch0: str, branch1: str):
 
     merged = _merge(fragments0, fragments1)
 
-    return consolidate_result(merged)
+    return consolidate(merged)
 
 
-def consolidate_result(output):
+def consolidate(fragments):
     """Consolidate consecutive fragments of similar types
     into a single segment"""
-
-    stack = list(reversed(list(output)))
-    something_has_been_output = False
 
     # Make two passes though the output.  In the first
     # past, conflicts and consolidated (and possibly expanded
@@ -41,50 +38,71 @@ def consolidate_result(output):
     # that get consolidated in the second pass are created from
     # the conflict expansions in the first pass.
 
-    staged = []
-    while stack:
-        conflict_segment = []
-        while stack and isinstance(stack[-1], ConflictFragment):
-            conflict_segment.append(stack.pop())
-        version1 = "".join(fragment.version1 for fragment in conflict_segment)
-        version2 = "".join(fragment.version2 for fragment in conflict_segment)
-        as_changeset = find_changeset(version2, version1)._fragments(version2)
-        for fragment in as_changeset:
-            if isinstance(fragment, CopyFragment):
-                staged.append(fragment)
-            elif isinstance(fragment, ChangeFragment):
-                staged.append(
-                    ConflictFragment(
-                        fragment.insert,
-                        fragment.delete,
-                    )
-                )
-        while stack and isinstance(stack[-1], CopyFragment | ChangeFragment):
-            staged.append(stack.pop())
+    yield from consolidate_all(consolidate_conflicts(fragments))
 
-    staged = list(reversed(staged))
+    return
+
+
+def consolidate_conflicts(input_stack):
+    input_stack = list(reversed(list(input_stack)))
+
+    while input_stack:
+        # Loop through and consolidate contiguous ConflictFragments
+        # First collect a contiguous gruop
+        conflict_group = []
+        while input_stack and isinstance(input_stack[-1], ConflictFragment):
+            conflict_group.append(input_stack.pop())
+
+        # Do a combination of consolidation and re-splitting with find_changeset()
+        version1 = "".join(fragment.version1 for fragment in conflict_group)
+        version2 = "".join(fragment.version2 for fragment in conflict_group)
+
+        for fragment in find_changeset(version2, version1)._fragments(version2):
+            if isinstance(fragment, CopyFragment):
+                yield fragment
+            elif isinstance(fragment, ChangeFragment):
+                yield ConflictFragment(
+                    fragment.insert,
+                    fragment.delete,
+                )
+            else:
+                raise ValueError(f"Unexpected fragment type: {type(fragment)}")
+
+        # For now, just copy the other fragment types.  They will be
+        # consolidated in the second pass.
+        while input_stack and isinstance(
+            input_stack[-1], CopyFragment | ChangeFragment
+        ):
+            yield input_stack.pop()
+
+
+def consolidate_all(staged):
+    staged = list(reversed(list(staged)))
+
+    something_has_been_output = False
     while staged:
-        conflict_segment = []
+        # Loop through and consolidate contiguous ConflictFragments
+        conflict_group = []
         while staged and isinstance(staged[-1], ConflictFragment):
-            conflict_segment.append(staged.pop())
-        version1 = "".join(fragment.version1 for fragment in conflict_segment)
-        version2 = "".join(fragment.version2 for fragment in conflict_segment)
+            conflict_group.append(staged.pop())
+
+        version1 = "".join(fragment.version1 for fragment in conflict_group)
+        version2 = "".join(fragment.version2 for fragment in conflict_group)
         if version1 or version2:
             yield (version1, version2)
             something_has_been_output = True
 
-        copy_and_change_segment = []
+        # Loop through and consolidate the other types
+        copy_or_change_group = []
         while staged and isinstance(staged[-1], CopyFragment | ChangeFragment):
-            copy_and_change_segment.append(staged.pop())
-        insert = "".join(fragment.insert for fragment in copy_and_change_segment)
+            copy_or_change_group.append(staged.pop())
+        insert = "".join(fragment.insert for fragment in copy_or_change_group)
         if insert:
             yield insert
             something_has_been_output = True
 
     if not something_has_been_output:
         yield ""
-
-    return
 
 
 def _merge(fragments0: list[InputType], fragments1):
@@ -206,9 +224,7 @@ def copy_change(copy_fragment, change_fragment):
             change_fragment, len(change_fragment.insert), smaller_length
         )
         if head0:
-            output = ConflictFragment(
-                head0.insert, copy_fragment.insert, smaller_length
-            )
+            output = ConflictFragment(head0.insert, copy_fragment.insert)
 
         if head1:
             change_tail = head1

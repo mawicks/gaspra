@@ -1,5 +1,5 @@
-C Remove\sfactor_common_prefix(()\swhich\sis\sno\slonger\snecessary.
-D 2023-12-24T20:21:45.098
+C Refactor\sand\srename\sconsolidate_result()\s->\sconsolidate()
+D 2023-12-24T20:52:31.145
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -11,7 +11,7 @@ F src/gaspra/common.py 08cbe0a23071f9a6ceb68012956a75035fc47f956e200152c9caab97d
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py c26cbaee58d2244f4bcd1b2180f8ee1bd9b3ceb18a5bbd4551c2d4f9572efcf5
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
-F src/gaspra/merge.py a4ff98aae3b71c82fdc9aa12b81a1c5cc60ebc223b7c96a9a9f30cdbe56cfe77
+F src/gaspra/merge.py 769204b75b94c4515f459eb375c73a346a25f9a5f02d33fa42f1b8bfabe77186
 F src/gaspra/multiple_strings.py f8caf8e0640112e7d4004d19e64039e834aaf242498735af4aacebbd7d9e13c0
 F src/gaspra/suffix_automaton.py 1cb12ea3afb24cf8d355142323bbd445d71c501a5bd0bc5e481ef11b1370239a
 F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
@@ -22,8 +22,8 @@ F tests/small/test_merge.py 13dce297da7676e4bf974b16882a0565ccf6a8a89051657ca390
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 4212b7e73d97bb44118d4f1695927a47da47c56b6aecab38679788053c36f10a
-R 1b72dc83097f8c7e7dc49b1f7d0c2418
+P fe8899821ef7eb09ef429d75728acd9a976ece4b8458410a44aa99d4e384a277
+R 326464298685af8185f6b167147251af
 U mwicks
-Z faead6f147d020a7f4e4bdeef64086ee
+Z 1e3ac8f0378ec43916566167e95c4a76
 # Remove this line to create a well-formed Fossil manifest.

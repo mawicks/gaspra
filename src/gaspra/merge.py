@@ -267,6 +267,9 @@ def ordinary_conflict(fragment0, fragment1):
 
 
 def split_copy_fragment(fragment: CopyFragment, length: int):
+    if not fragment:
+        return None, None
+
     head = tail = None
     if length > 0:
         head = replace(
@@ -274,6 +277,7 @@ def split_copy_fragment(fragment: CopyFragment, length: int):
             insert=fragment.insert[:length],
             length=length,
         )
+
     if length < fragment.length:
         tail = replace(
             fragment,
@@ -288,7 +292,11 @@ def split_change_fragment(
     insert_length,
     length: int,
 ):
+    if not fragment:
+        return None, None
+
     head = tail = None
+
     if length > 0 or insert_length > 0:
         head = replace(
             fragment,

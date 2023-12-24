@@ -1,5 +1,5 @@
-C Initial\simplentation\sof\srunning\sconflict\sidea.
-D 2023-12-24T07:32:46.584
+C Adjust\stests\sto\sbe\sconsistent\swith\snew\sdefinition\sof\sconflict.
+D 2023-12-24T12:18:52.038
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a89c667873e43350bcfe0691c0f7e9016d0a45cc54fac861e81658a820f36384
@@ -18,15 +18,12 @@ F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466
 F src/gaspra/wrappers.py 1bf1845c7253ebd5e4ebe74218686635d1e34d8f455bca73f974f5f07e2d8460
 F tests/medium/test_suffix_automaton_long.py 2c827c815e834d5650b6944179c54448b6dc70e29085ca6d33103f87c5abe977
 F tests/small/test_changesets.py 602d13324931bb148af6adc78e7a10b6f273b6875e187b5d885c57c03cdc6d5c
-F tests/small/test_merge.py 226f802ec35181d9163a0ee1b9d2c2326dd4b4f377f5f95aa9f0caec48812bc0
+F tests/small/test_merge.py 906d6c336516010fe038e00a05d7fc724f7782285f4f8341f0262a70caf30ffe
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py 70612095bf2d7de354d61e3ec2f2414d440192e4a716cb20aad16ca8d92c1e3a
-P 3e2f05ae0aedbdd841ddbd7b6cbf20b4283b9f9ed73d5727a0abd1a3b4f951d8
-R 510b136790a8473d5f881a4bca7bd8a6
-T *branch * running-conflict
-T *sym-running-conflict *
-T -sym-trunk *
+P 598a07048cf113e24a1cae60b4ad970b016790cf43850bd5bb93c36d54d1edf8
+R daed210f2961fb30f3f73a4ead0d23dc
 U mwicks
-Z 9f3a5e86271dd143ca6f8c1547669123
+Z 2325209336bd75f42c150aaab8c4d6a9
 # Remove this line to create a well-formed Fossil manifest.

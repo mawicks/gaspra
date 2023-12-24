@@ -125,13 +125,15 @@ def test_merge(parent, branch1, branch2, merged):
         # has enough context to make the decision to remove q, i.e., remove
         # "q" immediately before "e". It's only a question of where to
         # place "z".
-        ("spqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
+        # ("spqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
+        # On second thought, let's add "q" to conflict.
+        ("spqe", "sxyqe", "sxze", ("sx", ("yq", "z"), "e")),
         # Same case with null "p"
-        ("sqe", "sxyqe", "sxze", ("sx", ("y", "z"), "e")),
+        ("sqe", "sxyqe", "sxze", ("sx", ("yq", "z"), "e")),
         # Same case with null "x" (making it a slightly different case)
-        ("spqe", "syqe", "sze", ("s", ("y", "z"), "e")),
+        ("spqe", "syqe", "sze", ("s", ("yq", "z"), "e")),
         # Same case with null "y" -- CHECK THIS!!!
-        ("spqe", "sqe", "sze", ("s", ("", "z"), "e")),
+        ("spqe", "sqe", "sze", ("s", ("q", "z"), "e")),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

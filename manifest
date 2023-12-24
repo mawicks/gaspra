@@ -1,5 +1,5 @@
-C Add\sinstallation\ssection\sto\sREADME
-D 2023-12-23T18:36:15.597
+C Initial\simplentation\sof\srunning\sconflict\sidea.
+D 2023-12-24T07:32:46.584
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a89c667873e43350bcfe0691c0f7e9016d0a45cc54fac861e81658a820f36384
@@ -11,7 +11,7 @@ F src/gaspra/common.py 08cbe0a23071f9a6ceb68012956a75035fc47f956e200152c9caab97d
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py c26cbaee58d2244f4bcd1b2180f8ee1bd9b3ceb18a5bbd4551c2d4f9572efcf5
 F src/gaspra/examples.py 86987b274ef3227f4f927d92ccc5955c14353ee507a3980b17fa959cc0f3ead6
-F src/gaspra/merge.py 163f967c1d3c7c33c7d7d155c0978ed7f4c40a40084d2c50affe24c78123fb76
+F src/gaspra/merge.py 272cd0162c90dc4f943b7418def836243f6a747e26b7869d7311d7c38c31acd1
 F src/gaspra/multiple_strings.py f8caf8e0640112e7d4004d19e64039e834aaf242498735af4aacebbd7d9e13c0
 F src/gaspra/suffix_automaton.py 1cb12ea3afb24cf8d355142323bbd445d71c501a5bd0bc5e481ef11b1370239a
 F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466d7e1b8791dc2ce1798f08657f8c1
@@ -22,8 +22,11 @@ F tests/small/test_merge.py 226f802ec35181d9163a0ee1b9d2c2326dd4b4f377f5f95aa9f0
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py 70612095bf2d7de354d61e3ec2f2414d440192e4a716cb20aad16ca8d92c1e3a
-P f59efdd4195ef26cc291ef9b69a06956ee48d0f317c693c50e3e66ad7d3b8527
-R 5987857897fceb2cc66f8aa7ca67c979
+P 3e2f05ae0aedbdd841ddbd7b6cbf20b4283b9f9ed73d5727a0abd1a3b4f951d8
+R 510b136790a8473d5f881a4bca7bd8a6
+T *branch * running-conflict
+T *sym-running-conflict *
+T -sym-trunk *
 U mwicks
-Z 05caee4e49eb30561c07e296ac342500
+Z 9f3a5e86271dd143ca6f8c1547669123
 # Remove this line to create a well-formed Fossil manifest.

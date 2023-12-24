@@ -56,8 +56,7 @@ def _merge(fragments0: list[InputType], fragments1):
 
         output, tail0, tail1 = process_fragments(fragment0, fragment1)
 
-        if output:
-            yield output
+        yield from output
 
         # If the fragments weren't fully processed, push their tails
         # back onto their respective stacks.
@@ -111,11 +110,12 @@ def copy_copy(fragment0: CopyFragment, fragment1: CopyFragment):
     else:
         tail1 = long_queue_tail
 
-    return shorter, tail0, tail1
+    return [shorter], tail0, tail1
 
 
 def copy_change(copy_fragment, change_fragment):
-    output = copy_tail = change_tail = None
+    copy_tail = change_tail = None
+    output = []
 
     smaller_length = min(copy_fragment.length, change_fragment.length)
     if change_fragment.length == smaller_length:
@@ -130,14 +130,14 @@ def copy_change(copy_fragment, change_fragment):
             change_fragment, len(change_fragment.insert), smaller_length
         )
         if head0:
-            output = ConflictFragment(
-                head0.insert, copy_fragment.insert, smaller_length
-            )
+            output = [
+                ConflictFragment(head0.insert, copy_fragment.insert, smaller_length)
+            ]
 
         if head1:
             change_tail = head1
 
-    return output, copy_tail, change_tail
+    return [output], copy_tail, change_tail
 
 
 def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
@@ -151,7 +151,7 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
 
     # Exactly the same changeset can simply be passed along.
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
-        return fragment0, None, None
+        return [fragment0], None, None
 
     if has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
         return factor_common_prefix(fragment0, fragment1, insert_length, delete_length)
@@ -183,14 +183,14 @@ def compose_changes(fragment0, fragment1):
             fragment1.delete,
             fragment1.length,
         )
-        return None, None, tail1
+        return [], None, tail1
     elif fragment0.insert == "" and fragment1.length == 0:
         tail0 = ChangeFragment(
             fragment1.insert,
             fragment0.delete,
             fragment0.length,
         )
-        return None, tail0, None
+        return [], tail0, None
     else:
         raise ValueError("Changes are not composable")
 
@@ -242,13 +242,18 @@ def factor_common_prefix(
         insert_length,
         delete_length,
     )
-    return output, tail0, tail1
+
+    return [output], tail0, tail1
 
 
 def ordinary_conflict(fragment0, fragment1):
-    output = None
+    output = []
 
-    length = min(fragment0.length, fragment1.length)
+    if fragment0 and fragment1:
+        length = min(fragment0.length, fragment1.length)
+    else:
+        length = 0
+
     head0, tail0 = split_change_fragment(
         fragment0,
         len(fragment0.insert),
@@ -261,7 +266,7 @@ def ordinary_conflict(fragment0, fragment1):
     )
 
     if head0 and head1:
-        output = ConflictFragment(head0.insert, head1.insert, length)
+        output = [ConflictFragment(head0.insert, head1.insert, length)]
 
     return output, tail0, tail1
 

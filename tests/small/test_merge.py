@@ -92,6 +92,7 @@ def test_merge(parent, branch1, branch2, merged):
         # We're going with the second interpretation
         # and testing for this being a conflict.
         ("a", "", "b", [("", "b")]),
+        ("a", "b", "", [("b", "")]),
         (
             "abcdefg",
             "axdpefg",

@@ -88,9 +88,21 @@ def _merge(fragments0: list[InputType], fragments1):
         if tail1:
             fragments1.append(tail1)
 
+    # We've exhausted one of the input queues.  Flush the
+    # other one if there's anything left.
     if fragments0 or fragments1:
-        remaining = fragments0 or fragments1
-        yield from reversed(remaining)
+        yield from flush_remaining(fragments0, fragments1, within_conflict)
+
+
+def flush_remaining(fragments0, fragments1, within_conflict):
+    remaining = fragments0 or fragments1
+    for item in reversed(remaining):
+        if within_conflict and remaining == fragments0:
+            yield ConflictFragment(item.insert, "", 0)
+        elif within_conflict:
+            yield ConflictFragment("", item.insert, 0)
+        else:
+            yield item
 
 
 def process_fragments(fragment0, fragment1, within_conflict: bool):
@@ -190,7 +202,7 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
         return fragment0, None, None, False
 
-    if has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
+    if insert_length > 0 or delete_length > 0:
         return (
             *factor_common_prefix(fragment0, fragment1, insert_length, delete_length),
             True,
@@ -259,11 +271,7 @@ def has_factorable_common_prefix(
     conflict can't be detected in the tail.  This elif used to be more
     restrictive: just insert_length > 0 and delete_length > 0:
     """
-    return (
-        (insert_length > 0 or delete_length > 0)
-        and insert_length < len(fragment0.insert)
-        and insert_length < len(fragment1.insert)
-    )
+    return insert_length > 0 or delete_length > 0
 
 
 def factor_common_prefix(

@@ -22,43 +22,86 @@ def merge(parent: str, branch0: str, branch1: str):
 
     merged = _merge(fragments0, fragments1)
 
-    return accumulate_result(merged)
+    return consolidate(merged)
 
 
-def accumulate_result(output):
-    conflict_free_accumulation = ""
-    conflict_accumulation = ("", "")
-    nothing_has_been_output = True
-    for fragment in output:
-        if isinstance(fragment, ConflictFragment):
-            # Flush the conflict free string we've been accumulating.
-            if conflict_free_accumulation:
-                yield conflict_free_accumulation
-                nothing_has_been_output = False
-                conflict_free_accumulation = ""
+def consolidate(fragments):
+    """Consolidate consecutive fragments of similar types
+    into a single segment"""
 
-            c1, c2 = conflict_accumulation
-            conflict_accumulation = (c1 + fragment.version1, c2 + fragment.version2)
-        else:
-            if any(conflict_accumulation):
-                diff_sequence = diff(*reversed(conflict_accumulation))
-                yield from diff_sequence
-                nothing_has_been_output = False
-                conflict_accumulation = ("", "")
+    # Make two passes though the output.  In the first
+    # past, conflicts and consolidated (and possibly expanded
+    # into copy and conflict fragments
+    # In the second pass, consolidate copy and conflict fragments
+    # with one another and don't expand the conflict fragments.
+    # The second pass is required because some of the copy fragments
+    # that get consolidated in the second pass are created from
+    # the conflict expansions in the first pass.
 
-            conflict_free_accumulation += fragment.insert
+    yield from consolidate_all(consolidate_conflicts(fragments))
 
-    # Flush the conflict free string we've been accumulating and
-    # return empty string if no output yet.
-    if any(conflict_accumulation):
-        yield conflict_accumulation
-        nothing_has_been_output = False
+    return
 
-    if conflict_free_accumulation:
-        yield conflict_free_accumulation
-        nothing_has_been_output = False
 
-    if nothing_has_been_output:
+def consolidate_conflicts(input_stack):
+    input_stack = list(reversed(list(input_stack)))
+
+    while input_stack:
+        # Loop through and consolidate contiguous ConflictFragments
+        # First collect a contiguous gruop
+        conflict_group = []
+        while input_stack and isinstance(input_stack[-1], ConflictFragment):
+            conflict_group.append(input_stack.pop())
+
+        # Do a combination of consolidation and re-splitting with find_changeset()
+        version1 = "".join(fragment.version1 for fragment in conflict_group)
+        version2 = "".join(fragment.version2 for fragment in conflict_group)
+
+        for fragment in find_changeset(version2, version1)._fragments(version2):
+            if isinstance(fragment, CopyFragment):
+                yield fragment
+            elif isinstance(fragment, ChangeFragment):
+                yield ConflictFragment(
+                    fragment.insert,
+                    fragment.delete,
+                )
+            else:
+                raise ValueError(f"Unexpected fragment type: {type(fragment)}")
+
+        # For now, just copy the other fragment types.  They will be
+        # consolidated in the second pass.
+        while input_stack and isinstance(
+            input_stack[-1], CopyFragment | ChangeFragment
+        ):
+            yield input_stack.pop()
+
+
+def consolidate_all(staged):
+    staged = list(reversed(list(staged)))
+
+    something_has_been_output = False
+    while staged:
+        # Loop through and consolidate contiguous ConflictFragments
+        conflict_group = []
+        while staged and isinstance(staged[-1], ConflictFragment):
+            conflict_group.append(staged.pop())
+
+        version1 = "".join(fragment.version1 for fragment in conflict_group)
+        version2 = "".join(fragment.version2 for fragment in conflict_group)
+        if version1 or version2:
+            yield (version1, version2)
+            something_has_been_output = True
+
+        # Loop through and consolidate the other types
+        copy_or_change_group = []
+        while staged and isinstance(staged[-1], CopyFragment | ChangeFragment):
+            copy_or_change_group.append(staged.pop())
+        insert = "".join(fragment.insert for fragment in copy_or_change_group)
+        if insert:
+            yield insert
+            something_has_been_output = True
+
+    if not something_has_been_output:
         yield ""
 
 
@@ -100,9 +143,9 @@ def flush_remaining(fragments0, fragments1, within_conflict):
     remaining = fragments0 or fragments1
     for item in reversed(remaining):
         if within_conflict and remaining == fragments0:
-            yield ConflictFragment(item.insert, "", 0)
+            yield ConflictFragment(item.insert, "")
         elif within_conflict:
-            yield ConflictFragment("", item.insert, 0)
+            yield ConflictFragment("", item.insert)
         else:
             yield item
 
@@ -141,7 +184,7 @@ def pending_conflict(fragment0: InputType, fragment1: InputType):
     from0 = head0.insert if head0 else ""
     from1 = head1.insert if head1 else ""
 
-    output = ConflictFragment(from0, from1, min_length)
+    output = ConflictFragment(from0, from1)
     return output, tail0, tail1
 
 
@@ -181,9 +224,7 @@ def copy_change(copy_fragment, change_fragment):
             change_fragment, len(change_fragment.insert), smaller_length
         )
         if head0:
-            output = ConflictFragment(
-                head0.insert, copy_fragment.insert, smaller_length
-            )
+            output = ConflictFragment(head0.insert, copy_fragment.insert)
 
         if head1:
             change_tail = head1
@@ -203,12 +244,6 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     # Exactly the same changeset can simply be passed along.
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
         return fragment0, None, None, False
-
-    if insert_length > 0 or delete_length > 0:
-        return (
-            *factor_common_prefix(fragment0, fragment1, insert_length, delete_length),
-            True,
-        )
 
     return (*ordinary_conflict(fragment0, fragment1), True)
 
@@ -260,41 +295,6 @@ def are_identical_changes(
     )
 
 
-def has_factorable_common_prefix(
-    fragment0,
-    fragment1,
-    insert_length,
-    delete_length,
-):
-    """Check for the case where the two changesets have a non-empty
-    common prefix. If it isn't non-empty, there's nothing to do.  To
-    split/factor the fragment, the part of the insertion that's factored
-    must be a proper substring of both insertions.  Otherwise, the
-    conflict can't be detected in the tail.  This elif used to be more
-    restrictive: just insert_length > 0 and delete_length > 0:
-    """
-    return insert_length > 0 or delete_length > 0
-
-
-def factor_common_prefix(
-    fragment0: ChangeFragment,
-    fragment1: ChangeFragment,
-    insert_length,
-    delete_length,
-):
-    output, tail0 = split_change_fragment(
-        fragment0,
-        insert_length,
-        delete_length,
-    )
-    *_, tail1 = split_change_fragment(
-        fragment1,
-        insert_length,
-        delete_length,
-    )
-    return output, tail0, tail1
-
-
 def ordinary_conflict(fragment0, fragment1):
     output = None
 
@@ -311,7 +311,7 @@ def ordinary_conflict(fragment0, fragment1):
     )
 
     if head0 and head1:
-        output = ConflictFragment(head0.insert, head1.insert, length)
+        output = ConflictFragment(head0.insert, head1.insert)
 
     return output, tail0, tail1
 

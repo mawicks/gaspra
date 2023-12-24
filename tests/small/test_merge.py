@@ -2,7 +2,6 @@ import pytest
 from gaspra.merge import merge
 
 
-# @pytest.mark.xfail
 @pytest.mark.parametrize(
     ["parent", "branch1", "branch2", "merged"],
     [
@@ -135,6 +134,12 @@ def test_merge(parent, branch1, branch2, merged):
         ("spqe", "syqe", "sze", ("s", ("yq", "z"), "e")),
         # Same case with null "y" -- CHECK THIS!!!
         ("spqe", "sqe", "sze", ("s", ("q", "z"), "e")),
+        (
+            "sye",
+            "sxabce",
+            "sxbe",
+            ("sx", ("a", ""), "b", ("c", ""), "e"),
+        ),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

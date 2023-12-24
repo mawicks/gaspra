@@ -5,6 +5,7 @@ from gaspra.changesets import (
     ChangeFragment,
     ConflictFragment,
     CopyFragment,
+    diff,
     find_changeset,
 )
 
@@ -40,7 +41,8 @@ def accumulate_result(output):
             conflict_accumulation = (c1 + fragment.version1, c2 + fragment.version2)
         else:
             if any(conflict_accumulation):
-                yield conflict_accumulation
+                diff_sequence = diff(*reversed(conflict_accumulation))
+                yield from diff_sequence
                 nothing_has_been_output = False
                 conflict_accumulation = ("", "")
 

@@ -94,7 +94,7 @@ There's also `find_lcs_multiple()` for n-way common strings:
 ## Finding Diffs
 
 Given an original string and a modified string, the function
-`gaspra.changes()` returns the sequence of changes represented
+`gaspra.diff()` returns the sequence of changes represented
 interspersed with fragments from the original string.  The sequence is
 a sequence of strings (fragments from the original) and tuples of two strings
 representing an insertion/deletion pair.  Note that an insertion is a tuple
@@ -104,7 +104,7 @@ where the deletion string is empty, and vice versa.
 >>> import gaspra
 >>> original="The quick brown fox jumps over the lazy dog near the riverbank."
 >>> modified="The quick brown fox leaps over the lazy dogs near the river"
->>> list(gaspra.changes(original, modified))
+>>> list(gaspra.diff(original, modified))
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank.')]
 ```
 
@@ -117,9 +117,9 @@ resolved without any conflicts.
 >>> original = "The quick brown fox jumps over the lazy dog near the riverbank."
 >>> editor1 = "The quick brown fox leaps over the lazy dogs near the river."
 >>> editor2 = "The quick, clever fox jumps across the lazy dogs by the riverbank."
->>> list(gaspra.changes(original, editor1))
+>>> list(gaspra.diff(original, editor1))
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank'), '.']
->>> list(gaspra.changes(original, editor2))
+>>> list(gaspra.diff(original, editor2))
 ['The quick', (',', ''), ' ', ('cleve', 'b'), 'r', ('', 'own'), ' fox jumps ', ('ac', 'ove'), 'r', ('oss', ''), ' the lazy dog', ('s', ''), ' ', ('by', 'near'), ' the riverbank.']
 >>> list(gaspra.merge(original, editor1, editor2))
 ['The quick, clever fox leaps across the lazy dogs by the river.']
@@ -131,7 +131,7 @@ alternate versions of the merged text.
 
 ```
 >>> conflicts_with_1 = "The swift, agile fox leaps over the sleepy dog near the riverside."
->>> list(gaspra.changes(original, conflicts_with_1))
+>>> list(gaspra.diff(original, conflicts_with_1))
 ['The ', ('s', 'quick bro'), 'w', ('ift, agile', 'n'), ' fox ', ('lea', 'jum'), 'ps over the ', ('s', ''), 'l', ('eep', 'az'), 'y dog near the river', ('side', 'bank'), '.']
 >>> list(gaspra.merge(original, editor1, conflicts_with_1))
 ['The swift, agile fox leaps over the sleepy dogs near the river', ('', 'side'), '.']

@@ -24,7 +24,6 @@ class ChangeFragment:
 class ConflictFragment:
     version1: str
     version2: str
-    length: int
 
 
 @dataclass

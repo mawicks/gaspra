@@ -57,9 +57,6 @@ def consolidate_result(output):
                     ConflictFragment(
                         fragment.insert,
                         fragment.delete,
-                        len(
-                            fragment.delete,
-                        ),
                     )
                 )
         while stack and isinstance(stack[-1], CopyFragment | ChangeFragment):
@@ -128,9 +125,9 @@ def flush_remaining(fragments0, fragments1, within_conflict):
     remaining = fragments0 or fragments1
     for item in reversed(remaining):
         if within_conflict and remaining == fragments0:
-            yield ConflictFragment(item.insert, "", 0)
+            yield ConflictFragment(item.insert, "")
         elif within_conflict:
-            yield ConflictFragment("", item.insert, 0)
+            yield ConflictFragment("", item.insert)
         else:
             yield item
 
@@ -169,7 +166,7 @@ def pending_conflict(fragment0: InputType, fragment1: InputType):
     from0 = head0.insert if head0 else ""
     from1 = head1.insert if head1 else ""
 
-    output = ConflictFragment(from0, from1, min_length)
+    output = ConflictFragment(from0, from1)
     return output, tail0, tail1
 
 
@@ -339,7 +336,7 @@ def ordinary_conflict(fragment0, fragment1):
     )
 
     if head0 and head1:
-        output = ConflictFragment(head0.insert, head1.insert, length)
+        output = ConflictFragment(head0.insert, head1.insert)
 
     return output, tail0, tail1
 

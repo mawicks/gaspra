@@ -64,7 +64,7 @@ def _merge(fragments0: list[InputType], fragments1):
         if tail0 and not is_empty_fragment(tail0):
             fragments0.append(tail0)
 
-        if tail1 and not is_empty_fragment(tail0):
+        if tail1 and not is_empty_fragment(tail1):
             fragments1.append(tail1)
 
     if fragments0 or fragments1:
@@ -119,7 +119,7 @@ def copy_change(copy_fragment, change_fragment):
 
     smaller_length = min(copy_fragment.length, change_fragment.length)
     if change_fragment.length == smaller_length:
-        output = change_fragment
+        output = [change_fragment]
 
         # Anything left over?
         if copy_fragment.length > smaller_length:
@@ -137,7 +137,7 @@ def copy_change(copy_fragment, change_fragment):
         if head1 and not is_empty_fragment(head1):
             change_tail = head1
 
-    return [output], copy_tail, change_tail
+    return output, copy_tail, change_tail
 
 
 def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):

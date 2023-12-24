@@ -232,7 +232,7 @@ def factor_common_prefix(
     insert_length,
     delete_length,
 ):
-    output, tail0 = split_change_fragment(
+    output1, tail0 = split_change_fragment(
         fragment0,
         insert_length,
         delete_length,
@@ -242,8 +242,9 @@ def factor_common_prefix(
         insert_length,
         delete_length,
     )
+    output2, tail0, tail1 = ordinary_conflict(tail0, tail1)
 
-    return [output], tail0, tail1
+    return [output1, *output2], tail0, tail1
 
 
 def ordinary_conflict(fragment0, fragment1):

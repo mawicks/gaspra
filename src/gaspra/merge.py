@@ -229,12 +229,6 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
         return fragment0, None, None, False
 
-    if insert_length > 0 or delete_length > 0:
-        return (
-            *factor_common_prefix(fragment0, fragment1, insert_length, delete_length),
-            True,
-        )
-
     return (*ordinary_conflict(fragment0, fragment1), True)
 
 
@@ -283,41 +277,6 @@ def are_identical_changes(
     return (len(fragment0.insert) == len(fragment1.insert) == insert_length) and (
         fragment0.length == fragment1.length == delete_length
     )
-
-
-def has_factorable_common_prefix(
-    fragment0,
-    fragment1,
-    insert_length,
-    delete_length,
-):
-    """Check for the case where the two changesets have a non-empty
-    common prefix. If it isn't non-empty, there's nothing to do.  To
-    split/factor the fragment, the part of the insertion that's factored
-    must be a proper substring of both insertions.  Otherwise, the
-    conflict can't be detected in the tail.  This elif used to be more
-    restrictive: just insert_length > 0 and delete_length > 0:
-    """
-    return insert_length > 0 or delete_length > 0
-
-
-def factor_common_prefix(
-    fragment0: ChangeFragment,
-    fragment1: ChangeFragment,
-    insert_length,
-    delete_length,
-):
-    output, tail0 = split_change_fragment(
-        fragment0,
-        insert_length,
-        delete_length,
-    )
-    *_, tail1 = split_change_fragment(
-        fragment1,
-        insert_length,
-        delete_length,
-    )
-    return output, tail0, tail1
 
 
 def ordinary_conflict(fragment0, fragment1):

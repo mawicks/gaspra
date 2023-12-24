@@ -220,9 +220,10 @@ def has_factorable_common_prefix(
     restrictive: just insert_length > 0 and delete_length > 0:
     """
     return (
-        (insert_length > 0 or delete_length > 0)
-        and insert_length < len(fragment0.insert)
-        and insert_length < len(fragment1.insert)
+        insert_length > 0
+        or delete_length > 0
+        # and insert_length < len(fragment0.insert)
+        # and insert_length < len(fragment1.insert)
     )
 
 

@@ -1,6 +1,7 @@
+from gaspra.changesets import diff
 import pytest
 
-from gaspra.wrappers import find_substring, find_lcs, changes
+from gaspra.wrappers import find_substring, find_lcs
 
 # The `wrappers` module provides simple calls which are wrappers with
 # a simple interface that calls other functions in the package.
@@ -30,7 +31,7 @@ def test_find_lcs():
 def test_changes():
     original = "The quick brown fox jumps over the lazy dog near the riverbank."
     modified = "The quick brown fox leaps over the lazy dogs near the river"
-    result = list(changes(original, modified))
+    result = list(diff(original, modified))
     assert result == [
         "The quick brown fox ",
         ("lea", "jum"),

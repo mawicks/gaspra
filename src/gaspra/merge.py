@@ -5,6 +5,7 @@ from gaspra.changesets import (
     ChangeFragment,
     ConflictFragment,
     CopyFragment,
+    diff,
     find_changeset,
 )
 
@@ -26,35 +27,56 @@ def merge(parent: str, branch0: str, branch1: str):
 
 def accumulate_result(output):
     conflict_free_accumulation = ""
+    conflict_accumulation = ("", "")
     nothing_has_been_output = True
     for fragment in output:
         if isinstance(fragment, ConflictFragment):
             # Flush the conflict free string we've been accumulating.
             if conflict_free_accumulation:
                 yield conflict_free_accumulation
+                nothing_has_been_output = False
                 conflict_free_accumulation = ""
 
-            yield (fragment.version1, fragment.version2)
-            nothing_has_been_output = False
+            c1, c2 = conflict_accumulation
+            conflict_accumulation = (c1 + fragment.version1, c2 + fragment.version2)
         else:
+            if any(conflict_accumulation):
+                diff_sequence = diff(*reversed(conflict_accumulation))
+                yield from diff_sequence
+                nothing_has_been_output = False
+                conflict_accumulation = ("", "")
+
             conflict_free_accumulation += fragment.insert
 
     # Flush the conflict free string we've been accumulating and
     # return empty string if no output yet.
+    if any(conflict_accumulation):
+        yield conflict_accumulation
+        nothing_has_been_output = False
 
-    if conflict_free_accumulation or nothing_has_been_output:
-        yield conflict_free_accumulation or ""
+    if conflict_free_accumulation:
+        yield conflict_free_accumulation
+        nothing_has_been_output = False
+
+    if nothing_has_been_output:
+        yield ""
 
 
 def _merge(fragments0: list[InputType], fragments1):
     """Process changes in fragments0 and fragments1 until
     they are empty.  Note, this function modifies the passed lists"""
 
+    within_conflict = False
+
     while fragments0 and fragments1:
         fragment0 = fragments0.pop()
         fragment1 = fragments1.pop()
 
-        output, tail0, tail1 = process_fragments(fragment0, fragment1)
+        output, tail0, tail1, within_conflict = process_fragments(
+            fragment0,
+            fragment1,
+            within_conflict,
+        )
 
         if output:
             yield output
@@ -68,19 +90,35 @@ def _merge(fragments0: list[InputType], fragments1):
         if tail1:
             fragments1.append(tail1)
 
+    # We've exhausted one of the input queues.  Flush the
+    # other one if there's anything left.
     if fragments0 or fragments1:
-        remaining = fragments0 or fragments1
-        yield from reversed(remaining)
+        yield from flush_remaining(fragments0, fragments1, within_conflict)
 
 
-def process_fragments(fragment0, fragment1):
+def flush_remaining(fragments0, fragments1, within_conflict):
+    remaining = fragments0 or fragments1
+    for item in reversed(remaining):
+        if within_conflict and remaining == fragments0:
+            yield ConflictFragment(item.insert, "", 0)
+        elif within_conflict:
+            yield ConflictFragment("", item.insert, 0)
+        else:
+            yield item
+
+
+def process_fragments(fragment0, fragment1, within_conflict: bool):
     if isinstance(fragment0, CopyFragment) and isinstance(fragment1, CopyFragment):
         output, tail0, tail1 = copy_copy(fragment0, fragment1)
+        within_conflict = False
+
+    elif within_conflict:
+        output, tail0, tail1 = pending_conflict(fragment0, fragment1)
 
     elif isinstance(fragment0, ChangeFragment) and isinstance(
         fragment1, ChangeFragment
     ):
-        output, tail0, tail1 = change_change(fragment0, fragment1)
+        output, tail0, tail1, within_conflict = change_change(fragment0, fragment1)
 
     elif isinstance(fragment0, CopyFragment) and isinstance(fragment1, ChangeFragment):
         output, tail0, tail1 = copy_change(fragment0, fragment1)
@@ -91,6 +129,19 @@ def process_fragments(fragment0, fragment1):
     else:
         raise RuntimeError(f"Unexpected types: {type(fragment0)} or {type(fragment1)}")
 
+    return output, tail0, tail1, within_conflict
+
+
+def pending_conflict(fragment0: InputType, fragment1: InputType):
+    min_length = min(fragment0.length, fragment1.length)
+
+    head0, tail0 = split_fragment(fragment0, min_length)
+    head1, tail1 = split_fragment(fragment1, min_length)
+
+    from0 = head0.insert if head0 else ""
+    from1 = head1.insert if head1 else ""
+
+    output = ConflictFragment(from0, from1, min_length)
     return output, tail0, tail1
 
 
@@ -144,19 +195,22 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     """Handle two change blocks appearing at the same location"""
 
     if has_composable_changes(fragment0, fragment1):
-        return compose_changes(fragment0, fragment1)
+        return (*compose_changes(fragment0, fragment1), False)
 
     # Determine how much is common between the two changesets
     insert_length, delete_length = common_prefix_lengths(fragment0, fragment1)
 
     # Exactly the same changeset can simply be passed along.
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
-        return fragment0, None, None
+        return fragment0, None, None, False
 
-    if has_factorable_common_prefix(fragment0, fragment1, insert_length, delete_length):
-        return factor_common_prefix(fragment0, fragment1, insert_length, delete_length)
+    if insert_length > 0 or delete_length > 0:
+        return (
+            *factor_common_prefix(fragment0, fragment1, insert_length, delete_length),
+            True,
+        )
 
-    return ordinary_conflict(fragment0, fragment1)
+    return (*ordinary_conflict(fragment0, fragment1), True)
 
 
 def has_composable_changes(fragment0, fragment1):
@@ -219,11 +273,7 @@ def has_factorable_common_prefix(
     conflict can't be detected in the tail.  This elif used to be more
     restrictive: just insert_length > 0 and delete_length > 0:
     """
-    return (
-        (insert_length > 0 or delete_length > 0)
-        and insert_length < len(fragment0.insert)
-        and insert_length < len(fragment1.insert)
-    )
+    return insert_length > 0 or delete_length > 0
 
 
 def factor_common_prefix(
@@ -264,6 +314,13 @@ def ordinary_conflict(fragment0, fragment1):
         output = ConflictFragment(head0.insert, head1.insert, length)
 
     return output, tail0, tail1
+
+
+def split_fragment(fragment: InputType, length: int):
+    if isinstance(fragment, CopyFragment):
+        return split_copy_fragment(fragment, length)
+    if isinstance(fragment, ChangeFragment):
+        return split_change_fragment(fragment, len(fragment.insert), length)
 
 
 def split_copy_fragment(fragment: CopyFragment, length: int):

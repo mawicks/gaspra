@@ -61,10 +61,10 @@ def _merge(fragments0: list[InputType], fragments1):
         # If the fragments weren't fully processed, push their tails
         # back onto their respective stacks.
 
-        if tail0:
+        if tail0 and not is_empty_fragment(tail0):
             fragments0.append(tail0)
 
-        if tail1:
+        if tail1 and not is_empty_fragment(tail0):
             fragments1.append(tail1)
 
     if fragments0 or fragments1:
@@ -129,12 +129,12 @@ def copy_change(copy_fragment, change_fragment):
         head0, head1 = split_change_fragment(
             change_fragment, len(change_fragment.insert), smaller_length
         )
-        if head0:
+        if head0 and not is_empty_fragment(head0):
             output = [
                 ConflictFragment(head0.insert, copy_fragment.insert, smaller_length)
             ]
 
-        if head1:
+        if head1 and not is_empty_fragment(head1):
             change_tail = head1
 
     return [output], copy_tail, change_tail
@@ -249,10 +249,7 @@ def factor_common_prefix(
 def ordinary_conflict(fragment0, fragment1):
     output = []
 
-    if fragment0 and fragment1:
-        length = min(fragment0.length, fragment1.length)
-    else:
-        length = 0
+    length = min(fragment0.length, fragment1.length)
 
     head0, tail0 = split_change_fragment(
         fragment0,
@@ -265,30 +262,28 @@ def ordinary_conflict(fragment0, fragment1):
         length,
     )
 
-    if head0 and head1:
-        output = [ConflictFragment(head0.insert, head1.insert, length)]
+    output = [ConflictFragment(head0.insert, head1.insert, length)]
 
     return output, tail0, tail1
 
 
+def is_empty_fragment(fragment):
+    return fragment is None or (fragment.length == 0 and fragment.insert == "")
+
+
 def split_copy_fragment(fragment: CopyFragment, length: int):
-    if not fragment:
-        return None, None
+    head = replace(
+        fragment,
+        insert=fragment.insert[:length],
+        length=length,
+    )
 
-    head = tail = None
-    if length > 0:
-        head = replace(
-            fragment,
-            insert=fragment.insert[:length],
-            length=length,
-        )
+    tail = replace(
+        fragment,
+        insert=fragment.insert[length:],
+        length=fragment.length - length,
+    )
 
-    if length < fragment.length:
-        tail = replace(
-            fragment,
-            insert=fragment.insert[length:],
-            length=fragment.length - length,
-        )
     return head, tail
 
 
@@ -297,25 +292,18 @@ def split_change_fragment(
     insert_length,
     length: int,
 ):
-    if not fragment:
-        return None, None
-
-    head = tail = None
-
-    if length > 0 or insert_length > 0:
-        head = replace(
-            fragment,
-            insert=fragment.insert[:insert_length],
-            delete=fragment.delete[:length],
-            length=length,
-        )
-    if length < fragment.length or insert_length < len(fragment.insert):
-        tail = replace(
-            fragment,
-            insert=fragment.insert[insert_length:],
-            delete=fragment.delete[length:],
-            length=fragment.length - length,
-        )
+    head = replace(
+        fragment,
+        insert=fragment.insert[:insert_length],
+        delete=fragment.delete[:length],
+        length=length,
+    )
+    tail = replace(
+        fragment,
+        insert=fragment.insert[insert_length:],
+        delete=fragment.delete[length:],
+        length=fragment.length - length,
+    )
     return head, tail
 
 

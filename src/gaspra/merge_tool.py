@@ -24,21 +24,21 @@ def rich_escape(s):
 
 SCREEN_MARKUP = {
     "fragment": {
-        "branch0": {
+        "into": {
             "prefix": "[bright_green]",
             "suffix": "[/]",
         },
-        "branch1": {
+        "from": {
             "prefix": "[bright_red]",
             "suffix": "[/]",
         },
     },
     "line": {
-        "branch0": {
+        "into": {
             "prefix": lambda _: "[green]",
             "suffix": lambda _: "[/]",
         },
-        "branch1": {
+        "from": {
             "prefix": lambda _: "[red]",
             "suffix": lambda _: "[/]",
         },
@@ -53,21 +53,21 @@ SCREEN_MARKUP = {
 
 GIT_MARKUP = {
     "fragment": {
-        "branch0": {
+        "into": {
             "prefix": "",
             "suffix": "",
         },
-        "branch1": {
+        "from": {
             "prefix": "",
             "suffix": "",
         },
     },
     "line": {
-        "branch0": {
+        "into": {
             "prefix": lambda s: f"<<<<<<< {s}\n",
             "suffix": lambda _: "",
         },
-        "branch1": {
+        "from": {
             "prefix": lambda _: "",
             "suffix": lambda s: f"\n>>>>>>> {s}",
         },
@@ -155,8 +155,8 @@ def show_changes(
             print(fragment, end="")
 
         if isinstance(fragment, tuple):
-            print_fragment(fragment[0], fragment_markup["branch0"])
-            print_fragment(fragment[1], fragment_markup["branch1"])
+            print_fragment(fragment[0], fragment_markup["into"])
+            print_fragment(fragment[1], fragment_markup["from"])
 
             # print(f"[green]{escape(fragment[0])}[/]", end="")
             # print(f"[red]{escape(fragment[1])}[/]", end="")
@@ -181,51 +181,51 @@ def show_changes_line_oriented(
         return f"{prefix}{fragment}{suffix}"
 
     in_conflict = False
-    partial_line_0 = partial_line_1 = ""
-    any_line_0 = any_line_1 = False
+    partial_line_into = partial_line_from = ""
+    any_line_into = any_line_from = False
     for fragment in fragment_sequence:
         if isinstance(fragment, str):
             lines = fragment.split("\n")
             if in_conflict:
-                partial_line_0 = partial_line_0 + lines[0]
-                partial_line_1 = partial_line_1 + lines[0]
+                partial_line_into = partial_line_into + lines[0]
+                partial_line_from = partial_line_from + lines[0]
                 if len(lines) > 1:
                     print_line(
-                        partial_line_0,
+                        partial_line_into,
                         name0,
-                        line_markup["branch0"],
+                        line_markup["into"],
                     )
                     print(markup["separator"], end="")
                     print_line(
-                        partial_line_1,
+                        partial_line_from,
                         name1,
-                        line_markup["branch1"],
+                        line_markup["from"],
                     )
-                    partial_line_0 = partial_line_1 = ""
-                    any_line_0 = any_line_1 = in_conflict = False
+                    partial_line_into = partial_line_from = ""
+                    any_line_into = any_line_from = in_conflict = False
                     print(escape("\n".join(lines[1:-1])))
-                    partial_line_0 = lines[-1]
-                    partial_line_1 = lines[-1]
+                    partial_line_into = lines[-1]
+                    partial_line_from = lines[-1]
             else:
-                print(escape(partial_line_0))
+                print(escape(partial_line_into))
                 # If not in a conflict, partial_line_0 should be
                 # exactly the same as partial_line_1.
                 print(escape("\n".join(lines[:-1])))
-                partial_line_0 = lines[-1]
-                partial_line_1 = lines[-1]
+                partial_line_into = lines[-1]
+                partial_line_from = lines[-1]
 
         if isinstance(fragment, tuple):
             in_conflict = True
             if fragment[0]:
-                partial_line_0 = partial_line_0 + markup_fragment(
-                    fragment[0], fragment_markup["branch0"]
+                partial_line_into = partial_line_into + markup_fragment(
+                    fragment[0], fragment_markup["into"]
                 )
-                any_line_0 = True
+                any_line_into = True
             if fragment[1]:
-                partial_line_1 = partial_line_1 + markup_fragment(
-                    fragment[1], fragment_markup["branch1"]
+                partial_line_from = partial_line_from + markup_fragment(
+                    fragment[1], fragment_markup["from"]
                 )
-                any_line_1 = True
+                any_line_from = True
 
 
 def get_file_versions(test_case: str):
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     display_function = get_display_function(arguments)
     markup = get_markup_style(arguments)
 
-    parent, branch0, branch1 = get_file_versions(arguments.test_case)
+    parent, into_branch, from_branch = get_file_versions(arguments.test_case)
 
     def get_text(filename):
         with open(
@@ -291,28 +291,38 @@ if __name__ == "__main__":
             return data
 
     parent_text = get_text(parent)
-    branch0_text = get_text(branch0)
-    branch1_text = get_text(branch1)
+    into_text = get_text(into_branch)
+    from_text = get_text(from_branch)
 
-    changes0 = diff(parent_text, branch0_text)
-    changes1 = diff(parent_text, branch1_text)
+    into_changes = diff(parent_text, into_text)
+    from_changes = diff(parent_text, from_text)
 
     print_fn = console.print
 
     if arguments.diff:
         display_function(
-            console.print, changes0, branch0, parent, markup=markup, header=branch0
+            console.print,
+            into_changes,
+            into_branch,
+            parent,
+            markup=markup,
+            header=into_branch,
         )
         display_function(
-            console.print, changes1, branch1, parent, markup=markup, header=branch1
+            console.print,
+            from_changes,
+            from_branch,
+            parent,
+            markup=markup,
+            header=from_branch,
         )
 
-    merged = merge(parent_text, branch0_text, branch1_text)
+    merged = merge(parent_text, into_text, from_text)
     display_function(
         console.print,
         merged,
-        branch0,
-        branch1,
+        into_branch,
+        from_branch,
         markup=markup,
         header="Merged" if arguments.diff else None,
     )

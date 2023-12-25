@@ -69,7 +69,7 @@ GIT_MARKUP = {
         },
         "from": {
             "prefix": lambda _: "",
-            "suffix": lambda s: f"\n>>>>>>> {s}",
+            "suffix": lambda s: f">>>>>>> {s}\n",
         },
     },
     "escape": lambda _: _,
@@ -148,18 +148,15 @@ def show_changes(
     def print_fragment(fragment, fragment_markup):
         prefix = fragment_markup["prefix"]
         suffix = fragment_markup["suffix"]
-        print(f"{prefix}{escape(fragment)}{suffix}", end="")
+        print(f"{prefix}{escape(fragment)}{suffix}")
 
     for fragment in fragment_sequence:
         if isinstance(fragment, str):
-            print(fragment, end="")
+            print(fragment)
 
         if isinstance(fragment, tuple):
             print_fragment(fragment[0], fragment_markup["into"])
             print_fragment(fragment[1], fragment_markup["from"])
-
-            # print(f"[green]{escape(fragment[0])}[/]", end="")
-            # print(f"[red]{escape(fragment[1])}[/]", end="")
 
 
 def show_changes_line_oriented(
@@ -173,7 +170,7 @@ def show_changes_line_oriented(
     def print_line(line, name, line_markup):
         prefix = line_markup["prefix"](name)
         suffix = line_markup["suffix"](name)
-        print(f"{prefix}{line}{suffix}")
+        print(f"{prefix}{line}\n{suffix}")
 
     def markup_fragment(fragment, fragment_markup):
         prefix = fragment_markup["prefix"]
@@ -195,7 +192,7 @@ def show_changes_line_oriented(
                         name0,
                         line_markup["into"],
                     )
-                    print(markup["separator"], end="")
+                    print(markup["separator"])
                     print_line(
                         partial_line_from,
                         name1,
@@ -204,6 +201,7 @@ def show_changes_line_oriented(
                     partial_line_into = partial_line_from = ""
                     any_line_into = any_line_from = in_conflict = False
                     print(escape("\n".join(lines[1:-1])))
+                    print("\n")
                     partial_line_into = lines[-1]
                     partial_line_from = lines[-1]
             else:
@@ -277,6 +275,11 @@ def get_markup_style(arguments):
 if __name__ == "__main__":
     console = Console(force_terminal=True, highlight=False)
 
+    def console_print_function(s):
+        console.print(s, end="")
+
+    print_function = console_print_function
+
     arguments = get_arguments()
     display_function = get_display_function(arguments)
     markup = get_markup_style(arguments)
@@ -301,7 +304,7 @@ if __name__ == "__main__":
 
     if arguments.diff:
         display_function(
-            console.print,
+            print_function,
             into_changes,
             into_branch,
             parent,
@@ -309,7 +312,7 @@ if __name__ == "__main__":
             header=into_branch,
         )
         display_function(
-            console.print,
+            print_function,
             from_changes,
             from_branch,
             parent,
@@ -319,7 +322,7 @@ if __name__ == "__main__":
 
     merged = merge(parent_text, into_text, from_text)
     display_function(
-        console.print,
+        print_function,
         merged,
         into_branch,
         from_branch,

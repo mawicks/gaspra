@@ -45,6 +45,10 @@ SCREEN_MARKUP = {
     },
     "escape": rich_escape,
     "separator": "",
+    "header": {
+        "prefix": "<<<[bright_blue]",
+        "suffix": "[/]>>>",
+    },
 }
 
 GIT_MARKUP = {
@@ -61,7 +65,7 @@ GIT_MARKUP = {
     "line": {
         "branch0": {
             "prefix": lambda s: f"<<<<<<< {s}\n",
-            "suffix": lambda _: "\n",
+            "suffix": lambda _: "",
         },
         "branch1": {
             "prefix": lambda _: "",
@@ -70,6 +74,10 @@ GIT_MARKUP = {
     },
     "escape": lambda _: _,
     "separator": "=======\n",
+    "header": {
+        "prefix": "<<<",
+        "suffix": ">>>",
+    },
 }
 
 
@@ -122,29 +130,42 @@ def get_usage():
     )
 
 
-def show_header(print, header):
+def show_header(print, header, markup={}):
+    header_markup = markup.get("header", {})
+    prefix = header_markup.get("prefix", "")
+    suffix = header_markup.get("suffix", "")
     if header:
-        print(f"\n[bright_blue]<<<{escape(header)}>>>[/]")
+        print(f"\n{prefix}{escape(header)}{suffix}")
 
 
 def show_changes(
-    print, fragment_sequence, name0, name1, markup={}, header: str | None = None
+    print, fragment_sequence, __name0__, __name1__, markup={}, header: str | None = None
 ):
-    show_header(print, header)
+    show_header(print, header, markup)
+
+    fragment_markup = markup.get("fragment", {})
+
+    def print_fragment(fragment, fragment_markup):
+        prefix = fragment_markup["prefix"]
+        suffix = fragment_markup["suffix"]
+        print(f"{prefix}{escape(fragment)}{suffix}", end="")
 
     for fragment in fragment_sequence:
         if isinstance(fragment, str):
             print(fragment, end="")
 
         if isinstance(fragment, tuple):
-            print(f"[green]{escape(fragment[0])}[/]", end="")
-            print(f"[red]{escape(fragment[1])}[/]", end="")
+            print_fragment(fragment[0], fragment_markup["branch0"])
+            print_fragment(fragment[1], fragment_markup["branch1"])
+
+            # print(f"[green]{escape(fragment[0])}[/]", end="")
+            # print(f"[red]{escape(fragment[1])}[/]", end="")
 
 
 def show_changes_line_oriented(
     print, fragment_sequence, name0, name1, markup={}, header: str | None = None
 ):
-    show_header(print, header)
+    show_header(print, header, markup)
     escape = markup.get("escape", lambda _: _)
     line_markup = markup.get("line", {})
     fragment_markup = markup.get("fragment", {})
@@ -155,7 +176,6 @@ def show_changes_line_oriented(
         print(f"{prefix}{line}{suffix}")
 
     def markup_fragment(fragment, fragment_markup):
-        print(fragment_markup)
         prefix = fragment_markup["prefix"]
         suffix = fragment_markup["suffix"]
         return f"{prefix}{fragment}{suffix}"
@@ -171,13 +191,13 @@ def show_changes_line_oriented(
                 partial_line_1 = partial_line_1 + lines[0]
                 if len(lines) > 1:
                     print_line(
-                        partial_line_0 if any_line_0 else " ",
+                        partial_line_0,
                         name0,
                         line_markup["branch0"],
                     )
                     print(markup["separator"], end="")
                     print_line(
-                        partial_line_1 if any_line_1 else " ",
+                        partial_line_1,
                         name1,
                         line_markup["branch1"],
                     )
@@ -230,6 +250,12 @@ def get_arguments():
     parser.add_argument(
         "-d", "--diff", action="store_true", help="Show diffs along with merge"
     )
+    parser.add_argument(
+        "-f",
+        "--file-style",
+        action="store_true",
+        help="Mark up for files (git-style, no color)",
+    )
     args = parser.parse_args()
     return args
 
@@ -241,13 +267,19 @@ def get_display_function(arguments):
     return show_changes
 
 
+def get_markup_style(arguments):
+    if arguments.file_style:
+        return GIT_MARKUP
+    else:
+        return SCREEN_MARKUP
+
+
 if __name__ == "__main__":
     console = Console(force_terminal=True, highlight=False)
 
     arguments = get_arguments()
     display_function = get_display_function(arguments)
-    markup = GIT_MARKUP
-    markup = SCREEN_MARKUP
+    markup = get_markup_style(arguments)
 
     parent, branch0, branch1 = get_file_versions(arguments.test_case)
 
@@ -269,10 +301,10 @@ if __name__ == "__main__":
 
     if arguments.diff:
         display_function(
-            console.print, changes0, parent, branch0, markup=markup, header=branch0
+            console.print, changes0, branch0, parent, markup=markup, header=branch0
         )
         display_function(
-            console.print, changes1, parent, branch1, markup=markup, header=branch1
+            console.print, changes1, branch1, parent, markup=markup, header=branch1
         )
 
     merged = merge(parent_text, branch0_text, branch1_text)

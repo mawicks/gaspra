@@ -1,5 +1,5 @@
-C Remove\sunused\simport.
-D 2023-12-24T20:55:18.285
+C Added\stest\sof\schain\sof\soverlapping\schanges.
+D 2023-12-25T00:14:47.236
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -18,12 +18,12 @@ F src/gaspra/test_helpers/random_strings.py 8091c3a360c4e380dceb5a9c031a98c69466
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 2c827c815e834d5650b6944179c54448b6dc70e29085ca6d33103f87c5abe977
 F tests/small/test_changesets.py 602d13324931bb148af6adc78e7a10b6f273b6875e187b5d885c57c03cdc6d5c
-F tests/small/test_merge.py 13dce297da7676e4bf974b16882a0565ccf6a8a89051657ca390be6b04adfc5e
+F tests/small/test_merge.py f66066960e6e065da89060c9a83d79afb1509430c4e4aa8350603b4bcfab58b5
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P f523f73526978d154b9cdf3a31711138983e4b3b76166cbbc21d8a9309ba2b33
-R 141e73897b427e7c0e3df6c6c35365d1
+P 93ce3e648c0c3d73b017b2a0205632d22a29237ce0b642d4a3e1a45bb2e40a61
+R 4b6b11cfd5ca39a77960d9cb0211e780
 U mwicks
-Z 1e09cd72ac6d5d897f5173416b16915f
+Z bb8d3dfcbb5942eabafdcb86f33f9be7
 # Remove this line to create a well-formed Fossil manifest.

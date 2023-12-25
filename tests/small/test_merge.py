@@ -148,6 +148,7 @@ def test_merge(parent, branch1, branch2, merged):
             "sxbde",
             ("sx", ("a", ""), "b", ("c", ""), "de"),
         ),
+        ("abcdefgh", "aqdrgh", "abseth", ("a", ("qdrg", "bset"), "h")),
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):

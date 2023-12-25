@@ -129,9 +129,27 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
-def escape(s):
-    return s.replace("[", r"\[")
-    # return s
+def diff(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
+    """Returns the changes between a and b.
+
+    Arguments:
+        original: str
+            The "original" tring
+        modified: str
+            The "modified" string
+
+    Returns:
+        Iterable[str]
+            The changes between a and b.  Each item in the sequence
+            is either a string or a tuple of two strings.  If the item
+            is a string, it is unchanged test between `original` and
+            ``modified`.  If the item is a tuple, the first string is the
+            string inserted at that point in `original` to get `modified`
+            and the second string is the string that was deleted.
+
+    """
+    changeset = find_changeset(original, modified)
+    yield from changeset.fragments(original)
 
 
 def find_changeset(
@@ -195,6 +213,11 @@ def apply_reverse(changeset, modified: str):
     return reverse_patched_modified
 
 
+def escape(s):
+    return s.replace("[", r"\[")
+    # return s
+
+
 if __name__ == "__main__":
     from rich.console import Console
 
@@ -217,26 +240,3 @@ if __name__ == "__main__":
     assert reverse_patched_modified == original
 
     console.print(markup)
-
-
-def diff(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
-    """Returns the changes between a and b.
-
-    Arguments:
-        original: str
-            The "original" tring
-        modified: str
-            The "modified" string
-
-    Returns:
-        Iterable[str]
-            The changes between a and b.  Each item in the sequence
-            is either a string or a tuple of two strings.  If the item
-            is a string, it is unchanged test between `original` and
-            ``modified`.  If the item is a tuple, the first string is the
-            string inserted at that point in `original` to get `modified`
-            and the second string is the string that was deleted.
-
-    """
-    changeset = find_changeset(original, modified)
-    yield from changeset.fragments(original)

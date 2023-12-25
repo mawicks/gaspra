@@ -5,7 +5,6 @@ from gaspra.changesets import (
     ChangeFragment,
     ConflictFragment,
     CopyFragment,
-    diff,
     find_changeset,
 )
 

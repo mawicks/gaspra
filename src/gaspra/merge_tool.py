@@ -162,6 +162,7 @@ def show_changes(
 def show_changes_line_oriented(
     print, fragment_sequence, name0, name1, markup={}, header: str | None = None
 ):
+    output_is_empty = True
     show_header(print, header, markup)
     escape = markup.get("escape", lambda _: _)
     line_markup = markup.get("line", {})
@@ -177,6 +178,30 @@ def show_changes_line_oriented(
         suffix = fragment_markup["suffix"]
         return f"{prefix}{fragment}{suffix}"
 
+    def finish_conflict(
+        partial_line_into, partial_line_from, name0, name1, input_fragment
+    ):
+        input_fragment = escape(input_fragment)
+        if (partial_line_into and partial_line_into[-1] != "\n") or (
+            partial_line_from and partial_line_from[-1] != ""
+        ):
+            partial_line_into = partial_line_into + input_fragment
+            partial_line_from = partial_line_from + input_fragment
+            input_fragment = ""
+
+        print_line(
+            partial_line_into,
+            name0,
+            line_markup["into"],
+        )
+        print(markup["separator"])
+        print_line(
+            partial_line_from,
+            name1,
+            line_markup["from"],
+        )
+        print(input_fragment)
+
     in_conflict = False
     partial_line_into = partial_line_from = ""
     any_line_into = any_line_from = False
@@ -184,33 +209,34 @@ def show_changes_line_oriented(
         if isinstance(fragment, str):
             lines = fragment.split("\n")
             if in_conflict:
-                partial_line_into = partial_line_into + lines[0]
-                partial_line_from = partial_line_from + lines[0]
                 if len(lines) > 1:
-                    print_line(
+                    finish_conflict(
                         partial_line_into,
-                        name0,
-                        line_markup["into"],
-                    )
-                    print(markup["separator"])
-                    print_line(
                         partial_line_from,
+                        name0,
                         name1,
-                        line_markup["from"],
+                        lines[-1],
                     )
+                    output_is_empty = False
                     partial_line_into = partial_line_from = ""
+                    partial_line_from = partial_line_from = ""
                     any_line_into = any_line_from = in_conflict = False
                     print(escape("\n".join(lines[1:-1])))
                     print("\n")
                     partial_line_into = lines[-1]
                     partial_line_from = lines[-1]
             else:
-                print(escape(partial_line_into))
-                # If not in a conflict, partial_line_0 should be
-                # exactly the same as partial_line_1.
-                print(escape("\n".join(lines[:-1])))
-                partial_line_into = lines[-1]
-                partial_line_from = lines[-1]
+                if len(lines) > 1:
+                    print(escape("\n".join(lines[:-1])))
+                    print("\n")
+                    output_is_empty = False
+                    # If not in a conflict, partial_line_into should be
+                    # exactly the same as partial_line_from.
+                    partial_line_into = lines[-1]
+                    partial_line_from = lines[-1]
+                else:
+                    partial_line_into += lines[0]
+                    partial_line_from += lines[0]
 
         if isinstance(fragment, tuple):
             in_conflict = True
@@ -224,6 +250,13 @@ def show_changes_line_oriented(
                     fragment[1], fragment_markup["from"]
                 )
                 any_line_from = True
+                output_is_empty = False
+    if in_conflict:
+        finish_conflict(partial_line_into, partial_line_from, name0, name1, "")
+    else:
+        print(escape(partial_line_from))
+        if partial_line_from or output_is_empty:
+            print("\n")
 
 
 def get_file_versions(test_case: str):

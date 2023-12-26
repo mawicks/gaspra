@@ -19,7 +19,6 @@ TEST_MARKUP = {
 }
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     ["input_sequence", "output"],
     [
@@ -49,8 +48,35 @@ TEST_MARKUP = {
         ((("a\n", ""), "b\n"), "< x\na\n=\n> y\nb\n"),
         # Same with reversed directions.
         ((("", "a\n"), "b\n"), "< x\n=\na\n> y\nb\n"),
+        # "a" line followed by "b" or "c" lines
+        (
+            (
+                "a\n",
+                ("b\n", "c\n"),
+            ),
+            "a\n< x\nb\n=\nc\n> y\n",
+        ),
         # Conflict in the middle of a line (abd | acd).
         (("a", ("b", "c"), "d\n"), "< x\nabd\n=\nacd\n> y\n"),
+        # Two conflicts with one line between them. There was
+        # a bug that took two lines to trigger.
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\n", ("e\n", "f\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\n< x\ne\n=\nf\n> y\n",
+        ),
+        # Two conflicts with two lines between them.
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\ne\n", ("f\n", "g\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\n< x\nf\n=\ng\n> y\n",
+        ),
+        # Two conflicts with three lines between them.
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\ne\nf\n", ("g\n", "h\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\nf\n< x\ng\n=\nh\n> y\n",
+        ),
         #
         # Malformed files without newlines.
         (("a",), "a\n"),

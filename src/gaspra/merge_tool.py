@@ -185,10 +185,10 @@ def show_changes_line_oriented(
                         name1,
                         lines[0] + "\n",
                     )
-                    partial_line_into = partial_line_from = ""
-                    partial_line_from = partial_line_from = ""
                     in_conflict = False
-                    print(escape("\n".join(lines[1:-1])))
+                    print(
+                        escape("\n".join(lines[1:-1])) + "\n" if len(lines) > 2 else ""
+                    )
                     partial_line_into = lines[-1]
                     partial_line_from = lines[-1]
             else:

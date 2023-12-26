@@ -2,7 +2,21 @@ import pytest
 import io
 
 
-from gaspra.merge_tool import show_changes_line_oriented, GIT_MARKUP
+from gaspra.merge_tool import show_changes_line_oriented
+
+TEST_MARKUP = {
+    "fragment": {
+        "into": {"prefix": "", "suffix": ""},
+        "from": {"prefix": "", "suffix": ""},
+    },
+    "line": {
+        "into": {"prefix": lambda s: f"< {s}\n", "suffix": lambda _: ""},
+        "from": {"prefix": lambda _: "", "suffix": lambda s: f"> {s}\n"},
+    },
+    "escape": lambda _: _,
+    "separator": "=\n",
+    "header": {"prefix": "|", "suffix": "|"},
+}
 
 
 @pytest.mark.parametrize(
@@ -11,13 +25,20 @@ from gaspra.merge_tool import show_changes_line_oriented, GIT_MARKUP
         (("",), "\n"),
         (("\n",), "\n"),
         (("\n\n",), "\n\n"),
-        (("a",), "a\n"),
         (("a\n",), "a\n"),
         (("a\n\n",), "a\n\n"),
         (("a\nb\n",), "a\nb\n"),
-        (("a", ("c", "d")), "<<<<<<< x\nac\n=======\nad\n>>>>>>> y\n"),
-        (("a", ("c", "")), "<<<<<<< x\nac\n=======\na\n>>>>>>> y\n"),
-        ((("a", "b"),), "<<<<<<< x\na\n=======\nb\n>>>>>>> y\n"),
+        (("a", ("c\n", "d\n")), "< x\nac\n=\nad\n> y\n"),
+        (("a", ("c", "d"), "\n"), "< x\nac\n=\nad\n> y\n"),
+        ((("a\n", ""), "b\n"), "< x\na\n=\n> y\nb\n"),
+        #
+        #
+        #
+        # Degenerate files without newlines.
+        (("a",), "a\n"),
+        (("a", ("c", "d")), "< x\nac\n=\nad\n> y\n"),
+        (("a", ("c", "")), "< x\nac\n=\na\n> y\n"),
+        ((("a", "b"),), "< x\na\n=\nb\n> y\n"),
     ],
 )
 def test_show_changes_line_oriented(input_sequence, output):
@@ -28,7 +49,7 @@ def test_show_changes_line_oriented(input_sequence, output):
         input_sequence,
         "x",
         "y",
-        markup=GIT_MARKUP,
+        markup=TEST_MARKUP,
         header="",
     )
 

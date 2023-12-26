@@ -24,60 +24,30 @@ def rich_escape(s):
 
 SCREEN_MARKUP = {
     "fragment": {
-        "into": {
-            "prefix": "[bright_green]",
-            "suffix": "[/]",
-        },
-        "from": {
-            "prefix": "[bright_red]",
-            "suffix": "[/]",
-        },
+        "into": {"prefix": "[bright_green]", "suffix": "[/]"},
+        "from": {"prefix": "[bright_red]", "suffix": "[/]"},
     },
     "line": {
-        "into": {
-            "prefix": lambda _: "[green]",
-            "suffix": lambda _: "[/]",
-        },
-        "from": {
-            "prefix": lambda _: "[red]",
-            "suffix": lambda _: "[/]",
-        },
+        "into": {"prefix": lambda _: "[green]", "suffix": lambda _: "[/]"},
+        "from": {"prefix": lambda _: "[red]", "suffix": lambda _: "[/]"},
     },
     "escape": rich_escape,
     "separator": "",
-    "header": {
-        "prefix": "<<<[bright_blue]",
-        "suffix": "[/]>>>",
-    },
+    "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>"},
 }
 
 GIT_MARKUP = {
     "fragment": {
-        "into": {
-            "prefix": "",
-            "suffix": "",
-        },
-        "from": {
-            "prefix": "",
-            "suffix": "",
-        },
+        "into": {"prefix": "", "suffix": ""},
+        "from": {"prefix": "", "suffix": ""},
     },
     "line": {
-        "into": {
-            "prefix": lambda s: f"<<<<<<< {s}\n",
-            "suffix": lambda _: "",
-        },
-        "from": {
-            "prefix": lambda _: "",
-            "suffix": lambda s: f">>>>>>> {s}\n",
-        },
+        "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
+        "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
     },
     "escape": lambda _: _,
     "separator": "=======\n",
-    "header": {
-        "prefix": "<<<",
-        "suffix": ">>>",
-    },
+    "header": {"prefix": "<<<", "suffix": ">>>"},
 }
 
 
@@ -171,7 +141,7 @@ def show_changes_line_oriented(
     def print_line(line, name, line_markup):
         prefix = line_markup["prefix"](name)
         suffix = line_markup["suffix"](name)
-        print(f"{prefix}{line}\n{suffix}")
+        print(f"{prefix}{line}{suffix}")
 
     def markup_fragment(fragment, fragment_markup):
         prefix = fragment_markup["prefix"]
@@ -183,7 +153,7 @@ def show_changes_line_oriented(
     ):
         input_fragment = escape(input_fragment)
         if (partial_line_into and partial_line_into[-1] != "\n") or (
-            partial_line_from and partial_line_from[-1] != ""
+            partial_line_from and partial_line_from[-1] != "\n"
         ):
             partial_line_into = partial_line_into + input_fragment
             partial_line_from = partial_line_from + input_fragment
@@ -204,7 +174,6 @@ def show_changes_line_oriented(
 
     in_conflict = False
     partial_line_into = partial_line_from = ""
-    any_line_into = any_line_from = False
     for fragment in fragment_sequence:
         if isinstance(fragment, str):
             lines = fragment.split("\n")
@@ -215,14 +184,13 @@ def show_changes_line_oriented(
                         partial_line_from,
                         name0,
                         name1,
-                        lines[-1],
+                        lines[0] + "\n",
                     )
                     output_is_empty = False
                     partial_line_into = partial_line_from = ""
                     partial_line_from = partial_line_from = ""
-                    any_line_into = any_line_from = in_conflict = False
+                    in_conflict = False
                     print(escape("\n".join(lines[1:-1])))
-                    print("\n")
                     partial_line_into = lines[-1]
                     partial_line_from = lines[-1]
             else:
@@ -244,12 +212,10 @@ def show_changes_line_oriented(
                 partial_line_into = partial_line_into + markup_fragment(
                     fragment[0], fragment_markup["into"]
                 )
-                any_line_into = True
             if fragment[1]:
                 partial_line_from = partial_line_from + markup_fragment(
                     fragment[1], fragment_markup["from"]
                 )
-                any_line_from = True
                 output_is_empty = False
     if in_conflict:
         finish_conflict(partial_line_into, partial_line_from, name0, name1, "")

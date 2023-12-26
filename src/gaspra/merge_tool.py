@@ -132,11 +132,9 @@ def line_oriented_markup_changes(
                         escape("\n".join(lines[1:-1])) + "\n" if len(lines) > 2 else ""
                     )
                 else:
-                    print(escape("\n".join(lines[:-1])))
-                    print("\n")
-                    # If not in a conflict, partial_line_into should be
-                    # exactly the same as partial_line_from.
-            if len(lines) > 1:
+                    print(escape("\n".join(lines[:-1])) + "\n")
+                # If not in a conflict, partial_line_into should be
+                # exactly the same as partial_line_from.
                 partial_line_into = lines[-1]
                 partial_line_from = lines[-1]
             else:

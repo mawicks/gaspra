@@ -118,8 +118,8 @@ def line_oriented_markup_changes(
     for fragment in fragment_sequence:
         if isinstance(fragment, str):
             lines = fragment.split("\n")
-            if in_conflict:
-                if len(lines) > 1:  # Have a newline
+            if len(lines) > 1:  # Have a newline
+                if in_conflict:
                     finish_conflict(
                         partial_line_into,
                         partial_line_from,
@@ -131,23 +131,17 @@ def line_oriented_markup_changes(
                     print(
                         escape("\n".join(lines[1:-1])) + "\n" if len(lines) > 2 else ""
                     )
-                    partial_line_into = lines[-1]
-                    partial_line_from = lines[-1]
                 else:
-                    partial_line_into += lines[0]
-                    partial_line_from += lines[0]
-
-            else:
-                if len(lines) > 1:  # Have a newline
                     print(escape("\n".join(lines[:-1])))
                     print("\n")
                     # If not in a conflict, partial_line_into should be
                     # exactly the same as partial_line_from.
-                    partial_line_into = lines[-1]
-                    partial_line_from = lines[-1]
-                else:
-                    partial_line_into += lines[0]
-                    partial_line_from += lines[0]
+            if len(lines) > 1:
+                partial_line_into = lines[-1]
+                partial_line_from = lines[-1]
+            else:
+                partial_line_into += lines[0]
+                partial_line_from += lines[0]
 
         if isinstance(fragment, tuple):
             in_conflict = True

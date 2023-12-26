@@ -1,5 +1,5 @@
-C Fix\sdegenerate\scases\sand\sempty\scase\sin\smerge_tool.py
-D 2023-12-26T15:29:04.601
+C Merge\strunk.
+D 2023-12-26T15:30:28.293
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -24,8 +24,8 @@ F tests/small/test_merge_tool.py f664d55089afeedacdefa6a91f8fecc5161386e66c0ee83
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
 F tests/small/test_suffix_automaton.py eaa4b4eee5c5d5d83df1d921abf63ba6ec6bf5d4d73b969f77eeb23ac4609da1
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 6dd4e572ac742ee7deb0683804407e5617bd4e831148c5e928e286f518a2104e
+P 0c2402d8c0b47508eefced3f5e5f49f0e36a6505fe23d86cc24fbfce0893bd3e b1d8742e208b56f57b03fefe36df91306532012f4bcb2d6128b3665315d71677
 R 8f7384a3d9afeaeb55ef2ee868eea14d
 U mwicks
-Z 248f08c5d1448f59a9565e046b1b93e5
+Z d2297dc129cf60239a79ede5d32500be
 # Remove this line to create a well-formed Fossil manifest.

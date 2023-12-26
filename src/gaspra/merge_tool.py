@@ -132,7 +132,6 @@ def show_changes(
 def show_changes_line_oriented(
     print, fragment_sequence, name0, name1, markup={}, header: str | None = None
 ):
-    output_is_empty = True
     show_header(print, header, markup)
     escape = markup.get("escape", lambda _: _)
     line_markup = markup.get("line", {})
@@ -186,7 +185,6 @@ def show_changes_line_oriented(
                         name1,
                         lines[0] + "\n",
                     )
-                    output_is_empty = False
                     partial_line_into = partial_line_from = ""
                     partial_line_from = partial_line_from = ""
                     in_conflict = False
@@ -197,7 +195,6 @@ def show_changes_line_oriented(
                 if len(lines) > 1:
                     print(escape("\n".join(lines[:-1])))
                     print("\n")
-                    output_is_empty = False
                     # If not in a conflict, partial_line_into should be
                     # exactly the same as partial_line_from.
                     partial_line_into = lines[-1]
@@ -216,12 +213,15 @@ def show_changes_line_oriented(
                 partial_line_from = partial_line_from + markup_fragment(
                     fragment[1], fragment_markup["from"]
                 )
-                output_is_empty = False
     if in_conflict:
-        finish_conflict(partial_line_into, partial_line_from, name0, name1, "")
+        if partial_line_into[-1:] != "\n" or partial_line_from[-1] != "\n":
+            tail = "\n"
+        else:
+            tail = ""
+        finish_conflict(partial_line_into, partial_line_from, name0, name1, tail)
     else:
         print(escape(partial_line_from))
-        if partial_line_from or output_is_empty:
+        if partial_line_from:
             print("\n")
 
 

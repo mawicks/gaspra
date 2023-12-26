@@ -1,4 +1,5 @@
 import argparse
+from contextlib import contextmanager
 import os
 
 from rich.console import Console
@@ -20,7 +21,7 @@ SCREEN_MARKUP = {
     },
     "line": {
         "into": {"prefix": lambda _: "[green]", "suffix": lambda _: "[/]"},
-        "from": {"prefix": lambda _: "[red]", "suffix": lambda _: "[/]"},
+        "from": {"prefix": lambda _: "[red strike]", "suffix": lambda _: "[/]"},
     },
     "escape": rich_escape,
     "separator": "",
@@ -169,6 +170,12 @@ def get_arguments():
     parser.add_argument("from_branch_head")
     parser.add_argument("into_branch_head")
     parser.add_argument(
+        "-o",
+        "--output",
+        help="Output file",
+        default=None,
+    )
+    parser.add_argument(
         "-l",
         "--line-oriented",
         action="store_true",
@@ -187,7 +194,7 @@ def get_arguments():
     return args
 
 
-def get_display_function(arguments):
+def get_markup_function(arguments):
     if arguments.line_oriented:
         return line_oriented_markup_changes
 
@@ -201,16 +208,50 @@ def get_markup_style(arguments):
         return SCREEN_MARKUP
 
 
-if __name__ == "__main__":
+def get_print_function(arguments):
+    if arguments.output is None:
+        console = Console(force_terminal=True, highlight=False)
+
+        def console_print_function(s):
+            console.print(s, end="")
+
+        return console_print_function
+
+    def print_function(s):
+        with open(arguments.output, "wt", encoding="utf-8") as f:
+            f.write(s)
+
+
+@contextmanager
+def file_writer(filename):
+    file = open(filename, "wt", encoding="utf-8")
+    writer = file.write
+    yield writer
+    file.close()
+
+
+@contextmanager
+def console_writer():
     console = Console(force_terminal=True, highlight=False)
 
-    def console_print_function(s):
+    def print(s):
         console.print(s, end="")
 
-    print_function = console_print_function
+    yield print
+    return
 
+
+def get_writer(arguments):
+    if arguments.output is None:
+        return console_writer()
+
+    else:
+        return file_writer(arguments.output)
+
+
+def cli():
     arguments = get_arguments()
-    display_function = get_display_function(arguments)
+    display_function = get_markup_function(arguments)
     markup = get_markup_style(arguments)
 
     parent = arguments.parent
@@ -229,32 +270,35 @@ if __name__ == "__main__":
     into_changes = diff(parent_text, into_text)
     from_changes = diff(parent_text, from_text)
 
-    print_fn = console.print
+    with get_writer(arguments) as writer:
+        if arguments.diff:
+            display_function(
+                writer,
+                into_changes,
+                into_branch,
+                parent,
+                markup=markup,
+                header=into_branch,
+            )
+            display_function(
+                writer,
+                from_changes,
+                from_branch,
+                parent,
+                markup=markup,
+                header=from_branch,
+            )
 
-    if arguments.diff:
+        merged = merge(parent_text, into_text, from_text)
         display_function(
-            print_function,
-            into_changes,
+            writer,
+            merged,
             into_branch,
-            parent,
-            markup=markup,
-            header=into_branch,
-        )
-        display_function(
-            print_function,
-            from_changes,
             from_branch,
-            parent,
             markup=markup,
-            header=from_branch,
+            header="Merged" if arguments.diff else None,
         )
 
-    merged = merge(parent_text, into_text, from_text)
-    display_function(
-        print_function,
-        merged,
-        into_branch,
-        from_branch,
-        markup=markup,
-        header="Merged" if arguments.diff else None,
-    )
+
+if __name__ == "__main__":
+    cli()

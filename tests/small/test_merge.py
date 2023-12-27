@@ -168,7 +168,10 @@ MERGES_HAVING_CONFLICT_TOKEN_CASES = [
 
 @pytest.mark.parametrize(
     ["parent", "branch1", "branch2", "merged"],
-    MERGES_HAVING_CONFLICT_STRING_CASES,
+    [
+        *MERGES_HAVING_CONFLICT_STRING_CASES,
+        *MERGES_HAVING_CONFLICT_TOKEN_CASES,
+    ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):
     # For now, we only testing that the test cases have

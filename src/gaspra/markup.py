@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from copy import deepcopy
 from rich.console import Console
 
-from gaspra.types import Difference
+from gaspra.types import Change
 
 
 def rich_escape(s):
@@ -215,7 +215,7 @@ def token_oriented_markup_changes(
         show_header(print, header, markup)
 
     for item in fragment_sequence:
-        if isinstance(item, Difference):
+        if isinstance(item, Change):
             if item.a:
                 print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
             print(markup["separator"])

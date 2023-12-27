@@ -4,4 +4,4 @@ from collections import namedtuple
 StringSequence = Iterable[str]
 TokenSequence = Iterable[int]
 
-Difference = namedtuple("Difference", ["a", "b"])
+Change = namedtuple("Change", ["a", "b"])

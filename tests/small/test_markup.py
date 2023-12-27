@@ -3,7 +3,7 @@ import io
 
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
-from gaspra.types import Difference
+from gaspra.types import Change
 
 TEST_MARKUP = {
     "fragment": {
@@ -142,14 +142,14 @@ def token_dict():
         # A line with "a" or a line with "b"
         (
             [
-                Difference((1,), (2,)),
+                Change((1,), (2,)),
             ],
             "< x\na\n=\nb\n> y\n",
         ),
         # Previous case with an extra newline.
         (
             [
-                Difference((1,), (2,)),
+                Change((1,), (2,)),
                 (0,),
             ],
             "< x\na\n=\nb\n> y\n\n",

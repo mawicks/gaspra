@@ -114,14 +114,9 @@ def test_line_oriented_markup_changes(input_sequence, output):
 
 @pytest.fixture
 def token_dict():
-    return {
-        0: "",
-        1: "a",
-        2: "b",
-        3: "c",
-        4: "d",
-        5: "e",
-    }
+    _token_dict = {0: ""}
+    _token_dict.update({key: value for key, value in enumerate("abcdefg", start=1)})
+    return _token_dict
 
 
 @pytest.mark.parametrize(
@@ -161,6 +156,45 @@ def token_dict():
                 (2,),
             ],
             "< x\na\n=\n> y\nb\n",
+        ),
+        # Same with reversed directions.
+        (
+            [
+                Change((), (1,)),
+                (2,),
+            ],
+            "< x\n=\na\n> y\nb\n",
+        ),
+        # "a" line followed by "b" or "c" lines
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\n",
+        ),
+        # Two conflicts with one line between them.
+        #
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+                (4,),
+                Change((5,), (6,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\nd\n< x\ne\n=\nf\n> y\n",
+        ),
+        # Two conflicts with two lines between them.
+        #
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+                (4,),
+                (5,),
+                Change((6,), (7,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\n< x\nf\n=\ng\n> y\n",
         ),
     ],
 )

@@ -1,5 +1,4 @@
 from dataclasses import replace
-from itertools import chain
 
 from os.path import commonprefix
 
@@ -9,6 +8,7 @@ from gaspra.changesets import (
     CopyFragment,
     find_changeset,
 )
+from gaspra.common import get_joiner
 
 OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
@@ -80,14 +80,6 @@ def consolidate_conflicts(input_stack, empty=""):
             input_stack[-1], CopyFragment | ChangeFragment
         ):
             yield input_stack.pop()
-
-
-def get_joiner(empty):
-    if isinstance(empty, str):
-        joiner = lambda g: "".join(g)
-    else:
-        joiner = lambda g: tuple(chain(*g))
-    return joiner
 
 
 def consolidate_all(staged, empty=""):

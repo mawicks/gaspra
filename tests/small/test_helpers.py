@@ -12,9 +12,13 @@ from gaspra.test_helpers import helpers
         ("ab", (97, 98)),
         # Sequences of strings
         (("a", "b"), ((97,), (98,))),
+        (["a", "b"], ((97,), (98,))),
         # Sequence of [strings or sequences of strings]
         ((("a", "b"),), (((97,), (98,)),)),
+        ([("a", "b")], (((97,), (98,)),)),
         (("c", ("a", "b")), ((99,), ((97,), (98,)))),
+        (["c", ("a", "b")], ((99,), ((97,), (98,)))),
+        (["c", ["a", "b"]], ((99,), ((97,), (98,)))),
     ],
 )
 def test_tokenize(test_input, expected):

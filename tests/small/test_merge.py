@@ -1,73 +1,85 @@
 import pytest
 from gaspra.merge import merge
+from gaspra.test_helpers.helpers import tokenize
+
+
+MERGE_NO_CONFLICT_STRING_CASES = [
+    # No changes, all empty
+    ("", "", "", ""),
+    #
+    # No changes, non-empty
+    ("a", "a", "a", "a"),
+    #
+    # Same change both branches, beginning from empty
+    ("", "a", "a", "a"),
+    #
+    # Remove everything on both branches
+    ("a", "", "", ""),
+    #
+    # Remove everything on one branch, do nothing on the other.
+    ("a", "", "a", ""),
+    #
+    # Beginning empty, insert on one branch, do nothing on the other.
+    ("", "a", "", "a"),
+    #
+    # Beginning non-empty, Insert on one branch, do nothing on the other.
+    ("a", "ax", "a", "ax"),
+    #
+    # Beginning non-empty, delete on one branch, do nothing on the other.
+    ("ax", "a", "ax", "a"),
+    #
+    # Insert at beginning and end on different branches.
+    ("a", "xa", "ay", "xay"),
+    #
+    # Delete at beginning and end on different branches.
+    ("abc", "bc", "ab", "b"),
+    #
+    # Insert at beginning and deletion at end.
+    ("ab", "xab", "a", "xa"),
+    #
+    # Adjacent deletions which result in removing everything.
+    ("ab", "b", "a", ""),
+    #
+    # Should this be a conflict case?  It's definitely
+    # an edge case, but handle it this way:  Inserting
+    # token 'x' on one branch just before a token 'a' that was
+    # deleted on the other branch leaves the inerted token
+    # 'x' at the position where 'a' would have been.
+    ("a", "xa", "", "x"),
+    #
+    # A slightly more interpreable variation
+    # Branch 0 says, "insert 'x' after the '.'"
+    # Branch 1 says, "remove "a".  The merge is interpreted
+    # to be "insert 'x' after the '.', then remove 'a'
+    (".a", ".xa", ".", ".x"),
+    #
+    # This is another edge case.  The correct interpretation is
+    # Branch0: Insert "b" after "a"
+    # Branch1: Change "a" -> "x"
+    # Result "xb"
+    ("a", "ab", "x", "xb"),
+    # Yet another edge case.
+    # Branch0: Delete "a"
+    # Branch1: Insert "x" before "a"
+    # Resolution: Insert "x" before "a" then delete "a".
+    ("ab", "b", "xab", "xb"),
+    #
+    ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
+    #
+    ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
+]
+
+MERGE_NO_CONFLICT_TOKEN__CASES = [
+    (tokenize(parent), tokenize(branch1), tokenize(branch2), tokenize(merged))
+    for parent, branch1, branch2, merged in MERGE_NO_CONFLICT_STRING_CASES
+]
 
 
 @pytest.mark.parametrize(
     ["parent", "branch1", "branch2", "merged"],
     [
-        # No changes, all empty
-        ("", "", "", ""),
-        #
-        # No changes, non-empty
-        ("a", "a", "a", "a"),
-        #
-        # Same change both branches, beginning from empty
-        ("", "a", "a", "a"),
-        #
-        # Remove everything on both branches
-        ("a", "", "", ""),
-        #
-        # Remove everything on one branch, do nothing on the other.
-        ("a", "", "a", ""),
-        #
-        # Beginning empty, insert on one branch, do nothing on the other.
-        ("", "a", "", "a"),
-        #
-        # Beginning non-empty, Insert on one branch, do nothing on the other.
-        ("a", "ax", "a", "ax"),
-        #
-        # Beginning non-empty, delete on one branch, do nothing on the other.
-        ("ax", "a", "ax", "a"),
-        #
-        # Insert at beginning and end on different branches.
-        ("a", "xa", "ay", "xay"),
-        #
-        # Delete at beginning and end on different branches.
-        ("abc", "bc", "ab", "b"),
-        #
-        # Insert at beginning and deletion at end.
-        ("ab", "xab", "a", "xa"),
-        #
-        # Adjacent deletions which result in removing everything.
-        ("ab", "b", "a", ""),
-        #
-        # Should this be a conflict case?  It's definitely
-        # an edge case, but handle it this way:  Inserting
-        # token 'x' on one branch just before a token 'a' that was
-        # deleted on the other branch leaves the inerted token
-        # 'x' at the position where 'a' would have been.
-        ("a", "xa", "", "x"),
-        #
-        # A slightly more interpreable variation
-        # Branch 0 says, "insert 'x' after the '.'"
-        # Branch 1 says, "remove "a".  The merge is interpreted
-        # to be "insert 'x' after the '.', then remove 'a'
-        (".a", ".xa", ".", ".x"),
-        #
-        # This is another edge case.  The correct interpretation is
-        # Branch0: Insert "b" after "a"
-        # Branch1: Change "a" -> "x"
-        # Result "xb"
-        ("a", "ab", "x", "xb"),
-        # Yet another edge case.
-        # Branch0: Delete "a"
-        # Branch1: Insert "x" before "a"
-        # Resolution: Insert "x" before "a" then delete "a".
-        ("ab", "b", "xab", "xb"),
-        #
-        ("abcdefg", "abcxyz", "abcxyz", "abcxyz"),
-        #
-        ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
+        *MERGE_NO_CONFLICT_STRING_CASES,
+        *MERGE_NO_CONFLICT_TOKEN__CASES,
     ],
 )
 def test_merge(parent, branch1, branch2, merged):

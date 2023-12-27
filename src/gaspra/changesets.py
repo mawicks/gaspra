@@ -29,8 +29,8 @@ class ConflictFragment:
 
 @dataclass
 class ChangesetLeaf:
-    original: str
-    modified: str
+    original: str | tuple[int]
+    modified: str | tuple[int]
 
     original_slice: slice
     modified_slice: slice
@@ -154,8 +154,8 @@ def diff(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
 
 
 def find_changeset(
-    original: str,
-    modified: str,
+    original: str | tuple[int],
+    modified: str | tuple[int],
     original_slice: slice = slice(0, None),
     modified_slice: slice = slice(0, None),
 ) -> Changeset | ChangesetLeaf:

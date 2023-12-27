@@ -243,7 +243,7 @@ LCS_TEST_SEQS = [
 
 
 @pytest.mark.parametrize(
-    ["s1", "s2", "ignored"],
+    ["s1", "s2", "__lcs_length__"],
     [
         *LCS_TEST_STRINGS,
         *LCS_TEST_SEQS,
@@ -273,7 +273,7 @@ def test_find_lcs_finds_a_common_sequence(
     ["s1", "s2", "lcs_length"],
     [
         *LCS_TEST_STRINGS,
-        LCS_TEST_SEQS,
+        *LCS_TEST_SEQS,
     ],
 )
 def test_longest_common_string_finds_a_maximal_common_string(

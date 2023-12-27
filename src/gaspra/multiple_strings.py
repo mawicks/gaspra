@@ -8,7 +8,7 @@ from gaspra.suffix_automaton import (
 )
 
 
-def concatenate_strings(string_set: Sequence[str]):
+def concatenate_strings(string_set: Sequence[str | Sequence[int]]):
     # Concatenate the members of string_set with end of string "tokens"
     # to separate them. End of string "tokens" are represented by
     # strings of length 2, e.g. "$0", "$1", etc., so there's no
@@ -129,8 +129,8 @@ def update_shared_strings(shared_strings, top):
         # know the parent state represents a substring associated with
         #  that token. End of string "tokens" are represented by strings
         # of length 2, e.g. "$0", "$1", etc., so there's no possibility
-        # of them matching any single unicode character.
-        if len(token) > 1:
+        # of them matching any single unicode character or any int.
+        if not isinstance(token, str) or len(token) > 1:
             shared_strings[top.id].add(token)
 
         # If any of the transitions are regular charactrers then the

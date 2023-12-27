@@ -2,7 +2,7 @@ import pytest
 import io
 
 
-from gaspra.merge_tool import line_oriented_markup_changes
+from gaspra.markup import line_oriented_markup_changes
 
 TEST_MARKUP = {
     "fragment": {

@@ -9,12 +9,18 @@ from gaspra.changesets import (
     find_changeset,
 )
 from gaspra.common import get_joiner
+from gaspra.types import Change, TokenSequence
+
 
 OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
 
 
-def merge(parent: str, branch0: str, branch1: str):
+def merge(
+    parent: str | TokenSequence,
+    branch0: str | TokenSequence,
+    branch1: str | TokenSequence,
+):
     empty = parent[0:0]
 
     changeset0 = find_changeset(parent, branch0)
@@ -97,7 +103,7 @@ def consolidate_all(staged, empty=""):
         version2 = join(fragment.version2 for fragment in conflict_group)
 
         if version1 or version2:
-            yield (version1, version2)
+            yield Change(version1, version2)
             something_has_been_output = True
 
         # Loop through and consolidate the other types

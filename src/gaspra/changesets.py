@@ -6,31 +6,32 @@ import os
 
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
+from gaspra.types import Change, TokenSequence
 
 
 @dataclass
 class CopyFragment:
-    insert: str
+    insert: str | TokenSequence
     length: int
 
 
 @dataclass
 class ChangeFragment:
-    insert: str
-    delete: str
+    insert: str | TokenSequence
+    delete: str | TokenSequence
     length: int
 
 
 @dataclass
 class ConflictFragment:
-    version1: str
-    version2: str
+    version1: str | TokenSequence
+    version2: str | TokenSequence
 
 
 @dataclass
 class ChangesetLeaf:
-    original: str | tuple[int]
-    modified: str | tuple[int]
+    original: str | TokenSequence
+    modified: str | TokenSequence
 
     original_slice: slice
     modified_slice: slice
@@ -54,15 +55,17 @@ class ChangesetLeaf:
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
-            yield (self.modified, self.original)
+            yield Change(self.modified, self.original)
 
-    def apply_forward(self, _: str):
+    def apply_forward(self, _: str | TokenSequence):
         yield self.modified
 
-    def apply_reverse(self, _: str):
+    def apply_reverse(self, _: str | TokenSequence):
         yield self.original
 
-    def show(self, __original__: str, __modified__: str) -> str:
+    def show(
+        self, __original__: str | TokenSequence, __modified__: str | TokenSequence
+    ) -> str:
         result = ""
 
         if self.original:
@@ -130,7 +133,9 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
-def diff(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
+def diff(
+    original: str | TokenSequence, modified: str | TokenSequence
+) -> Iterable[str | TokenSequence | Change]:
     """Returns the changes between a and b.
 
     Arguments:
@@ -154,8 +159,8 @@ def diff(original: str, modified: str) -> Iterable[str | tuple[str, str]]:
 
 
 def find_changeset(
-    original: str | tuple[int],
-    modified: str | tuple[int],
+    original: str | TokenSequence,
+    modified: str | TokenSequence,
     original_slice: slice = slice(0, None),
     modified_slice: slice = slice(0, None),
 ) -> Changeset | ChangesetLeaf:

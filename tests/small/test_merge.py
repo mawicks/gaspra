@@ -1,6 +1,7 @@
 import pytest
 from gaspra.merge import merge
 from gaspra.test_helpers.helpers import tokenize
+from gaspra.types import Change
 
 
 CONFLICT_FREE_MERGES_STRING_CASES = [
@@ -178,3 +179,24 @@ def test_merge_conflict(parent, branch1, branch2, merged):
     # some kind of merge conflict, not specifically what that is.
     result = merge(parent, branch1, branch2)
     assert tuple(merged) == tuple(result)
+
+
+# We use "named" tuples for the changes in the sequence so that we can
+# easily which tuples are changes and which are sequences of tokens.
+# Make sure the tuples that should be named are named.  For the string
+# case, all tuples should named.  For the token case, it's ambigious, so
+# we check only the string case.  The token case uses exactly the same
+# code, so if the named tuples are in the right place when processing
+# strings, they should also be in the right place when processing
+# tokens.
+
+
+@pytest.mark.parametrize(
+    ["parent", "branch1", "branch2", "__merged__"],
+    MERGES_HAVING_CONFLICT_STRING_CASES,
+)
+def test_all_string_merge_tuples_are_typed(parent, branch1, branch2, __merged__):
+    merged = merge(parent, branch1, branch2)
+    assert all(
+        isinstance(change, Change) or isinstance(change, str) for change in merged
+    )

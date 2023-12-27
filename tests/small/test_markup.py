@@ -2,7 +2,8 @@ import pytest
 import io
 
 
-from gaspra.markup import line_oriented_markup_changes
+from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
+from gaspra.types import Change
 
 TEST_MARKUP = {
     "fragment": {
@@ -15,6 +16,14 @@ TEST_MARKUP = {
     },
     "escape": lambda _: _,
     "separator": "=\n",
+    "header": {"prefix": "|", "suffix": "|"},
+}
+
+TEST_TOKEN_MARKUP = {
+    "into": {"prefix": lambda s: f"< {s}", "suffix": lambda _: None},
+    "from": {"prefix": lambda _: None, "suffix": lambda s: f"> {s}"},
+    "escape": lambda _: _,
+    "separator": "=",
     "header": {"prefix": "|", "suffix": "|"},
 }
 
@@ -40,7 +49,7 @@ TEST_MARKUP = {
         ((("a\n", "b\n"),), "< x\na\n=\nb\n> y\n"),
         # Previous case with an extra newline.
         ((("a\n", "b\n"), "\n"), "< x\na\n=\nb\n> y\n\n"),
-        # A line with "ab" or a line with "bc"
+        # A line with "ab" or a line with "ac"
         (("a", ("b", "c"), "\n"), "< x\nab\n=\nac\n> y\n"),
         # Same thing written diferently
         (("a", ("b\n", "c\n")), "< x\nab\n=\nac\n> y\n"),
@@ -98,6 +107,112 @@ def test_line_oriented_markup_changes(input_sequence, output):
         "y",
         markup=TEST_MARKUP,
         header="",
+    )
+
+    assert output_buffer.getvalue() == output
+
+
+@pytest.fixture
+def token_dict():
+    _token_dict = {0: ""}
+    _token_dict.update({key: value for key, value in enumerate("abcdefg", start=1)})
+    return _token_dict
+
+
+@pytest.mark.parametrize(
+    ["input_sequence", "output"],
+    [
+        # Empty file remains empty.
+        ([()], ""),
+        # Just an empty line
+        ([(0,)], "\n"),
+        # Two empty lines
+        ([(0, 0)], "\n\n"),
+        # One non-empty line
+        ([(1,)], "a\n"),
+        # One non-empty line followed by empty line
+        ([(1, 0)], "a\n\n"),
+        # Two non-empty lines
+        ([(1, 2)], "a\nb\n"),
+        # A line with "a" or a line with "b"
+        (
+            [
+                Change((1,), (2,)),
+            ],
+            "< x\na\n=\nb\n> y\n",
+        ),
+        # Previous case with an extra newline.
+        (
+            [
+                Change((1,), (2,)),
+                (0,),
+            ],
+            "< x\na\n=\nb\n> y\n\n",
+        ),
+        # Line with "a" deleted in alternate followed by "b".
+        (
+            [
+                Change((1,), ()),
+                (2,),
+            ],
+            "< x\na\n=\n> y\nb\n",
+        ),
+        # Same with reversed directions.
+        (
+            [
+                Change((), (1,)),
+                (2,),
+            ],
+            "< x\n=\na\n> y\nb\n",
+        ),
+        # "a" line followed by "b" or "c" lines
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\n",
+        ),
+        # Two conflicts with one line between them.
+        #
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+                (4,),
+                Change((5,), (6,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\nd\n< x\ne\n=\nf\n> y\n",
+        ),
+        # Two conflicts with two lines between them.
+        #
+        (
+            (
+                (1,),
+                Change((2,), (3,)),
+                (4,),
+                (5,),
+                Change((6,), (7,)),
+            ),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\n< x\nf\n=\ng\n> y\n",
+        ),
+    ],
+)
+def test_token_oriented_markup_changes(input_sequence, output, token_dict):
+    output_buffer = io.StringIO()
+
+    def writer(s):
+        output_buffer.write(s)
+        output_buffer.write("\n")
+
+    token_oriented_markup_changes(
+        writer,
+        tuple(input_sequence),
+        "x",
+        "y",
+        markup=TEST_TOKEN_MARKUP,
+        header="",
+        token_dict=token_dict,
     )
 
     assert output_buffer.getvalue() == output

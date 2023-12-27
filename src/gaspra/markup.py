@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from copy import deepcopy
 from rich.console import Console
 
+from gaspra.types import Change
+
 
 def rich_escape(s):
     return s.replace("[", r"\[")
@@ -39,6 +41,14 @@ GIT_MARKUP = {
     "header": {"prefix": "<<<", "suffix": ">>>\n"},
 }
 
+TOKEN_GIT_MARKUP = {
+    "into": {"prefix": lambda s: f"<<<<<<< {s}", "suffix": lambda _: None},
+    "from": {"prefix": lambda _: None, "suffix": lambda s: f">>>>>>> {s}"},
+    "escape": lambda _: _,
+    "separator": "=======",
+    "header": {"prefix": "<<<", "suffix": ">>>"},
+}
+
 
 def show_header(print, header, markup={}):
     escape = markup.get("escape", lambda _: _)
@@ -50,7 +60,13 @@ def show_header(print, header, markup={}):
 
 
 def markup_changes(
-    print, fragment_sequence, __name0__, __name1__, markup={}, header: str | None = None
+    print,
+    fragment_sequence,
+    __name0__,
+    __name1__,
+    markup={},
+    header: str | None = None,
+    **__kwargs__,
 ):
     escape = markup.get("escape", lambda _: _)
 
@@ -85,7 +101,13 @@ def markup_fragment(fragment, fragment_markup):
 
 
 def line_oriented_markup_changes(
-    print, fragment_sequence, name0, name1, markup={}, header: str | None = None
+    print,
+    fragment_sequence,
+    name0,
+    name1,
+    markup={},
+    header: str | None = None,
+    **__kwargs__,
 ):
     show_header(print, header, markup)
     escape = markup.get("escape", lambda _: _)
@@ -169,19 +191,59 @@ def line_oriented_markup_changes(
 
 
 @contextmanager
-def file_writer(filename):
+def file_writer(filename, end=""):
     file = open(filename, "wt", encoding="utf-8")
-    writer = file.write
-    yield writer
+
+    def print(s):
+        file.write(s)
+        if end:
+            file.write(end)
+
+    yield print
     file.close()
 
 
 @contextmanager
-def console_writer():
+def console_writer(end=""):
     console = Console(force_terminal=True, highlight=False)
 
     def print(s):
-        console.print(s, end="")
+        console.print(s, end=end)
 
     yield print
     return
+
+
+def print_conflict(print, version, token_dict, escape, name, markup):
+    prefix = markup["prefix"](name)
+    suffix = markup["suffix"](name)
+    if prefix is not None:
+        print(prefix)
+    for token in version:
+        print(escape(token_dict[token]))
+    if suffix is not None:
+        print(suffix)
+
+
+def token_oriented_markup_changes(
+    print,
+    fragment_sequence,
+    name0,
+    name1,
+    markup={},
+    header: str | None = None,
+    token_dict={},
+):
+    escape = markup["escape"]
+
+    if header:
+        show_header(print, header, markup)
+
+    for item in fragment_sequence:
+        if isinstance(item, Change):
+            print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
+            print(markup["separator"])
+            print_conflict(print, item.b, token_dict, escape, name1, markup["from"])
+        else:
+            for token in item:
+                print(token_dict[token])

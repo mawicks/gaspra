@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from copy import deepcopy
 from rich.console import Console
 
+from gaspra.types import Difference
+
 
 def rich_escape(s):
     return s.replace("[", r"\[")
@@ -187,6 +189,17 @@ def console_writer():
     return
 
 
+def print_conflict(print, version, token_dict, escape, name, markup):
+    prefix = markup["prefix"](name)
+    suffix = markup["suffix"](name)
+    if prefix is not None:
+        print(prefix)
+    for token in version:
+        print(token_dict[token])
+    if suffix is not None:
+        print(suffix)
+
+
 def token_oriented_markup_changes(
     print,
     fragment_sequence,
@@ -196,6 +209,18 @@ def token_oriented_markup_changes(
     markup={},
     header: str | None = None,
 ):
+    escape = markup["escape"]
+
+    if header:
+        show_header(print, header, markup)
+
     for item in fragment_sequence:
-        for token in item:
-            print(token_dict[token])
+        if isinstance(item, Difference):
+            if item.a:
+                print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
+            print(markup["separator"])
+            if item.b:
+                print_conflict(print, item.b, token_dict, escape, name1, markup["from"])
+        else:
+            for token in item:
+                print(token_dict[token])

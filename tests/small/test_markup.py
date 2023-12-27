@@ -3,6 +3,7 @@ import io
 
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
+from gaspra.types import Difference
 
 TEST_MARKUP = {
     "fragment": {
@@ -15,6 +16,14 @@ TEST_MARKUP = {
     },
     "escape": lambda _: _,
     "separator": "=\n",
+    "header": {"prefix": "|", "suffix": "|"},
+}
+
+TEST_TOKEN_MARKUP = {
+    "into": {"prefix": lambda s: f"< {s}", "suffix": lambda _: None},
+    "from": {"prefix": lambda _: None, "suffix": lambda s: f"> {s}"},
+    "escape": lambda _: _,
+    "separator": "=",
     "header": {"prefix": "|", "suffix": "|"},
 }
 
@@ -130,6 +139,21 @@ def token_dict():
         ([(1, 0)], "a\n\n"),
         # Two non-empty lines
         ([(1, 2)], "a\nb\n"),
+        # A line with "a" or a line with "b"
+        (
+            [
+                Difference((1,), (2,)),
+            ],
+            "< x\na\n=\nb\n> y\n",
+        ),
+        # Previous case with an extra newline.
+        (
+            [
+                Difference((1,), (2,)),
+                (0,),
+            ],
+            "< x\na\n=\nb\n> y\n\n",
+        ),
     ],
 )
 def test_token_oriented_markup_changes(input_sequence, output, token_dict):
@@ -145,7 +169,7 @@ def test_token_oriented_markup_changes(input_sequence, output, token_dict):
         token_dict,
         "x",
         "y",
-        markup=TEST_MARKUP,
+        markup=TEST_TOKEN_MARKUP,
         header="",
     )
 

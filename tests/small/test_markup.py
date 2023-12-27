@@ -20,10 +20,10 @@ TEST_MARKUP = {
 }
 
 TEST_TOKEN_MARKUP = {
-    "into": {"prefix": lambda s: f"< {s}", "suffix": lambda _: None},
-    "from": {"prefix": lambda _: None, "suffix": lambda s: f"> {s}"},
+    "into": {"prefix": lambda s: f"< {s}\n", "suffix": lambda _: None},
+    "from": {"prefix": lambda _: None, "suffix": lambda s: f"> {s}\n"},
     "escape": lambda _: _,
-    "separator": "=",
+    "separator": "=\n",
     "header": {"prefix": "|", "suffix": "|"},
 }
 
@@ -201,12 +201,8 @@ def token_dict():
 def test_token_oriented_markup_changes(input_sequence, output, token_dict):
     output_buffer = io.StringIO()
 
-    def writer(s):
-        output_buffer.write(s)
-        output_buffer.write("\n")
-
     token_oriented_markup_changes(
-        writer,
+        output_buffer.write,
         tuple(input_sequence),
         "x",
         "y",

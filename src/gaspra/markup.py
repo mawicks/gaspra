@@ -1,5 +1,6 @@
 from contextlib import contextmanager
 from copy import deepcopy
+import io
 from rich.console import Console
 
 from gaspra.types import Change
@@ -42,10 +43,18 @@ GIT_MARKUP = {
 }
 
 TOKEN_GIT_MARKUP = {
-    "into": {"prefix": lambda s: f"<<<<<<< {s}", "suffix": lambda _: None},
-    "from": {"prefix": lambda _: None, "suffix": lambda s: f">>>>>>> {s}"},
+    "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
+    "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
     "escape": lambda _: _,
-    "separator": "=======",
+    "separator": "=======\n",
+    "header": {"prefix": "<<<", "suffix": ">>>"},
+}
+
+TOKEN_SCREEN_MARKUP = {
+    "into": {"prefix": lambda _: "[bright_green]", "suffix": lambda _: "[/]"},
+    "from": {"prefix": lambda _: "[bright_red]", "suffix": lambda _: "[/]"},
+    "escape": rich_escape,
+    "separator": "",
     "header": {"prefix": "<<<", "suffix": ">>>"},
 }
 
@@ -191,24 +200,19 @@ def line_oriented_markup_changes(
 
 
 @contextmanager
-def file_writer(filename, end=""):
+def file_writer(filename):
     file = open(filename, "wt", encoding="utf-8")
 
-    def print(s):
-        file.write(s)
-        if end:
-            file.write(end)
-
-    yield print
+    yield file.write
     file.close()
 
 
 @contextmanager
-def console_writer(end=""):
+def console_writer():
     console = Console(force_terminal=True, highlight=False)
 
     def print(s):
-        console.print(s, end=end)
+        console.print(s, end="")
 
     yield print
     return
@@ -217,12 +221,18 @@ def console_writer(end=""):
 def print_conflict(print, version, token_dict, escape, name, markup):
     prefix = markup["prefix"](name)
     suffix = markup["suffix"](name)
+    # Collect output in a buffer so that prefix and suffix
+    # tags appear in the same call to print().
+    # That is important for the rich Console writer.
+    buffer = io.StringIO()
     if prefix is not None:
-        print(prefix)
+        buffer.write(prefix)
     for token in version:
-        print(escape(token_dict[token]))
+        buffer.write(escape(token_dict[token]))
+        buffer.write("\n")
     if suffix is not None:
-        print(suffix)
+        buffer.write(suffix)
+    print(buffer.getvalue())
 
 
 def token_oriented_markup_changes(
@@ -247,3 +257,4 @@ def token_oriented_markup_changes(
         else:
             for token in item:
                 print(token_dict[token])
+                print("\n")

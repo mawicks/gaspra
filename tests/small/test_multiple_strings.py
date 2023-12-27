@@ -1,5 +1,7 @@
 from collections.abc import Sequence
 
+from gaspra.test_helpers.helpers import tokenize
+
 import pytest
 
 
@@ -16,6 +18,23 @@ def test_concatenate_strings_on_tokens():
     concatenation = list(concatenate_strings([(1, 2), (3, 4), (5, 6)]))
 
     assert concatenation == [1, 2, "$0", 3, 4, "$1", 5, 6, "$2"]
+
+
+MULTIPLE_STRING_TEST_CASES = [
+    ((), (), None),
+    (("", ""), (0, 0), 0),
+    (("", "abc"), (0, 0), 0),
+    (("abc", ""), (0, 0), 0),
+    (("abc", "abc"), (0, 0), 3),
+    (("abc", "abcdef"), (0, 0), 3),
+    (("abcdef", "def"), (3, 0), 3),
+    (("abc", "xbc", "bcxy"), (1, 1, 0), 2),
+    (("abcd", "bcdax", "yzbcd"), (1, 0, 2), 3),
+]
+MULTIPLE_TOKEN_TEST_CASES = [
+    (tokenize(string_set), start_positions, length)
+    for string_set, start_positions, length in MULTIPLE_STRING_TEST_CASES
+]
 
 
 @pytest.mark.parametrize(

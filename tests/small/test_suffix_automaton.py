@@ -182,20 +182,19 @@ def test_find_substring_is_correct_on_random_tokens(token_sequence):
             assert token_sequence[position:end_position] == candidate
 
 
-FIND_SUBSTRING_ALL_CASES = (
-    [
-        # Substring cases
-        ("abcdefg", "def", (3,)),
-        ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
-        ("", "", (0,)),
-        ("abcabc", "abc", (0, 3)),
-        # Non-substring cases
-        ("", "anything", ()),
-        ("bananas", "sana", ()),
-        ("bananas", "bananasx", ()),
-        ("bananas", "xbananas", ()),
-    ],
-)
+FIND_SUBSTRING_ALL_CASES = [
+    # Substring cases
+    ("abcdefg", "def", (3,)),
+    ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
+    ("", "", (0,)),
+    ("abcabc", "abc", (0, 3)),
+    # Non-substring cases
+    ("", "anything", ()),
+    ("bananas", "sana", ()),
+    ("bananas", "bananasx", ()),
+    ("bananas", "xbananas", ()),
+]
+
 FIND_SUBSTRING_ALL_TOKEN_CASES = [
     (tokenize(automaton_string), tokenize(query_string), position)
     for (automaton_string, query_string, position) in FIND_SUBSTRING_ALL_CASES

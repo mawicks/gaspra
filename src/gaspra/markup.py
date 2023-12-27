@@ -185,3 +185,17 @@ def console_writer():
 
     yield print
     return
+
+
+def token_oriented_markup_changes(
+    print,
+    fragment_sequence,
+    token_dict,
+    name0,
+    name1,
+    markup={},
+    header: str | None = None,
+):
+    for item in fragment_sequence:
+        for token in item:
+            print(token_dict[token])

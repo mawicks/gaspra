@@ -2,7 +2,7 @@ import pytest
 import io
 
 
-from gaspra.markup import line_oriented_markup_changes
+from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 
 TEST_MARKUP = {
     "fragment": {
@@ -94,6 +94,55 @@ def test_line_oriented_markup_changes(input_sequence, output):
     line_oriented_markup_changes(
         output_buffer.write,
         input_sequence,
+        "x",
+        "y",
+        markup=TEST_MARKUP,
+        header="",
+    )
+
+    assert output_buffer.getvalue() == output
+
+
+@pytest.fixture
+def token_dict():
+    return {
+        0: "",
+        1: "a",
+        2: "b",
+        3: "c",
+        4: "d",
+        5: "e",
+    }
+
+
+@pytest.mark.parametrize(
+    ["input_sequence", "output"],
+    [
+        # Empty file remains empty.
+        ([()], ""),
+        # Just an empty line
+        ([(0,)], "\n"),
+        # Two empty lines
+        ([(0, 0)], "\n\n"),
+        # One non-empty line
+        ([(1,)], "a\n"),
+        # One non-empty line followed by empty line
+        ([(1, 0)], "a\n\n"),
+        # Two non-empty lines
+        ([(1, 2)], "a\nb\n"),
+    ],
+)
+def test_token_oriented_markup_changes(input_sequence, output, token_dict):
+    output_buffer = io.StringIO()
+
+    def writer(s):
+        output_buffer.write(s)
+        output_buffer.write("\n")
+
+    token_oriented_markup_changes(
+        writer,
+        tuple(input_sequence),
+        token_dict,
         "x",
         "y",
         markup=TEST_MARKUP,

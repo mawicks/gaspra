@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-
+from copy import deepcopy
 from rich.console import Console
 
 
@@ -14,12 +14,17 @@ SCREEN_MARKUP = {
     },
     "line": {
         "into": {"prefix": lambda _: "[green]", "suffix": lambda _: "[/]"},
-        "from": {"prefix": lambda _: "[red strike]", "suffix": lambda _: "[/]"},
+        "from": {"prefix": lambda _: "[red]", "suffix": lambda _: "[/]"},
     },
     "escape": rich_escape,
     "separator": "",
     "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>\n"},
 }
+
+STRIKEOUT_SCREEN_MARKUP = deepcopy(SCREEN_MARKUP)
+STRIKEOUT_SCREEN_MARKUP["fragment"]["from"]["prefix"] = "[bright_red strike]"
+STRIKEOUT_SCREEN_MARKUP["line"]["from"]["prefix"] = "[red strike]"
+
 GIT_MARKUP = {
     "fragment": {
         "into": {"prefix": "", "suffix": ""},

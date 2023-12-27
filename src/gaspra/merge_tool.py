@@ -5,6 +5,7 @@ from gaspra.markup import console_writer, file_writer
 from gaspra.markup import (
     GIT_MARKUP,
     SCREEN_MARKUP,
+    STRIKEOUT_SCREEN_MARKUP,
     line_oriented_markup_changes,
     markup_changes,
 )
@@ -27,13 +28,16 @@ def add_common_arguments(parser):
         help="Use a line-oriented diff rather than a fragment-oriented diff",
     )
     parser.add_argument(
-        "-d", "--diff", action="store_true", help="Show diffs along with merge result"
-    )
-    parser.add_argument(
         "-f",
         "--file-style",
         action="store_true",
         help='Mark up for file output (git-style with "-l", no color otherwise)',
+    )
+    parser.add_argument(
+        "-s",
+        "--strikeout",
+        action="store_true",
+        help="Use a strikeout font for deletions on diffs.",
     )
 
 
@@ -44,6 +48,10 @@ def get_merge_arguments():
     parser.add_argument("into_branch_head")
 
     add_common_arguments(parser)
+
+    parser.add_argument(
+        "-d", "--diff", action="store_true", help="Show diffs along with merge result"
+    )
 
     args = parser.parse_args()
     return args
@@ -67,11 +75,19 @@ def get_markup_function(arguments):
     return markup_changes
 
 
-def get_markup_style(arguments):
+def get_merge_markup_style(arguments):
     if arguments.file_style:
         return GIT_MARKUP
     else:
         return SCREEN_MARKUP
+
+
+def get_diff_markup_style(arguments):
+    if arguments.file_style:
+        return GIT_MARKUP
+    elif arguments.strikeout:
+        return STRIKEOUT_SCREEN_MARKUP
+    return SCREEN_MARKUP
 
 
 def get_writer(arguments):
@@ -85,7 +101,8 @@ def get_writer(arguments):
 def merge_cli():
     arguments = get_merge_arguments()
     display_function = get_markup_function(arguments)
-    markup = get_markup_style(arguments)
+    markup = get_merge_markup_style(arguments)
+    diff_markup = get_diff_markup_style(arguments)
 
     parent = arguments.parent
     into_branch = arguments.into_branch_head
@@ -110,7 +127,7 @@ def merge_cli():
                 into_changes,
                 into_branch,
                 parent,
-                markup=markup,
+                markup=diff_markup,
                 header=into_branch,
             )
             display_function(
@@ -118,7 +135,7 @@ def merge_cli():
                 from_changes,
                 from_branch,
                 parent,
-                markup=markup,
+                markup=diff_markup,
                 header=from_branch,
             )
 
@@ -137,7 +154,7 @@ def diff_cli():
     arguments = get_diff_arguments()
 
     display_function = get_markup_function(arguments)
-    markup = get_markup_style(arguments)
+    markup = get_diff_markup_style(arguments)
 
     original = arguments.original
     modified = arguments.modified

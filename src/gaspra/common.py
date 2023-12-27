@@ -2,18 +2,18 @@ from collections.abc import Iterable
 from itertools import chain
 import os
 
-from gaspra.types import StringSequence, TokenSequence
+from gaspra.types import StringIterable, TokenIterable
 
 DATA_DIR = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "data"),
 )
 
 
-def string_joiner(g: StringSequence) -> str:
+def string_joiner(g: StringIterable) -> str:
     return "".join(g)
 
 
-def tuple_joiner(g: Iterable[TokenSequence]) -> TokenSequence:
+def tuple_joiner(g: Iterable[TokenIterable]) -> TokenIterable:
     return tuple(chain(*g))
 
 

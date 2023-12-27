@@ -6,12 +6,30 @@ from gaspra.markup import (
     GIT_MARKUP,
     SCREEN_MARKUP,
     STRIKEOUT_SCREEN_MARKUP,
+    TOKEN_GIT_MARKUP,
     line_oriented_markup_changes,
     markup_changes,
+    token_oriented_markup_changes,
 )
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
+from gaspra.types import TokenSequence
+
+
+def tokenize(s: str, token_dict: dict[str, int]) -> TokenSequence:
+    lines = s.split("\n")
+    # Ignore the empty string that gets generated
+    # by an ending newline.
+
+    if len(lines) > 0 and lines[-1] == "":
+        lines = lines[:-1]
+
+    for line in s.split("\n"):
+        if line not in token_dict:
+            token_dict[line] = len(token_dict)
+
+    return tuple(token_dict[line] for line in lines)
 
 
 def add_common_arguments(parser):
@@ -25,7 +43,13 @@ def add_common_arguments(parser):
         "-l",
         "--line-oriented",
         action="store_true",
-        help="Use a line-oriented diff rather than a fragment-oriented diff",
+        help="Use a line-oriented diff for output rather than a fragment-oriented diff",
+    )
+    parser.add_argument(
+        "-t",
+        "--tokenize-lines",
+        action="store_true",
+        help="Process the input a line at a time rather than a character at a time (implies -l)",
     )
     parser.add_argument(
         "-f",
@@ -69,6 +93,9 @@ def get_diff_arguments():
 
 
 def get_markup_function(arguments):
+    if arguments.tokenize_lines:
+        return token_oriented_markup_changes
+
     if arguments.line_oriented:
         return line_oriented_markup_changes
 
@@ -83,6 +110,8 @@ def get_merge_markup_style(arguments):
 
 
 def get_diff_markup_style(arguments):
+    if arguments.tokenize_lines:
+        return TOKEN_GIT_MARKUP
     if arguments.file_style:
         return GIT_MARKUP
     elif arguments.strikeout:
@@ -91,11 +120,16 @@ def get_diff_markup_style(arguments):
 
 
 def get_writer(arguments):
+    if arguments.tokenize_lines:
+        end = "\n"
+    else:
+        end = ""
+
     if arguments.output is None:
-        return console_writer()
+        return console_writer(end=end)
 
     else:
-        return file_writer(arguments.output)
+        return file_writer(arguments.output, end=end)
 
 
 def merge_cli():
@@ -117,6 +151,14 @@ def merge_cli():
     into_text = get_text(into_branch)
     from_text = get_text(from_branch)
 
+    token_dict = {}
+    reverse_token_dict = None
+    if arguments.tokenize_lines:
+        parent_text = tokenize(parent_text, token_dict)
+        into_text = tokenize(into_text, token_dict)
+        from_text = tokenize(from_text, token_dict)
+        reverse_token_dict = {token: string for string, token in token_dict.items()}
+
     into_changes = diff(parent_text, into_text)
     from_changes = diff(parent_text, from_text)
 
@@ -129,6 +171,7 @@ def merge_cli():
                 parent,
                 markup=diff_markup,
                 header=into_branch,
+                token_dict=reverse_token_dict,
             )
             display_function(
                 writer,
@@ -137,6 +180,7 @@ def merge_cli():
                 parent,
                 markup=diff_markup,
                 header=from_branch,
+                token_dict=reverse_token_dict,
             )
 
         merged = merge(parent_text, into_text, from_text)
@@ -147,6 +191,7 @@ def merge_cli():
             from_branch,
             markup=markup,
             header="Merged" if arguments.diff else None,
+            token_dict=reverse_token_dict,
         )
 
 
@@ -167,6 +212,13 @@ def diff_cli():
     original_text = get_text(original)
     modified_text = get_text(modified)
 
+    token_dict = {}
+    reverse_token_dict = None
+    if arguments.tokenize_lines:
+        original_text = tokenize(original_text, token_dict)
+        modified_text = tokenize(modified_text, token_dict)
+        reverse_token_dict = {token: string for string, token in token_dict.items()}
+
     changes = diff(original_text, modified_text)
 
     with get_writer(arguments) as writer:
@@ -176,6 +228,7 @@ def diff_cli():
             modified,
             original,
             markup=markup,
+            token_dict=reverse_token_dict,
         )
 
 

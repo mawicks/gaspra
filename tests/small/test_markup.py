@@ -208,11 +208,11 @@ def test_token_oriented_markup_changes(input_sequence, output, token_dict):
     token_oriented_markup_changes(
         writer,
         tuple(input_sequence),
-        token_dict,
         "x",
         "y",
         markup=TEST_TOKEN_MARKUP,
         header="",
+        token_dict=token_dict,
     )
 
     assert output_buffer.getvalue() == output

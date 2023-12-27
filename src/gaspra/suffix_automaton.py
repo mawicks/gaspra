@@ -5,6 +5,8 @@ from dataclasses import dataclass, field
 import random
 from typing import Callable
 
+from gaspra.types import TokenSequence
+
 
 @dataclass
 class Node:
@@ -15,10 +17,10 @@ class Node:
     is_terminal: bool = False  # Is this a terminal state?
     link: Node | None = None
     reverse_links: list[Node] = field(default_factory=list)
-    empty: str | tuple[int, ...] = ""
+    empty: str | TokenSequence = ""
 
     @staticmethod
-    def get_factory(empty_sequence: str | tuple[int, ...]):
+    def get_factory(empty_sequence: str | TokenSequence):
         generator = make_id_sequence()
 
         def factory(**kwargs):
@@ -229,7 +231,7 @@ def dedup_sorted(sequence: Iterable[int]) -> list[int]:
     return deduped
 
 
-def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
+def find_lcs(root: Node, s: str | TokenSequence) -> tuple[int, int, int]:
     """Return the starting positions and length of an LCS.
 
     The LCS is the longest common substring of the

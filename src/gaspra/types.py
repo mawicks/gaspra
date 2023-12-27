@@ -1,7 +1,9 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
 from collections import namedtuple
 
-StringSequence = Iterable[str]
-TokenSequence = Iterable[int]
+TokenSequence = Sequence[int]
+
+StringIterable = Iterable[str]
+TokenIterable = Iterable[TokenSequence]
 
 Change = namedtuple("Change", ["a", "b"])

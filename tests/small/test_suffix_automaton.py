@@ -8,7 +8,7 @@ from gaspra.suffix_automaton import (
     find_lcs,
 )
 
-from gaspra.test_helpers.random_strings import random_string
+from gaspra.test_helpers.random_strings import random_string, random_tokens
 
 
 def test_build_empty_string():
@@ -20,28 +20,51 @@ def test_build_empty_string():
         assert string == ""
 
 
+def test_build_empty_tuple():
+    """
+    Ensure that an empty string is handled correctly.
+    """
+    empty = ()
+    automaton = build(empty)
+    for suffix in all_suffixes(automaton):
+        assert tuple(suffix) == ()
+
+
 BUILD_AND_EXTRACT_TEST_STRINGS = [
     "bananas",
     "abcbc",
     random_string("abc", 20, 42),
 ]
 
+BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES = [
+    (1, 2, 3, 2, 3, 2, 4),
+    (1, 2, 3, 2, 1),
+    random_tokens([1, 2, 3], 20, 42),
+]
+
 
 @pytest.mark.parametrize(
-    "string",
-    BUILD_AND_EXTRACT_TEST_STRINGS,
+    "token_sequence",
+    [
+        *BUILD_AND_EXTRACT_TEST_STRINGS,
+        *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES,
+    ],
 )
-def test_automaton_generates_only_suffixes(string):
+def test_automaton_generates_only_suffixes(token_sequence):
     """
     Ensure that everything produced by the automaton is a suffix.
     Passing this along with the companion test
-    test_automaton_generates_each_length_once()
-    ensures that all suffixes are generated, each only once.
+    test_automaton_generates_each_length_once() ensures that all
+    suffixes are generated, each only once.
     """
-    automaton = build(string)
-    for string in all_suffixes(automaton):
-        # Assert that string is indeed a suffix
-        assert isinstance(string, str) and string.endswith(string)
+    automaton = build(token_sequence, empty=token_sequence[0:0])
+    for suffix_sequence in all_suffixes(automaton):
+        # Assert that suffix_sequence is indeed a suffix
+        suffix_len = len(suffix_sequence)
+        if suffix_len > 0:
+            assert suffix_sequence == token_sequence[-suffix_len:]
+        else:
+            assert suffix_sequence == token_sequence[0:0]
 
 
 @pytest.mark.parametrize(

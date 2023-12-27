@@ -2,7 +2,7 @@ import time
 from gaspra.suffix_automaton import build, find_substring_all
 
 
-from gaspra.test_helpers.random_strings import random_string
+from gaspra.test_helpers.helpers import random_string
 
 COMPLEXITY_TEST_COEFFICIENT = 3.0
 COMPLEXITY_TEST_EXPONENT = 1.5

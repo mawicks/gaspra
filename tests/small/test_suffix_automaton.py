@@ -8,7 +8,7 @@ from gaspra.suffix_automaton import (
     find_lcs,
 )
 
-from gaspra.test_helpers.random_strings import random_string, random_tokens
+from gaspra.test_helpers.helpers import random_string, random_tokens, tokenize
 
 
 def test_build_empty_string():
@@ -37,9 +37,7 @@ BUILD_AND_EXTRACT_TEST_STRINGS = [
 ]
 
 BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES = [
-    (1, 2, 3, 2, 3, 2, 4),
-    (1, 2, 3, 2, 1),
-    random_tokens([1, 2, 3], 20, 42),
+    tokenize(sequence) for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
 ]
 
 
@@ -91,20 +89,26 @@ def test_automaton_generates_each_length_once(token_sequence):
     assert len(lengths) == 0
 
 
+FIND_SUBSTRING_CASES = [
+    ("", "anything", None),
+    ("bananas", "bananasx", None),
+    ("bananas", "xbananas", None),
+    # Below are technically true substring cases which are also tested separately.
+    ("anything", "", 0),
+    ("", "", 0),
+    ((), (), 0),
+]
+FIND_SUBSTRING_TOKEN_CASES = [
+    (tokenize(automaton_string), tokenize(query_string), position)
+    for (automaton_string, query_string, position) in FIND_SUBSTRING_CASES
+]
+
+
 @pytest.mark.parametrize(
     ["automaton_string", "query_string", "position"],
     [
-        ("", "anything", None),
-        ("bananas", "bananasx", None),
-        ("bananas", "xbananas", None),
-        ((), (1, 2, 3, 4, 5, 6, 7, 8), None),
-        ((1, 2, 3, 2, 3, 2, 4), (1, 2, 3, 2, 3, 2, 4, 5), None),
-        ((1, 2, 3, 2, 3, 2, 4), (5, 1, 2, 3, 2, 3, 2, 4), None),
-        # Below are technically true substring cases which are also tested separately.
-        ("anything", "", 0),
-        ("", "", 0),
-        ((1, 2, 3, 4, 5, 6, 7, 8), (), 0),
-        ((), (), 0),
+        *FIND_SUBSTRING_CASES,
+        *FIND_SUBSTRING_TOKEN_CASES,
     ],
 )
 def test_find_substring(automaton_string, query_string, position):
@@ -178,23 +182,31 @@ def test_find_substring_is_correct_on_random_tokens(token_sequence):
             assert token_sequence[position:end_position] == candidate
 
 
-@pytest.mark.parametrize(
-    ["automaton_sequence", "query_sequence", "positions"],
+FIND_SUBSTRING_ALL_CASES = (
     [
         # Substring cases
         ("abcdefg", "def", (3,)),
         ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
         ("", "", (0,)),
         ("abcabc", "abc", (0, 3)),
-        ((3, 4, 5, 6, 7, 8, 9), (6, 7, 8), (3,)),
-        ((1, 2, 3, 4, 5, 6, 7, 8), (), (0, 1, 2, 3, 4, 5, 6, 7, 8)),
-        ((), (), (0,)),
-        ((1, 2, 3, 1, 2, 3), (1, 2, 3), (0, 3)),
         # Non-substring cases
         ("", "anything", ()),
         ("bananas", "sana", ()),
         ("bananas", "bananasx", ()),
         ("bananas", "xbananas", ()),
+    ],
+)
+FIND_SUBSTRING_ALL_TOKEN_CASES = [
+    (tokenize(automaton_string), tokenize(query_string), position)
+    for (automaton_string, query_string, position) in FIND_SUBSTRING_ALL_CASES
+]
+
+
+@pytest.mark.parametrize(
+    ["automaton_sequence", "query_sequence", "positions"],
+    [
+        *FIND_SUBSTRING_ALL_CASES,
+        *FIND_SUBSTRING_ALL_TOKEN_CASES,
     ],
 )
 def test_find_substring_all(automaton_sequence, query_sequence, positions):
@@ -220,25 +232,9 @@ LCS_TEST_STRINGS = [
     (S1, S2, len(COMMON)),
 ]
 
-COMMON_SEQ = random_tokens((1, 2, 3), 17, 41)
-NOT_COMMON1_SEQ = random_tokens((1, 2, 3), 13, 42)
-NOT_COMMON2_SEQ = random_tokens((1, 2, 3), 13, 43)
-S1_SEQ = NOT_COMMON1_SEQ[:3] + COMMON_SEQ + NOT_COMMON1_SEQ[3:]
-S2_SEQ = NOT_COMMON2_SEQ[:6] + COMMON_SEQ + NOT_COMMON1_SEQ[6:]
-
-LCS_TEST_SEQS = [
-    ("bananas", "xnanananx", 5),
-    ((1, 2, 3, 2, 3, 2, 4), (5, 3, 2, 3, 2, 3, 2, 3, 5), 5),
-    ("abcabcxyzfoo", "xyzafabcxyzfaz", 7),
-    (
-        (1, 2, 3, 1, 2, 3, 4, 5, 6, 7, 8, 8),
-        (4, 5, 6, 1, 7, 1, 2, 3, 4, 5, 6, 7, 1, 9),
-        7,
-    ),
-    # Since these longer strings are randomly generated,
-    # we don't know the exact length of the common string.
-    # We know that it's *at least* len(common).
-    (S1_SEQ, S2_SEQ, len(COMMON_SEQ)),
+LCS_TEST_TOKENS = [
+    (tokenize(automaton_string), tokenize(query_string), position)
+    for (automaton_string, query_string, position) in LCS_TEST_STRINGS
 ]
 
 
@@ -246,7 +242,7 @@ LCS_TEST_SEQS = [
     ["s1", "s2", "__lcs_length__"],
     [
         *LCS_TEST_STRINGS,
-        *LCS_TEST_SEQS,
+        *LCS_TEST_TOKENS,
     ],
 )
 def test_find_lcs_finds_a_common_sequence(
@@ -273,7 +269,7 @@ def test_find_lcs_finds_a_common_sequence(
     ["s1", "s2", "lcs_length"],
     [
         *LCS_TEST_STRINGS,
-        *LCS_TEST_SEQS,
+        *LCS_TEST_TOKENS,
     ],
 )
 def test_longest_common_string_finds_a_maximal_common_string(
@@ -308,17 +304,22 @@ def test_longest_common_string_finds_a_maximal_common_string(
     )
 
 
+NULL_TEST_CASES_STRINGS = (
+    ("abc", "xyz"),
+    ("", "xyz"),
+    ("abc", ""),
+    ("", ""),
+)
+NULL_TEST_CASES_TOKENS = [
+    (tokenize(build), tokenize(query)) for build, query in NULL_TEST_CASES_STRINGS
+]
+
+
 @pytest.mark.parametrize(
     ["build_sequence", "query_sequence"],
     (
-        ("abc", "xyz"),
-        ("", "xyz"),
-        ("abc", ""),
-        ("", ""),
-        ((1, 2, 3), (4, 5, 6)),
-        ((), (1, 2, 3)),
-        ((1, 2, 3), ()),
-        ((), ()),
+        *NULL_TEST_CASES_STRINGS,
+        *NULL_TEST_CASES_TOKENS,
     ),
 )
 def test_find_lcs_returns_all_zeros_when_nothing_in_common_or_empty_query(

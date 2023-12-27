@@ -2,7 +2,7 @@ import pytest
 
 
 from gaspra.changesets import apply_forward, apply_reverse, find_changeset
-from gaspra.test_helpers.random_strings import random_string
+from gaspra.test_helpers.helpers import random_string
 
 
 @pytest.mark.parametrize(

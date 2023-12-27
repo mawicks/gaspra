@@ -195,7 +195,7 @@ def print_conflict(print, version, token_dict, escape, name, markup):
     if prefix is not None:
         print(prefix)
     for token in version:
-        print(token_dict[token])
+        print(escape(token_dict[token]))
     if suffix is not None:
         print(suffix)
 
@@ -216,11 +216,9 @@ def token_oriented_markup_changes(
 
     for item in fragment_sequence:
         if isinstance(item, Change):
-            if item.a:
-                print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
+            print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
             print(markup["separator"])
-            if item.b:
-                print_conflict(print, item.b, token_dict, escape, name1, markup["from"])
+            print_conflict(print, item.b, token_dict, escape, name1, markup["from"])
         else:
             for token in item:
                 print(token_dict[token])

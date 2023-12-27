@@ -49,7 +49,7 @@ TEST_TOKEN_MARKUP = {
         ((("a\n", "b\n"),), "< x\na\n=\nb\n> y\n"),
         # Previous case with an extra newline.
         ((("a\n", "b\n"), "\n"), "< x\na\n=\nb\n> y\n\n"),
-        # A line with "ab" or a line with "bc"
+        # A line with "ab" or a line with "ac"
         (("a", ("b", "c"), "\n"), "< x\nab\n=\nac\n> y\n"),
         # Same thing written diferently
         (("a", ("b\n", "c\n")), "< x\nab\n=\nac\n> y\n"),
@@ -153,6 +153,14 @@ def token_dict():
                 (0,),
             ],
             "< x\na\n=\nb\n> y\n\n",
+        ),
+        # Line with "a" deleted in alternate followed by "b".
+        (
+            [
+                Change((1,), ()),
+                (2,),
+            ],
+            "< x\na\n=\n> y\nb\n",
         ),
     ],
 )

@@ -68,10 +68,10 @@ def test_automaton_generates_only_suffixes(token_sequence):
 
 
 @pytest.mark.parametrize(
-    "string",
-    BUILD_AND_EXTRACT_TEST_STRINGS,
+    "token_sequence",
+    [*BUILD_AND_EXTRACT_TEST_STRINGS, *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES],
 )
-def test_automaton_generates_each_length_once(string):
+def test_automaton_generates_each_length_once(token_sequence):
     """
     Ensure that a string of every possible suffix length is generated
     by the automaton once and only once. Passing this along with the
@@ -79,13 +79,13 @@ def test_automaton_generates_each_length_once(string):
     the automaton generates all of the suffixes are generated, each
     only once.
     """
-    lengths = set(range(len(string) + 1))
-    automaton = build(string)
+    lengths = set(range(len(token_sequence) + 1))
+    automaton = build(token_sequence, empty=token_sequence[0:0])
 
-    for string in all_suffixes(automaton):
-        assert len(string) in lengths
+    for suffix_sequence in all_suffixes(automaton):
+        assert len(suffix_sequence) in lengths
         # Remove len(string) so that repeats are detected.
-        lengths.remove(len(string))
+        lengths.remove(len(suffix_sequence))
 
     # Check that every possible length was generated.
     assert len(lengths) == 0

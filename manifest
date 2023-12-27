@@ -1,5 +1,5 @@
 C Add\ssequences\sof\sints\sto\stest_automaton_generates_only_suffixes
-D 2023-12-27T03:13:58.260
+D 2023-12-27T03:19:01.338
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -24,10 +24,10 @@ F tests/small/test_changesets.py 602d13324931bb148af6adc78e7a10b6f273b6875e187b5
 F tests/small/test_merge.py f66066960e6e065da89060c9a83d79afb1509430c4e4aa8350603b4bcfab58b5
 F tests/small/test_merge_tool.py 36e970ded14f944b096cfa0dc4259e9775e669581d60db64a32f02e0390e22df
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
-F tests/small/test_suffix_automaton.py f8f9e4df342dd1b973d74b3c05a084c6c3e2cdbd3ed613182b0282d9fc5f333d
+F tests/small/test_suffix_automaton.py 5675775e940599aa136e77b34f666dcde0a7765135e1631dc5b84792b4b627af
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 50894978258f3570c1ca4e3ef50d53c5e8a5f498badc098e633f0102e35dc450
-R 625cc4825c453bd7c9e111dddb67088f
+P 26bab9d1103d2a5a4337acbb35f1598224cca37bab9624c1de660206bd89a500
+R 9d417099b2d36ee4bc54cbc9abc42f5c
 U mwicks
-Z a948bcdc4d4e8c14845856e95e82b255
+Z b24a5f904e9c39d79fb505b0ee4bc486
 # Remove this line to create a well-formed Fossil manifest.

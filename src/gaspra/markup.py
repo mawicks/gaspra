@@ -218,7 +218,7 @@ def console_writer():
     return
 
 
-def print_conflict(print, version, token_dict, escape, name, markup):
+def print_conflict(print, version, token_map, escape, name, markup):
     prefix = markup["prefix"](name)
     suffix = markup["suffix"](name)
     # Collect output in a buffer so that prefix and suffix
@@ -228,7 +228,7 @@ def print_conflict(print, version, token_dict, escape, name, markup):
     if prefix is not None:
         buffer.write(prefix)
     for token in version:
-        buffer.write(escape(token_dict[token]))
+        buffer.write(escape(token_map[token]))
         buffer.write("\n")
     if suffix is not None:
         buffer.write(suffix)
@@ -242,7 +242,7 @@ def token_oriented_markup_changes(
     name1,
     markup={},
     header: str | None = None,
-    token_dict={},
+    token_map=(),
 ):
     escape = markup["escape"]
 
@@ -251,10 +251,10 @@ def token_oriented_markup_changes(
 
     for item in fragment_sequence:
         if isinstance(item, Change):
-            print_conflict(print, item.a, token_dict, escape, name0, markup["into"])
+            print_conflict(print, item.a, token_map, escape, name0, markup["into"])
             print(markup["separator"])
-            print_conflict(print, item.b, token_dict, escape, name1, markup["from"])
+            print_conflict(print, item.b, token_map, escape, name1, markup["from"])
         else:
             for token in item:
-                print(token_dict[token])
+                print(token_map[token])
                 print("\n")

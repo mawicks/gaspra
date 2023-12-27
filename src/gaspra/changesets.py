@@ -6,7 +6,7 @@ import os
 
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
-from gaspra.types import Change, TokenSequence
+from gaspra.types import Change, ChangeSequence, TokenSequence
 
 
 @dataclass
@@ -51,7 +51,7 @@ class ChangesetLeaf:
                 ),
             )
 
-    def fragments(self, _: str) -> Iterable[str | tuple[str, str]]:
+    def fragments(self, _: str | TokenSequence) -> ChangeSequence:
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
@@ -105,7 +105,7 @@ class Changeset:
         yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix._fragments(original)
 
-    def fragments(self, original) -> Iterable[str | tuple[str, str]]:
+    def fragments(self, original: str | TokenSequence) -> ChangeSequence:
         yield from self.prefix.fragments(original)
         yield original[self.common_original]
         yield from self.suffix.fragments(original)
@@ -135,7 +135,7 @@ class Changeset:
 
 def diff(
     original: str | TokenSequence, modified: str | TokenSequence
-) -> Iterable[str | TokenSequence | Change]:
+) -> ChangeSequence:
     """Returns the changes between a and b.
 
     Arguments:

@@ -1,3 +1,4 @@
+from collections.abc import Iterable, Sequence
 import argparse
 import os
 
@@ -18,19 +19,27 @@ from gaspra.changesets import diff
 from gaspra.types import TokenSequence
 
 
-def tokenize(s: str, token_dict: dict[str, int]) -> TokenSequence:
-    lines = s.split("\n")
-    # Ignore the empty string that gets generated
-    # by an ending newline.
+def tokenize(
+    *string_set: str,
+) -> Iterable[TokenSequence]:
+    tokenized = []
+    token_dict = {}
 
-    if len(lines) > 0 and lines[-1] == "":
-        lines = lines[:-1]
+    for s in string_set:
+        lines = s.split("\n")
+        # Ignore the empty string that gets generated
+        # by an ending newline.
 
-    for line in s.split("\n"):
-        if line not in token_dict:
-            token_dict[line] = len(token_dict)
+        if len(lines) > 0 and lines[-1] == "":
+            lines = lines[:-1]
 
-    return tuple(token_dict[line] for line in lines)
+        for line in s.split("\n"):
+            if line not in token_dict:
+                token_dict[line] = len(token_dict)
+
+        tokenized.append(tuple(token_dict[line] for line in lines))
+    token_map = tuple(token_dict.keys())
+    return tuple([token_map, *tokenized])
 
 
 def add_common_arguments(parser):
@@ -103,23 +112,14 @@ def get_markup_function(arguments):
     return markup_changes
 
 
-def get_merge_markup_style(arguments):
+def get_markup_style(arguments, allow_strikeout=True):
     if arguments.tokenize_lines:
         if arguments.file_style:
             return TOKEN_GIT_MARKUP
         return TOKEN_SCREEN_MARKUP
     if arguments.file_style:
         return GIT_MARKUP
-    else:
-        return SCREEN_MARKUP
-
-
-def get_diff_markup_style(arguments):
-    if arguments.tokenize_lines:
-        return TOKEN_GIT_MARKUP
-    if arguments.file_style:
-        return GIT_MARKUP
-    elif arguments.strikeout:
+    elif arguments.strikeout and allow_strikeout:
         return STRIKEOUT_SCREEN_MARKUP
     return SCREEN_MARKUP
 
@@ -134,30 +134,23 @@ def get_writer(arguments):
 
 def merge_cli():
     arguments = get_merge_arguments()
-    display_function = get_markup_function(arguments)
-    markup = get_merge_markup_style(arguments)
-    diff_markup = get_diff_markup_style(arguments)
-
     parent = arguments.parent
     into_branch = arguments.into_branch_head
     from_branch = arguments.from_branch_head
-
-    def get_text(filename):
-        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
-            data = f.read()
-            return data
 
     parent_text = get_text(parent)
     into_text = get_text(into_branch)
     from_text = get_text(from_branch)
 
-    token_dict = {}
-    reverse_token_dict = None
+    token_map = None
     if arguments.tokenize_lines:
-        parent_text = tokenize(parent_text, token_dict)
-        into_text = tokenize(into_text, token_dict)
-        from_text = tokenize(from_text, token_dict)
-        reverse_token_dict = {token: string for string, token in token_dict.items()}
+        token_map, parent_text, into_text, from_text = tokenize(
+            parent_text, into_text, from_text
+        )
+
+    display_function = get_markup_function(arguments)
+    markup = get_markup_style(arguments, allow_strikeout=False)
+    diff_markup = get_markup_style(arguments)
 
     into_changes = diff(parent_text, into_text)
     from_changes = diff(parent_text, from_text)
@@ -171,7 +164,7 @@ def merge_cli():
                 parent,
                 markup=diff_markup,
                 header=into_branch,
-                token_dict=reverse_token_dict,
+                token_map=token_map,
             )
             display_function(
                 writer,
@@ -180,7 +173,7 @@ def merge_cli():
                 parent,
                 markup=diff_markup,
                 header=from_branch,
-                token_dict=reverse_token_dict,
+                token_map=token_map,
             )
 
         merged = merge(parent_text, into_text, from_text)
@@ -191,35 +184,27 @@ def merge_cli():
             from_branch,
             markup=markup,
             header="Merged" if arguments.diff else None,
-            token_dict=reverse_token_dict,
+            token_map=token_map,
         )
 
 
 def diff_cli():
     arguments = get_diff_arguments()
 
-    display_function = get_markup_function(arguments)
-    markup = get_diff_markup_style(arguments)
-
     original = arguments.original
     modified = arguments.modified
-
-    def get_text(filename):
-        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
-            data = f.read()
-            return data
 
     original_text = get_text(original)
     modified_text = get_text(modified)
 
-    token_dict = {}
-    reverse_token_dict = None
+    token_map = None
     if arguments.tokenize_lines:
-        original_text = tokenize(original_text, token_dict)
-        modified_text = tokenize(modified_text, token_dict)
-        reverse_token_dict = {token: string for string, token in token_dict.items()}
+        token_map, original_text, modified_text = tokenize(original_text, modified_text)
 
     changes = diff(original_text, modified_text)
+
+    markup = get_markup_style(arguments)
+    display_function = get_markup_function(arguments)
 
     with get_writer(arguments) as writer:
         display_function(
@@ -228,8 +213,14 @@ def diff_cli():
             modified,
             original,
             markup=markup,
-            token_dict=reverse_token_dict,
+            token_map=token_map,
         )
+
+
+def get_text(filename):
+    with open(os.path.join(filename), "rt", encoding="utf-8") as f:
+        data = f.read()
+        return data
 
 
 if __name__ == "__main__":

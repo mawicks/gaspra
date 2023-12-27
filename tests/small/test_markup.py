@@ -208,7 +208,7 @@ def test_token_oriented_markup_changes(input_sequence, output, token_dict):
         "y",
         markup=TEST_TOKEN_MARKUP,
         header="",
-        token_dict=token_dict,
+        token_map=None,=token_dict,
     )
 
     assert output_buffer.getvalue() == output

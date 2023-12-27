@@ -7,6 +7,7 @@ from gaspra.markup import (
     SCREEN_MARKUP,
     STRIKEOUT_SCREEN_MARKUP,
     TOKEN_GIT_MARKUP,
+    TOKEN_SCREEN_MARKUP,
     line_oriented_markup_changes,
     markup_changes,
     token_oriented_markup_changes,
@@ -103,6 +104,10 @@ def get_markup_function(arguments):
 
 
 def get_merge_markup_style(arguments):
+    if arguments.tokenize_lines:
+        if arguments.file_style:
+            return TOKEN_GIT_MARKUP
+        return TOKEN_SCREEN_MARKUP
     if arguments.file_style:
         return GIT_MARKUP
     else:
@@ -120,16 +125,11 @@ def get_diff_markup_style(arguments):
 
 
 def get_writer(arguments):
-    if arguments.tokenize_lines:
-        end = "\n"
-    else:
-        end = ""
-
     if arguments.output is None:
-        return console_writer(end=end)
+        return console_writer()
 
     else:
-        return file_writer(arguments.output, end=end)
+        return file_writer(arguments.output)
 
 
 def merge_cli():

@@ -2,7 +2,7 @@ import pytest
 import io
 
 
-from gaspra.merge_tool import show_changes_line_oriented
+from gaspra.markup import line_oriented_markup_changes
 
 TEST_MARKUP = {
     "fragment": {
@@ -19,7 +19,6 @@ TEST_MARKUP = {
 }
 
 
-@pytest.mark.xfail
 @pytest.mark.parametrize(
     ["input_sequence", "output"],
     [
@@ -49,8 +48,38 @@ TEST_MARKUP = {
         ((("a\n", ""), "b\n"), "< x\na\n=\n> y\nb\n"),
         # Same with reversed directions.
         ((("", "a\n"), "b\n"), "< x\n=\na\n> y\nb\n"),
+        # "a" line followed by "b" or "c" lines
+        (
+            (
+                "a\n",
+                ("b\n", "c\n"),
+            ),
+            "a\n< x\nb\n=\nc\n> y\n",
+        ),
         # Conflict in the middle of a line (abd | acd).
         (("a", ("b", "c"), "d\n"), "< x\nabd\n=\nacd\n> y\n"),
+        # Two conflicts with one line between them. There was
+        # a bug that needed two lines to trigger it:
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\n", ("e\n", "f\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\n< x\ne\n=\nf\n> y\n",
+        ),
+        # Two conflicts with two lines between them:
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\ne\n", ("f\n", "g\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\n< x\nf\n=\ng\n> y\n",
+        ),
+        # Two conflicts with three lines between them:
+        #
+        (
+            ("a\n", ("b\n", "c\n"), "d\ne\nf\n", ("g\n", "h\n")),
+            "a\n< x\nb\n=\nc\n> y\nd\ne\nf\n< x\ng\n=\nh\n> y\n",
+        ),
+        #
+        # Two conflict in the same line
+        (("a", ("b", "c"), "d", ("e", "f"), "g\n"), "< x\nabdeg\n=\nacdfg\n> y\n"),
         #
         # Malformed files without newlines.
         (("a",), "a\n"),
@@ -59,10 +88,10 @@ TEST_MARKUP = {
         ((("a", "b"),), "< x\na\n=\nb\n> y\n"),
     ],
 )
-def test_show_changes_line_oriented(input_sequence, output):
+def test_line_oriented_markup_changes(input_sequence, output):
     output_buffer = io.StringIO()
 
-    show_changes_line_oriented(
+    line_oriented_markup_changes(
         output_buffer.write,
         input_sequence,
         "x",

@@ -1,294 +1,115 @@
 import argparse
 import os
 
-from rich.console import Console
-
-from gaspra.merge import merge
-from gaspra.changesets import escape, diff
-
-TEST_CASE_DIRECTORY = os.path.abspath(
-    os.path.join(
-        os.path.dirname(__file__),
-        "..",
-        "..",
-        "test-cases",
-    )
+from gaspra.markup import console_writer, file_writer
+from gaspra.markup import (
+    GIT_MARKUP,
+    SCREEN_MARKUP,
+    STRIKEOUT_SCREEN_MARKUP,
+    line_oriented_markup_changes,
+    markup_changes,
 )
 
-PROGRAM_NAME = os.path.basename(__file__)
+from gaspra.merge import merge
+from gaspra.changesets import diff
 
 
-def rich_escape(s):
-    return s.replace("[", r"\[")
-
-
-SCREEN_MARKUP = {
-    "fragment": {
-        "into": {"prefix": "[bright_green]", "suffix": "[/]"},
-        "from": {"prefix": "[bright_red]", "suffix": "[/]"},
-    },
-    "line": {
-        "into": {"prefix": lambda _: "[green]", "suffix": lambda _: "[/]"},
-        "from": {"prefix": lambda _: "[red]", "suffix": lambda _: "[/]"},
-    },
-    "escape": rich_escape,
-    "separator": "",
-    "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>"},
-}
-
-GIT_MARKUP = {
-    "fragment": {
-        "into": {"prefix": "", "suffix": ""},
-        "from": {"prefix": "", "suffix": ""},
-    },
-    "line": {
-        "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
-        "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
-    },
-    "escape": lambda _: _,
-    "separator": "=======\n",
-    "header": {"prefix": "<<<", "suffix": ">>>"},
-}
-
-
-TEST_CASES = [
-    "About.java",
-    "ErrorMsg.java",
-    "FlownetController.cpp",
-    "Misc.java",
-    "RearViewMirror.java",
-    "ServerWin_2005.vcproj",  # This is the "real world" anchor moves example.
-    "ServerWin_2005.vcproj.Reduced",
-    "getCLIArgs.java",
-    "chunks",
-    "ReleaseNotes",
-    "Bug_ReporterApp",
-]
-
-# 0 - Perfect.  No issues at all.
-# 1 - Conflicts that are handled correctly.
-# 2 - Conflicts that are handled correctly.
-# 3 - Conflicts that are handled correctly.
-# 4 - Technically correct, but SureMerge says they would have flagged it.
-# 5 - Too long to tell. (This is the "real world" moves test.)
-# 6 - Perfect (Shorter version of real world).
-# 7 - Duplicated some code but it's arguably correct.
-# 8 - Perfect but it had a weird split.
-# 9 - Perfect, but it easily have gone otherwise.
-
-
-EXCEPTIONS = {
-    "chunks": ("chunks_1_0.c", "chunks_1_1.c", "chunks_1_2.c"),
-    "ReleaseNotes": (
-        "ReleaseNotes 9_4.html",
-        "ReleaseNotes 9_4_1.html",
-        "ReleaseNotes 9_4_2.html",
-    ),
-    "Bug_ReporterApp": (
-        "Bug_ReporterApp_Parent.h",
-        "Bug_ReporterApp_BranchA.h",
-        "Bug_ReporterApp_BranchB.h",
-    ),
-}
-
-
-def get_usage():
-    return (
-        f"{PROGRAM_NAME} test_case\nValid test cases are:\n\t"
-        + "\n\t".join(TEST_CASES)
-        + "\n"
+def add_common_arguments(parser):
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Output file",
+        default=None,
     )
-
-
-def show_header(print, header, markup={}):
-    header_markup = markup.get("header", {})
-    prefix = header_markup.get("prefix", "")
-    suffix = header_markup.get("suffix", "")
-    if header:
-        print(f"\n{prefix}{escape(header)}{suffix}")
-
-
-def show_changes(
-    print, fragment_sequence, __name0__, __name1__, markup={}, header: str | None = None
-):
-    show_header(print, header, markup)
-
-    fragment_markup = markup.get("fragment", {})
-
-    def print_fragment(fragment, fragment_markup):
-        prefix = fragment_markup["prefix"]
-        suffix = fragment_markup["suffix"]
-        print(f"{prefix}{escape(fragment)}{suffix}")
-
-    for fragment in fragment_sequence:
-        if isinstance(fragment, str):
-            print(fragment)
-
-        if isinstance(fragment, tuple):
-            print_fragment(fragment[0], fragment_markup["into"])
-            print_fragment(fragment[1], fragment_markup["from"])
-
-
-def show_changes_line_oriented(
-    print, fragment_sequence, name0, name1, markup={}, header: str | None = None
-):
-    show_header(print, header, markup)
-    escape = markup.get("escape", lambda _: _)
-    line_markup = markup.get("line", {})
-    fragment_markup = markup.get("fragment", {})
-
-    def print_line(line, name, line_markup):
-        prefix = line_markup["prefix"](name)
-        suffix = line_markup["suffix"](name)
-        print(f"{prefix}{line}{suffix}")
-
-    def markup_fragment(fragment, fragment_markup):
-        prefix = fragment_markup["prefix"]
-        suffix = fragment_markup["suffix"]
-        return f"{prefix}{fragment}{suffix}"
-
-    def finish_conflict(
-        partial_line_into, partial_line_from, name0, name1, input_fragment
-    ):
-        input_fragment = escape(input_fragment)
-        if (partial_line_into and partial_line_into[-1] != "\n") or (
-            partial_line_from and partial_line_from[-1] != "\n"
-        ):
-            partial_line_into = partial_line_into + input_fragment
-            partial_line_from = partial_line_from + input_fragment
-            input_fragment = ""
-
-        print_line(
-            partial_line_into,
-            name0,
-            line_markup["into"],
-        )
-        print(markup["separator"])
-        print_line(
-            partial_line_from,
-            name1,
-            line_markup["from"],
-        )
-        print(input_fragment)
-
-    in_conflict = False
-    partial_line_into = partial_line_from = ""
-    for fragment in fragment_sequence:
-        if isinstance(fragment, str):
-            lines = fragment.split("\n")
-            if in_conflict:
-                if len(lines) > 1:
-                    finish_conflict(
-                        partial_line_into,
-                        partial_line_from,
-                        name0,
-                        name1,
-                        lines[0] + "\n",
-                    )
-                    partial_line_into = partial_line_from = ""
-                    partial_line_from = partial_line_from = ""
-                    in_conflict = False
-                    print(escape("\n".join(lines[1:-1])))
-                    partial_line_into = lines[-1]
-                    partial_line_from = lines[-1]
-            else:
-                if len(lines) > 1:
-                    print(escape("\n".join(lines[:-1])))
-                    print("\n")
-                    # If not in a conflict, partial_line_into should be
-                    # exactly the same as partial_line_from.
-                    partial_line_into = lines[-1]
-                    partial_line_from = lines[-1]
-                else:
-                    partial_line_into += lines[0]
-                    partial_line_from += lines[0]
-
-        if isinstance(fragment, tuple):
-            in_conflict = True
-            if fragment[0]:
-                partial_line_into = partial_line_into + markup_fragment(
-                    fragment[0], fragment_markup["into"]
-                )
-            if fragment[1]:
-                partial_line_from = partial_line_from + markup_fragment(
-                    fragment[1], fragment_markup["from"]
-                )
-    if in_conflict:
-        if partial_line_into[-1:] != "\n" or partial_line_from[-1] != "\n":
-            tail = "\n"
-        else:
-            tail = ""
-        finish_conflict(partial_line_into, partial_line_from, name0, name1, tail)
-    else:
-        print(escape(partial_line_from))
-        if partial_line_from:
-            print("\n")
-
-
-def get_file_versions(test_case: str):
-    if test_case in EXCEPTIONS:
-        return EXCEPTIONS[test_case]
-
-    parent = f"{test_case}.parent"
-    branch0 = f"{test_case}.1st"
-    branch1 = f"{test_case}.2nd"
-    return parent, branch0, branch1
-
-
-def get_arguments():
-    parser = argparse.ArgumentParser(usage=get_usage())
-    parser.add_argument("test_case")
     parser.add_argument(
         "-l",
         "--line-oriented",
         action="store_true",
-        help="Show lines changed rather than fragments changed",
-    )
-    parser.add_argument(
-        "-d", "--diff", action="store_true", help="Show diffs along with merge"
+        help="Use a line-oriented diff rather than a fragment-oriented diff",
     )
     parser.add_argument(
         "-f",
         "--file-style",
         action="store_true",
-        help="Mark up for files (git-style, no color)",
+        help='Mark up for file output (git-style with "-l", no color otherwise)',
     )
+    parser.add_argument(
+        "-s",
+        "--strikeout",
+        action="store_true",
+        help="Use a strikeout font for deletions on diffs.",
+    )
+
+
+def get_merge_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("parent")
+    parser.add_argument("from_branch_head")
+    parser.add_argument("into_branch_head")
+
+    add_common_arguments(parser)
+
+    parser.add_argument(
+        "-d", "--diff", action="store_true", help="Show diffs along with merge result"
+    )
+
     args = parser.parse_args()
     return args
 
 
-def get_display_function(arguments):
+def get_diff_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("original")
+    parser.add_argument("modified")
+
+    add_common_arguments(parser)
+
+    args = parser.parse_args()
+    return args
+
+
+def get_markup_function(arguments):
     if arguments.line_oriented:
-        return show_changes_line_oriented
+        return line_oriented_markup_changes
 
-    return show_changes
+    return markup_changes
 
 
-def get_markup_style(arguments):
+def get_merge_markup_style(arguments):
     if arguments.file_style:
         return GIT_MARKUP
     else:
         return SCREEN_MARKUP
 
 
-if __name__ == "__main__":
-    console = Console(force_terminal=True, highlight=False)
+def get_diff_markup_style(arguments):
+    if arguments.file_style:
+        return GIT_MARKUP
+    elif arguments.strikeout:
+        return STRIKEOUT_SCREEN_MARKUP
+    return SCREEN_MARKUP
 
-    def console_print_function(s):
-        console.print(s, end="")
 
-    print_function = console_print_function
+def get_writer(arguments):
+    if arguments.output is None:
+        return console_writer()
 
-    arguments = get_arguments()
-    display_function = get_display_function(arguments)
-    markup = get_markup_style(arguments)
+    else:
+        return file_writer(arguments.output)
 
-    parent, into_branch, from_branch = get_file_versions(arguments.test_case)
+
+def merge_cli():
+    arguments = get_merge_arguments()
+    display_function = get_markup_function(arguments)
+    markup = get_merge_markup_style(arguments)
+    diff_markup = get_diff_markup_style(arguments)
+
+    parent = arguments.parent
+    into_branch = arguments.into_branch_head
+    from_branch = arguments.from_branch_head
 
     def get_text(filename):
-        with open(
-            os.path.join(TEST_CASE_DIRECTORY, filename), "rt", encoding="ISO-8859-1"
-        ) as f:
+        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
             data = f.read()
             return data
 
@@ -299,32 +120,64 @@ if __name__ == "__main__":
     into_changes = diff(parent_text, into_text)
     from_changes = diff(parent_text, from_text)
 
-    print_fn = console.print
+    with get_writer(arguments) as writer:
+        if arguments.diff:
+            display_function(
+                writer,
+                into_changes,
+                into_branch,
+                parent,
+                markup=diff_markup,
+                header=into_branch,
+            )
+            display_function(
+                writer,
+                from_changes,
+                from_branch,
+                parent,
+                markup=diff_markup,
+                header=from_branch,
+            )
 
-    if arguments.diff:
+        merged = merge(parent_text, into_text, from_text)
         display_function(
-            print_function,
-            into_changes,
+            writer,
+            merged,
             into_branch,
-            parent,
-            markup=markup,
-            header=into_branch,
-        )
-        display_function(
-            print_function,
-            from_changes,
             from_branch,
-            parent,
             markup=markup,
-            header=from_branch,
+            header="Merged" if arguments.diff else None,
         )
 
-    merged = merge(parent_text, into_text, from_text)
-    display_function(
-        print_function,
-        merged,
-        into_branch,
-        from_branch,
-        markup=markup,
-        header="Merged" if arguments.diff else None,
-    )
+
+def diff_cli():
+    arguments = get_diff_arguments()
+
+    display_function = get_markup_function(arguments)
+    markup = get_diff_markup_style(arguments)
+
+    original = arguments.original
+    modified = arguments.modified
+
+    def get_text(filename):
+        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
+            data = f.read()
+            return data
+
+    original_text = get_text(original)
+    modified_text = get_text(modified)
+
+    changes = diff(original_text, modified_text)
+
+    with get_writer(arguments) as writer:
+        display_function(
+            writer,
+            changes,
+            modified,
+            original,
+            markup=markup,
+        )
+
+
+if __name__ == "__main__":
+    diff_cli()

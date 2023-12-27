@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Sequence
 from dataclasses import dataclass, field
 import random
 from typing import Callable
@@ -15,13 +15,14 @@ class Node:
     is_terminal: bool = False  # Is this a terminal state?
     link: Node | None = None
     reverse_links: list[Node] = field(default_factory=list)
+    empty: str | tuple[int, ...] = ""
 
     @staticmethod
-    def get_factory():
+    def get_factory(empty_sequence: str | tuple[int, ...]):
         generator = make_id_sequence()
 
         def factory(**kwargs):
-            return Node(id=next(generator), **kwargs)
+            return Node(id=next(generator), empty=empty_sequence, **kwargs)
 
         return factory
 
@@ -58,6 +59,7 @@ def build(
     input_string: Iterable[str | int],
     reverse_links=True,
     mark_terminals=True,
+    empty: str | tuple[int, ...] = "",
 ) -> Node:
     """Build a suffix automaton from `input_string`.
 
@@ -77,7 +79,7 @@ def build(
     node_list = []
 
     # Decorate node factory so that node_list is updated on every call.
-    node_factory = wrap_node_factory(Node.get_factory(), node_list)
+    node_factory = wrap_node_factory(Node.get_factory(empty), node_list)
 
     # Implemention mostly follows description at
     # https://cp-algorithms.com/string/suffix-automaton.html
@@ -174,7 +176,7 @@ def add_reverse_links(node_list: list[Node]):
     return
 
 
-def find_substring(root: Node, s: str) -> int | None:
+def find_substring(root: Node, s: Sequence[str | int]) -> int | None:
     current = _find_match_node(root, s)
     if current is None:
         return None
@@ -198,7 +200,7 @@ def _get_all_start_positions(current, length):
     return positions
 
 
-def _find_match_node(root: Node, s: str) -> Node | None:
+def _find_match_node(root: Node, s: Iterable[str | int]) -> Node | None:
     current = root
     for character in s:
         current = current.transitions.get(character)
@@ -278,23 +280,23 @@ def find_lcs(root: Node, s: str) -> tuple[int, int, int]:
     )
 
 
-def all_suffixes(current: Node) -> Iterator[str | bytes]:
+def all_suffixes(current: Node) -> Iterator[str | tuple[int, ...]]:
     """Iterate over every suffix in the automaton.
 
     The only purpose for this is in a test that ensures the automaton
     produces all suffixes and only suffixes.
     """
     if current.is_terminal:
-        yield ""
+        yield current.empty
 
-    for character, node in current.transitions.items():
+    for token, node in current.transitions.items():
         for substring in all_suffixes(node):
-            if isinstance(character, str) and isinstance(substring, str):
-                yield character + substring
-            elif isinstance(substring, str):
-                yield bytes([character]) + substring.encode("utf-8")
+            if isinstance(token, str) and isinstance(substring, str):
+                yield token + substring
+            elif isinstance(token, int) and isinstance(substring, tuple):
+                yield (token,) + substring  # (character,)  # + substring
             else:
-                yield bytes([character]) + substring
+                raise ValueError(f"Unexpected type {type(token)}")
 
 
 def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):

@@ -1,4 +1,6 @@
 from dataclasses import replace
+from itertools import chain
+
 from os.path import commonprefix
 
 from gaspra.changesets import (
@@ -13,6 +15,8 @@ InputType = CopyFragment | ChangeFragment
 
 
 def merge(parent: str, branch0: str, branch1: str):
+    empty = parent[0:0]
+
     changeset0 = find_changeset(parent, branch0)
     changeset1 = find_changeset(parent, branch1)
 
@@ -21,10 +25,10 @@ def merge(parent: str, branch0: str, branch1: str):
 
     merged = _merge(fragments0, fragments1)
 
-    return consolidate(merged)
+    return consolidate(merged, empty=empty)
 
 
-def consolidate(fragments):
+def consolidate(fragments, empty=""):
     """Consolidate consecutive fragments of similar types
     into a single segment"""
 
@@ -37,12 +41,15 @@ def consolidate(fragments):
     # that get consolidated in the second pass are created from
     # the conflict expansions in the first pass.
 
-    yield from consolidate_all(consolidate_conflicts(fragments))
+    yield from consolidate_all(
+        consolidate_conflicts(fragments, empty=empty), empty=empty
+    )
 
     return
 
 
-def consolidate_conflicts(input_stack):
+def consolidate_conflicts(input_stack, empty=""):
+    join = get_joiner(empty)
     input_stack = list(reversed(list(input_stack)))
 
     while input_stack:
@@ -53,8 +60,8 @@ def consolidate_conflicts(input_stack):
             conflict_group.append(input_stack.pop())
 
         # Do a combination of consolidation and re-splitting with find_changeset()
-        version1 = "".join(fragment.version1 for fragment in conflict_group)
-        version2 = "".join(fragment.version2 for fragment in conflict_group)
+        version1 = join(fragment.version1 for fragment in conflict_group)
+        version2 = join(fragment.version2 for fragment in conflict_group)
 
         for fragment in find_changeset(version2, version1)._fragments(version2):
             if isinstance(fragment, CopyFragment):
@@ -75,7 +82,17 @@ def consolidate_conflicts(input_stack):
             yield input_stack.pop()
 
 
-def consolidate_all(staged):
+def get_joiner(empty):
+    if isinstance(empty, str):
+        joiner = lambda g: "".join(g)
+    else:
+        joiner = lambda g: tuple(chain(*g))
+    return joiner
+
+
+def consolidate_all(staged, empty=""):
+    join = get_joiner(empty)
+
     staged = list(reversed(list(staged)))
 
     something_has_been_output = False
@@ -84,9 +101,9 @@ def consolidate_all(staged):
         conflict_group = []
         while staged and isinstance(staged[-1], ConflictFragment):
             conflict_group.append(staged.pop())
+        version1 = join(fragment.version1 for fragment in conflict_group)
+        version2 = join(fragment.version2 for fragment in conflict_group)
 
-        version1 = "".join(fragment.version1 for fragment in conflict_group)
-        version2 = "".join(fragment.version2 for fragment in conflict_group)
         if version1 or version2:
             yield (version1, version2)
             something_has_been_output = True
@@ -95,13 +112,13 @@ def consolidate_all(staged):
         copy_or_change_group = []
         while staged and isinstance(staged[-1], CopyFragment | ChangeFragment):
             copy_or_change_group.append(staged.pop())
-        insert = "".join(fragment.insert for fragment in copy_or_change_group)
+        insert = join(fragment.insert for fragment in copy_or_change_group)
         if insert:
             yield insert
             something_has_been_output = True
 
     if not something_has_been_output:
-        yield ""
+        yield empty
 
 
 def _merge(fragments0: list[InputType], fragments1):
@@ -259,20 +276,20 @@ def has_composable_changes(fragment0, fragment1):
     # queue which has the affect of inserting 's' at position where 's'
     # was.  See compose_changes() for how the changes are composed.
 
-    return (fragment0.length == 0 and fragment1.insert == "") or (
-        fragment0.insert == "" and fragment1.length == 0
+    return (fragment0.length == 0 and len(fragment1.insert) == 0) or (
+        len(fragment0.insert) == 0 and fragment1.length == 0
     )
 
 
 def compose_changes(fragment0, fragment1):
-    if fragment0.length == 0 and fragment1.insert == "":
+    if fragment0.length == 0 and len(fragment1.insert) == 0:
         tail1 = ChangeFragment(
             fragment0.insert,
             fragment1.delete,
             fragment1.length,
         )
         return None, None, tail1
-    elif fragment0.insert == "" and fragment1.length == 0:
+    elif len(fragment0.insert) == 0 and fragment1.length == 0:
         tail0 = ChangeFragment(
             fragment1.insert,
             fragment0.delete,

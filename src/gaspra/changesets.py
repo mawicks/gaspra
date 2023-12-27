@@ -1,6 +1,7 @@
 from __future__ import annotations
 from collections.abc import Iterable
 from dataclasses import dataclass
+from itertools import chain
 import os
 
 from gaspra.common import DATA_DIR
@@ -203,13 +204,23 @@ def find_changeset(
     return changeset
 
 
-def apply_forward(changeset, original: str):
-    patched_original = "".join(changeset.apply_forward(original))
+def apply_forward(changeset, original: str | Iterable[int]):
+    changed = changeset.apply_forward(original)
+    if isinstance(original, str):
+        patched_original = "".join(changed)
+    else:
+        patched_original = tuple(chain(*changed))
+
     return patched_original
 
 
 def apply_reverse(changeset, modified: str):
-    reverse_patched_modified = "".join(changeset.apply_reverse(modified))
+    changed = changeset.apply_reverse(modified)
+    if isinstance(modified, str):
+        reverse_patched_modified = "".join(changed)
+    else:
+        reverse_patched_modified = tuple(chain(*changed))
+
     return reverse_patched_modified
 
 

@@ -18,6 +18,8 @@ from gaspra.test_helpers.random_strings import random_string
             random_string("abcdef", 51),
             random_string("abcdef", 53),
         ),
+        ((), ()),
+        ((1, 2, 3, 1, 2, 3, 1, 2, 3), ()),
     ],
 )
 def test_find_changesets_and_apply_reproduces_string(s1: str, s2: str):

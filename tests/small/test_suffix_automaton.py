@@ -153,17 +153,17 @@ def test_find_substring_is_correct_on_random_letters(string):
         assert string.find(candidate) == position or position is None
 
 
-@pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES)
-def test_find_substring_is_correct_on_random_tokens(string):
+@pytest.mark.parametrize("token_sequence", BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES)
+def test_find_substring_is_correct_on_random_tokens(token_sequence):
     """
     Build automaton for "string" and check that non-trivial
     random strings of different lengths selected from characters
     of "string" are detected (or not detected) correctly.
     """
-    root = build(string, empty=string[0:0])
+    root = build(token_sequence, empty=token_sequence[0:0])
 
-    for k in range(len(string)):
-        candidate = random_tokens(string, k + 1, k)
+    for k in range(len(token_sequence)):
+        candidate = random_tokens(token_sequence, k + 1, k)
         position = find_substring(root, candidate)
         # This test is a bit different than the string version.  We
         # don't have an efficient alternative to str.find() so we'll
@@ -175,17 +175,21 @@ def test_find_substring_is_correct_on_random_tokens(string):
 
         if position is not None:
             end_position = position + len(candidate)
-            assert string[position:end_position] == candidate
+            assert token_sequence[position:end_position] == candidate
 
 
 @pytest.mark.parametrize(
-    ["automaton_string", "query_string", "positions"],
+    ["automaton_sequence", "query_sequence", "positions"],
     [
         # Substring cases
         ("abcdefg", "def", (3,)),
         ("anything", "", (0, 1, 2, 3, 4, 5, 6, 7, 8)),
         ("", "", (0,)),
         ("abcabc", "abc", (0, 3)),
+        ((3, 4, 5, 6, 7, 8, 9), (6, 7, 8), (3,)),
+        ((1, 2, 3, 4, 5, 6, 7, 8), (), (0, 1, 2, 3, 4, 5, 6, 7, 8)),
+        ((), (), (0,)),
+        ((1, 2, 3, 1, 2, 3), (1, 2, 3), (0, 3)),
         # Non-substring cases
         ("", "anything", ()),
         ("bananas", "sana", ()),
@@ -193,12 +197,12 @@ def test_find_substring_is_correct_on_random_tokens(string):
         ("bananas", "xbananas", ()),
     ],
 )
-def test_find_substring_all(automaton_string, query_string, positions):
+def test_find_substring_all(automaton_sequence, query_sequence, positions):
     """
     We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
     """
-    root = build(automaton_string)
-    assert positions == tuple(find_substring_all(root, query_string))
+    root = build(automaton_sequence, empty=automaton_sequence[0:0])
+    assert positions == tuple(find_substring_all(root, query_sequence))
 
 
 COMMON = random_string("abc", 17, 41)
@@ -211,21 +215,52 @@ LCS_TEST_STRINGS = [
     ("bananas", "xnanananx", 5),
     ("abcabcxyzfoo", "xyzafabcxyzfaz", 7),
     # Since these longer strings are randomly generated,
-    # we don't know the exactly length of the common string.
+    # we don't know the exact length of the common string.
     # We know that it's *at least* len(common).
     (S1, S2, len(COMMON)),
 ]
 
+COMMON_SEQ = random_tokens((1, 2, 3), 17, 41)
+NOT_COMMON1_SEQ = random_tokens((1, 2, 3), 13, 42)
+NOT_COMMON2_SEQ = random_tokens((1, 2, 3), 13, 43)
+S1_SEQ = NOT_COMMON1_SEQ[:3] + COMMON_SEQ + NOT_COMMON1_SEQ[3:]
+S2_SEQ = NOT_COMMON2_SEQ[:6] + COMMON_SEQ + NOT_COMMON1_SEQ[6:]
 
-@pytest.mark.parametrize(["s1", "s2", "ignored"], LCS_TEST_STRINGS)
-def test_longest_common_string_finds_a_common_string(s1: str, s2: str, ignored: int):
+LCS_TEST_SEQS = [
+    ("bananas", "xnanananx", 5),
+    ((1, 2, 3, 2, 3, 2, 4), (5, 3, 2, 3, 2, 3, 2, 3, 5), 5),
+    ("abcabcxyzfoo", "xyzafabcxyzfaz", 7),
+    (
+        (1, 2, 3, 1, 2, 3, 4, 5, 6, 7, 8, 8),
+        (4, 5, 6, 1, 7, 1, 2, 3, 4, 5, 6, 7, 1, 9),
+        7,
+    ),
+    # Since these longer strings are randomly generated,
+    # we don't know the exact length of the common string.
+    # We know that it's *at least* len(common).
+    (S1_SEQ, S2_SEQ, len(COMMON_SEQ)),
+]
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2", "ignored"],
+    [
+        *LCS_TEST_STRINGS,
+        *LCS_TEST_SEQS,
+    ],
+)
+def test_find_lcs_finds_a_common_sequence(
+    s1: str | tuple[int, ...],
+    s2: str | tuple[int, ...],
+    __lcs_length__: int,
+):
     """
     Since some test strings are generated randomly,
-    the parameter lcs_legnth is a lower bound on the lcs.
+    the parameter lcs_length is a lower bound on the lcs.
     We check that the computed lcs is 1) common; 2) locally maximal;
     and 3) at *least* lcs_length in length.
     """
-    root = build(s1)
+    root = build(s1, empty=s1[0:0])
 
     start1, start2, length = find_lcs(root, s2)
     end1 = start1 + length
@@ -234,7 +269,13 @@ def test_longest_common_string_finds_a_common_string(s1: str, s2: str, ignored: 
     assert s1[start1:end1] == s2[start2:end2]
 
 
-@pytest.mark.parametrize(["s1", "s2", "lcs_length"], LCS_TEST_STRINGS)
+@pytest.mark.parametrize(
+    ["s1", "s2", "lcs_length"],
+    [
+        *LCS_TEST_STRINGS,
+        LCS_TEST_SEQS,
+    ],
+)
 def test_longest_common_string_finds_a_maximal_common_string(
     s1: str, s2: str, lcs_length: int
 ):
@@ -244,7 +285,7 @@ def test_longest_common_string_finds_a_maximal_common_string(
     We check that the computed lcs is 1) common; 2) locally maximal;
     and 3) at *least* lcs_length in length.
     """
-    root = build(s1)
+    root = build(s1, empty=s1[0:0])
 
     start1, start2, length = find_lcs(root, s2)
 
@@ -268,19 +309,23 @@ def test_longest_common_string_finds_a_maximal_common_string(
 
 
 @pytest.mark.parametrize(
-    ["build_string", "query_string"],
+    ["build_sequence", "query_sequence"],
     (
         ("abc", "xyz"),
         ("", "xyz"),
         ("abc", ""),
         ("", ""),
+        ((1, 2, 3), (4, 5, 6)),
+        ((), (1, 2, 3)),
+        ((1, 2, 3), ()),
+        ((), ()),
     ),
 )
 def test_find_lcs_returns_all_zeros_when_nothing_in_common_or_empty_query(
-    build_string, query_string
+    build_sequence, query_sequence
 ):
-    root = build(build_string)
-    start1, start2, length = find_lcs(root, query_string)
+    root = build(build_sequence, empty=build_sequence[0:0])
+    start1, start2, length = find_lcs(root, query_sequence)
 
     assert start1 == 0
     assert start2 == 0

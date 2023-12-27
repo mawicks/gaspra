@@ -1,5 +1,5 @@
-C Continue\sadding\stests\sfor\ssequences\sof\sints
-D 2023-12-27T03:42:44.798
+C Finish\sadding\stests\swith\snumerical\ssequences\sin\stest_suffix_automaton.
+D 2023-12-27T04:11:27.672
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -24,10 +24,10 @@ F tests/small/test_changesets.py 602d13324931bb148af6adc78e7a10b6f273b6875e187b5
 F tests/small/test_merge.py f66066960e6e065da89060c9a83d79afb1509430c4e4aa8350603b4bcfab58b5
 F tests/small/test_merge_tool.py 36e970ded14f944b096cfa0dc4259e9775e669581d60db64a32f02e0390e22df
 F tests/small/test_multiple_strings.py 9bb64afadddb7218c6461a1fc6dbf03f9d38e3229583d6babf33481f3861fd6a
-F tests/small/test_suffix_automaton.py 7779b930cd6144f94aae2ab8999f761dff1a27b963fe523acffdcacd6a9adf4d
+F tests/small/test_suffix_automaton.py c1b65eb86cb68d19082b1cb5802a7f6cd3fd242c0aaf64d3d3842ca88ece1fed
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P ed71ede046a4edcb5cc3ed116c63363e209c7b81662e509a2c589a0e35707b31
-R 5ade4c41564f9a706ce311cd7cb85fc3
+P 16b9d38a411d06801103e3a9d0ce7e0211b8568bd52d75e2c1f8c937e84ecfc0
+R b475d1ea81d115db9a4dd717490f30d2
 U mwicks
-Z 0ec701f857ba9e955033ecbf286592f7
+Z c479ecf486f8691dbd70b09f22f2fbf9
 # Remove this line to create a well-formed Fossil manifest.

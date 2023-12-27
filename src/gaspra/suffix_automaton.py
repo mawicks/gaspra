@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Iterable
+from collections.abc import Iterator, Iterable, Sequence
 from dataclasses import dataclass, field
 import random
 from typing import Callable
@@ -176,7 +176,7 @@ def add_reverse_links(node_list: list[Node]):
     return
 
 
-def find_substring(root: Node, s: str) -> int | None:
+def find_substring(root: Node, s: Sequence[str | int]) -> int | None:
     current = _find_match_node(root, s)
     if current is None:
         return None
@@ -200,7 +200,7 @@ def _get_all_start_positions(current, length):
     return positions
 
 
-def _find_match_node(root: Node, s: str) -> Node | None:
+def _find_match_node(root: Node, s: Iterable[str | int]) -> Node | None:
     current = root
     for character in s:
         current = current.transitions.get(character)

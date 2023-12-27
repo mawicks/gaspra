@@ -25,7 +25,7 @@ def test_build_empty_tuple():
     Ensure that an empty string is handled correctly.
     """
     empty = ()
-    automaton = build(empty)
+    automaton = build(empty, empty=empty)
     for suffix in all_suffixes(automaton):
         assert tuple(suffix) == ()
 
@@ -97,34 +97,45 @@ def test_automaton_generates_each_length_once(token_sequence):
         ("", "anything", None),
         ("bananas", "bananasx", None),
         ("bananas", "xbananas", None),
+        ((), (1, 2, 3, 4, 5, 6, 7, 8), None),
+        ((1, 2, 3, 2, 3, 2, 4), (1, 2, 3, 2, 3, 2, 4, 5), None),
+        ((1, 2, 3, 2, 3, 2, 4), (5, 1, 2, 3, 2, 3, 2, 4), None),
         # Below are technically true substring cases which are also tested separately.
         ("anything", "", 0),
         ("", "", 0),
+        ((1, 2, 3, 4, 5, 6, 7, 8), (), 0),
+        ((), (), 0),
     ],
 )
 def test_find_substring(automaton_string, query_string, position):
     """
     We have a separate test that all substrings work, so this test is mostly focused on non-substrings.
     """
-    root = build(automaton_string)
+    root = build(automaton_string, automaton_string[0:0])
     assert position == find_substring(root, query_string)
 
 
-@pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_STRINGS)
-def test_find_substring_is_true_on_all_substrings(string):
+@pytest.mark.parametrize(
+    "token_sequence",
+    [
+        *BUILD_AND_EXTRACT_TEST_STRINGS,
+        *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES,
+    ],
+)
+def test_find_substring_is_true_on_all_substrings(token_sequence):
     """
     Build automaton for "string" and check that every non-trivial
     substring is correctly detected.
     """
-    root = build(string)
+    root = build(token_sequence, empty=token_sequence[0:0])
 
-    for start in range(len(string)):
-        for end in range(start + 1, len(string)):
-            substring = string[start:end]
-            position = find_substring(root, substring)
+    for start in range(len(token_sequence)):
+        for end in range(start + 1, len(token_sequence)):
+            subsequence = token_sequence[start:end]
+            position = find_substring(root, subsequence)
             assert position is not None
-            end_position = position + len(substring)
-            assert string[position:end_position] == substring
+            end_position = position + len(subsequence)
+            assert token_sequence[position:end_position] == subsequence
 
 
 @pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_STRINGS)
@@ -140,6 +151,31 @@ def test_find_substring_is_correct_on_random_letters(string):
         candidate = random_string(string, k + 1, k)
         position = find_substring(root, candidate)
         assert string.find(candidate) == position or position is None
+
+
+@pytest.mark.parametrize("string", BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES)
+def test_find_substring_is_correct_on_random_tokens(string):
+    """
+    Build automaton for "string" and check that non-trivial
+    random strings of different lengths selected from characters
+    of "string" are detected (or not detected) correctly.
+    """
+    root = build(string, empty=string[0:0])
+
+    for k in range(len(string)):
+        candidate = random_tokens(string, k + 1, k)
+        position = find_substring(root, candidate)
+        # This test is a bit different than the string version.  We
+        # don't have an efficient alternative to str.find() so we'll
+        # only check the ones that find_substring() determines to be
+        # present.  In other words, we don't check that string reported
+        # as missing are actually missing.  The algorithms are exactly
+        # the same for tuple[int.,,,] and str so this should be
+        # sufficient.
+
+        if position is not None:
+            end_position = position + len(candidate)
+            assert string[position:end_position] == candidate
 
 
 @pytest.mark.parametrize(

@@ -1,5 +1,6 @@
 import pytest
 import io
+from itertools import chain
 
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
@@ -113,10 +114,9 @@ def test_line_oriented_markup_changes(input_sequence, output):
 
 
 @pytest.fixture
-def token_dict():
-    _token_dict = {0: ""}
-    _token_dict.update({key: value for key, value in enumerate("abcdefg", start=1)})
-    return _token_dict
+def token_map():
+    _token_map = tuple(chain(("",), "abcdefg"))
+    return _token_map
 
 
 @pytest.mark.parametrize(
@@ -198,7 +198,7 @@ def token_dict():
         ),
     ],
 )
-def test_token_oriented_markup_changes(input_sequence, output, token_dict):
+def test_token_oriented_markup_changes(input_sequence, output, token_map):
     output_buffer = io.StringIO()
 
     token_oriented_markup_changes(
@@ -208,7 +208,7 @@ def test_token_oriented_markup_changes(input_sequence, output, token_dict):
         "y",
         markup=TEST_TOKEN_MARKUP,
         header="",
-        token_map=None,=token_dict,
+        token_map=token_map,
     )
 
     assert output_buffer.getvalue() == output

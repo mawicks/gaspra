@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable
 import argparse
 import os
 
@@ -16,7 +16,7 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.types import TokenSequence
+from gaspra.types import TokenSequence, ChangeSequence
 
 
 def tokenize(
@@ -102,14 +102,35 @@ def get_diff_arguments():
     return args
 
 
-def get_markup_function(arguments):
+def get_markup_function(arguments, token_map=(), allow_strikeout=True):
     if arguments.tokenize_lines:
-        return token_oriented_markup_changes
+        wrapped_markup_function = token_oriented_markup_changes
 
-    if arguments.line_oriented:
-        return line_oriented_markup_changes
+    elif arguments.line_oriented:
+        wrapped_markup_function = line_oriented_markup_changes
+    else:
+        wrapped_markup_function = markup_changes
 
-    return markup_changes
+    markup = get_markup_style(arguments, allow_strikeout)
+
+    def markup_function(
+        writer,
+        changeset: ChangeSequence,
+        branch0: str,
+        branch1: str,
+        header: str | None = "",
+    ):
+        wrapped_markup_function(
+            writer,
+            changeset,
+            branch0,
+            branch1,
+            markup=markup,
+            header=header,
+            token_map=token_map,
+        )
+
+    return markup_function
 
 
 def get_markup_style(arguments, allow_strikeout=True):
@@ -134,94 +155,81 @@ def get_writer(arguments):
 
 def merge_cli():
     arguments = get_merge_arguments()
-    parent = arguments.parent
-    into_branch = arguments.into_branch_head
-    from_branch = arguments.from_branch_head
 
-    parent_text = get_text(parent)
-    into_text = get_text(into_branch)
-    from_text = get_text(from_branch)
+    parent_name = arguments.parent
+    current_name = arguments.into_branch_head
+    other_name = arguments.from_branch_head
+
+    parent, current, other = get_text(parent_name, current_name, other_name)
 
     token_map = None
     if arguments.tokenize_lines:
-        token_map, parent_text, into_text, from_text = tokenize(
-            parent_text, into_text, from_text
-        )
-
-    display_function = get_markup_function(arguments)
-    markup = get_markup_style(arguments, allow_strikeout=False)
-    diff_markup = get_markup_style(arguments)
-
-    into_changes = diff(parent_text, into_text)
-    from_changes = diff(parent_text, from_text)
+        token_map, parent, current, other = tokenize(parent, current, other)
 
     with get_writer(arguments) as writer:
         if arguments.diff:
-            display_function(
-                writer,
-                into_changes,
-                into_branch,
-                parent,
-                markup=diff_markup,
-                header=into_branch,
-                token_map=token_map,
+            diff_markup = get_markup_function(
+                arguments, token_map, allow_strikeout=True
             )
-            display_function(
-                writer,
-                from_changes,
-                from_branch,
-                parent,
-                markup=diff_markup,
-                header=from_branch,
-                token_map=token_map,
-            )
+            current_changes = diff(parent, current)
+            other_changes = diff(parent, other)
 
-        merged = merge(parent_text, into_text, from_text)
-        display_function(
+            def markup_one(changes, branch_name):
+                diff_markup(
+                    writer,
+                    changes,
+                    branch_name,
+                    parent_name,
+                    header=branch_name,
+                )
+
+            markup_one(current_changes, current_name)
+            markup_one(other_changes, other_name)
+
+        merged = merge(parent, current, other)
+        merge_markup = get_markup_function(arguments, token_map, allow_strikeout=False)
+
+        merge_markup(
             writer,
             merged,
-            into_branch,
-            from_branch,
-            markup=markup,
+            current_name,
+            other_name,
             header="Merged" if arguments.diff else None,
-            token_map=token_map,
         )
 
 
 def diff_cli():
     arguments = get_diff_arguments()
 
-    original = arguments.original
-    modified = arguments.modified
+    original_name = arguments.original
+    modified_name = arguments.modified
 
-    original_text = get_text(original)
-    modified_text = get_text(modified)
+    original, modified = get_text(original_name, modified_name)
 
     token_map = None
     if arguments.tokenize_lines:
-        token_map, original_text, modified_text = tokenize(original_text, modified_text)
+        token_map, original, modified = tokenize(original, modified)
 
-    changes = diff(original_text, modified_text)
+    changes = diff(original, modified)
 
-    markup = get_markup_style(arguments)
-    display_function = get_markup_function(arguments)
+    display_function = get_markup_function(arguments, token_map)
 
     with get_writer(arguments) as writer:
         display_function(
             writer,
             changes,
-            modified,
-            original,
-            markup=markup,
-            token_map=token_map,
+            modified_name,
+            original_name,
         )
 
 
-def get_text(filename):
-    with open(os.path.join(filename), "rt", encoding="utf-8") as f:
-        data = f.read()
-        return data
+def get_text(*filenames: str):
+    data = []
+    for filename in filenames:
+        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
+            data.append(f.read())
+    return tuple(data)
 
 
 if __name__ == "__main__":
-    diff_cli()
+    merge_cli()

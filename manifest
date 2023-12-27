@@ -1,5 +1,5 @@
-C Add\stest_helpers.py
-D 2023-12-27T16:01:04.905
+C Get\sall\sconflict-free\smerge\stests\sworking\swith\stokens.
+D 2023-12-27T16:48:55.603
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -12,7 +12,7 @@ F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a
 F src/gaspra/dot_dump.py c26cbaee58d2244f4bcd1b2180f8ee1bd9b3ceb18a5bbd4551c2d4f9572efcf5
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/markup.py c2263f7658629a426d88c4ecda3733181500b11f7150b522f07c0e705e5c4b0b
-F src/gaspra/merge.py b75b682f292a656fca4e29517939cac6b02b14c757da98a8a37b4cd21d270cda
+F src/gaspra/merge.py 9ce9426a2b82001c9a59e2fd5da86b810b8e08c9178543e15df69e31261bf79f
 F src/gaspra/merge_tool.py 1e40672c1c619cb8c4ed2ad96ec7837474eb9bfdf28d91f95b41ddeb54796083
 F src/gaspra/multiple_strings.py 408cb07da91c9468eee7d2279189fa145e1dc006365d580197855de9f2e8b7ad
 F src/gaspra/suffix_automaton.py 6ffa15c85f1d50fc75963f8060998dd50d1032f1c25eb3dcd07f87873b771655
@@ -27,8 +27,8 @@ F tests/small/test_merge_tool.py 36e970ded14f944b096cfa0dc4259e9775e669581d60db6
 F tests/small/test_multiple_strings.py cda3880e228b577e75b3685a96745724504c71b9207c1a38ee23e1c14463ed76
 F tests/small/test_suffix_automaton.py 3ae3c46974228f30e400c60721d68df20955277cae4b8031079278a5720906d0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 1c750206086fa971b56698b2d648a2daa9cdb39f83e6f048fe954b184f8a6f01
-R e32947d2c0dc1c529fb04821288c56b5
+P 58bbcdd5ee9d636e66a44acacb4e28e4c2a67201e202a562a0b4a10d46ce5eb5
+R 2a7ca61c8d67772e399042d48644e2b6
 U mwicks
-Z a107d9a996bd14bfde16ea772b8ab353
+Z ab67dae96a2f7b1cbb6303aa8e1287d2
 # Remove this line to create a well-formed Fossil manifest.

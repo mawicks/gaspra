@@ -276,20 +276,20 @@ def has_composable_changes(fragment0, fragment1):
     # queue which has the affect of inserting 's' at position where 's'
     # was.  See compose_changes() for how the changes are composed.
 
-    return (fragment0.length == 0 and fragment1.insert == "") or (
-        fragment0.insert == "" and fragment1.length == 0
+    return (fragment0.length == 0 and len(fragment1.insert) == 0) or (
+        len(fragment0.insert) == 0 and fragment1.length == 0
     )
 
 
 def compose_changes(fragment0, fragment1):
-    if fragment0.length == 0 and fragment1.insert == "":
+    if fragment0.length == 0 and len(fragment1.insert) == 0:
         tail1 = ChangeFragment(
             fragment0.insert,
             fragment1.delete,
             fragment1.length,
         )
         return None, None, tail1
-    elif fragment0.insert == "" and fragment1.length == 0:
+    elif len(fragment0.insert) == 0 and fragment1.length == 0:
         tail0 = ChangeFragment(
             fragment1.insert,
             fragment0.delete,

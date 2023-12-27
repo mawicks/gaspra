@@ -36,7 +36,7 @@ BUILD_AND_EXTRACT_TEST_STRINGS = [
     random_string("abc", 20, 42),
 ]
 
-BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES = [
+BUILD_AND_EXTRACT_TEST_TOKENS = [
     tokenize(sequence) for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
 ]
 
@@ -45,7 +45,7 @@ BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES = [
     "token_sequence",
     [
         *BUILD_AND_EXTRACT_TEST_STRINGS,
-        *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES,
+        *BUILD_AND_EXTRACT_TEST_TOKENS,
     ],
 )
 def test_automaton_generates_only_suffixes(token_sequence):
@@ -67,7 +67,7 @@ def test_automaton_generates_only_suffixes(token_sequence):
 
 @pytest.mark.parametrize(
     "token_sequence",
-    [*BUILD_AND_EXTRACT_TEST_STRINGS, *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES],
+    [*BUILD_AND_EXTRACT_TEST_STRINGS, *BUILD_AND_EXTRACT_TEST_TOKENS],
 )
 def test_automaton_generates_each_length_once(token_sequence):
     """
@@ -89,7 +89,7 @@ def test_automaton_generates_each_length_once(token_sequence):
     assert len(lengths) == 0
 
 
-FIND_SUBSTRING_CASES = [
+FIND_SUBSTRING_STRING_CASES = [
     ("", "anything", None),
     ("bananas", "bananasx", None),
     ("bananas", "xbananas", None),
@@ -100,14 +100,14 @@ FIND_SUBSTRING_CASES = [
 ]
 FIND_SUBSTRING_TOKEN_CASES = [
     (tokenize(automaton_string), tokenize(query_string), position)
-    for (automaton_string, query_string, position) in FIND_SUBSTRING_CASES
+    for (automaton_string, query_string, position) in FIND_SUBSTRING_STRING_CASES
 ]
 
 
 @pytest.mark.parametrize(
     ["automaton_string", "query_string", "position"],
     [
-        *FIND_SUBSTRING_CASES,
+        *FIND_SUBSTRING_STRING_CASES,
         *FIND_SUBSTRING_TOKEN_CASES,
     ],
 )
@@ -123,7 +123,7 @@ def test_find_substring(automaton_string, query_string, position):
     "token_sequence",
     [
         *BUILD_AND_EXTRACT_TEST_STRINGS,
-        *BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES,
+        *BUILD_AND_EXTRACT_TEST_TOKENS,
     ],
 )
 def test_find_substring_is_true_on_all_substrings(token_sequence):
@@ -157,7 +157,7 @@ def test_find_substring_is_correct_on_random_letters(string):
         assert string.find(candidate) == position or position is None
 
 
-@pytest.mark.parametrize("token_sequence", BUILD_AND_EXTRACT_TEST_TOKEN_SEQUENCES)
+@pytest.mark.parametrize("token_sequence", BUILD_AND_EXTRACT_TEST_TOKENS)
 def test_find_substring_is_correct_on_random_tokens(token_sequence):
     """
     Build automaton for "string" and check that non-trivial
@@ -196,8 +196,8 @@ FIND_SUBSTRING_ALL_CASES = [
 ]
 
 FIND_SUBSTRING_ALL_TOKEN_CASES = [
-    (tokenize(automaton_string), tokenize(query_string), position)
-    for (automaton_string, query_string, position) in FIND_SUBSTRING_ALL_CASES
+    (tokenize(automaton_string), tokenize(query_string), positions)
+    for (automaton_string, query_string, positions) in FIND_SUBSTRING_ALL_CASES
 ]
 
 
@@ -232,8 +232,7 @@ LCS_TEST_STRINGS = [
 ]
 
 LCS_TEST_TOKENS = [
-    (tokenize(automaton_string), tokenize(query_string), position)
-    for (automaton_string, query_string, position) in LCS_TEST_STRINGS
+    (tokenize(s1), tokenize(s2), length) for (s1, s2, length) in LCS_TEST_STRINGS
 ]
 
 

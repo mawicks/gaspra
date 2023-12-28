@@ -31,13 +31,13 @@ def get_joiner(empty) -> StringJoiner | TokenJoiner:
 
 
 def common_prefix_length(a: str | TokenSequence, b: str | TokenSequence):
-    l = min(len(a), len(b))
+    length = min(len(a), len(b))
 
-    for l, (x, y) in enumerate(zip(a, b)):
+    for length, (x, y) in enumerate(zip(a, b)):
         if x != y:
-            return l
+            return length
 
-    return l
+    return length
 
 
 if __name__ == "__main__":

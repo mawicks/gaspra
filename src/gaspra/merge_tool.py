@@ -2,7 +2,6 @@ from collections.abc import Iterable
 import argparse
 import os
 
-from gaspra.common import DATA_DIR
 from gaspra.markup import console_writer, file_writer
 from gaspra.markup import (
     GIT_MARKUP,
@@ -258,7 +257,7 @@ def get_text(*filenames: str):
             with open(filename, "rt", encoding="utf-8") as f:
                 data.append(f.read())
 
-        except UnicodeDecodeError as e:
+        except UnicodeDecodeError:
             with open(filename, "rt", encoding="iso-8859-1") as f:
                 data.append(f.read())
 

@@ -54,25 +54,25 @@ def add_common_arguments(parser):
         "-l",
         "--line-oriented",
         action="store_true",
-        help="Use a line-oriented diff for output rather than a fragment-oriented diff",
+        help="Use a line-oriented diff for output, even if the processing was character-oriented",
     )
     parser.add_argument(
-        "-t",
-        "--tokenize-lines",
+        "-c",
+        "--character-oriented",
         action="store_true",
-        help="Process the input a line at a time rather than a character at a time (implies -l)",
+        help="Use a character-oriented diff as opposed to line-oriented.",
     )
     parser.add_argument(
         "-f",
         "--file-style",
         action="store_true",
-        help='Mark up for file output (git-style with "-l", no color otherwise)',
+        help="Use file-oriented vs screen-oriented markup (git-style, no color)",
     )
     parser.add_argument(
         "-s",
         "--strikeout",
         action="store_true",
-        help="Use a strikeout font for deletions on diffs.",
+        help="Use a strikeout font for deletions (only on diffs).",
     )
 
 
@@ -117,7 +117,7 @@ def get_torture_test_arguments():
 
 
 def get_markup_function(arguments, token_map=(), allow_strikeout=True):
-    if arguments.tokenize_lines:
+    if not arguments.character_oriented:
         wrapped_markup_function = token_oriented_markup_changes
 
     elif arguments.line_oriented:
@@ -148,7 +148,7 @@ def get_markup_function(arguments, token_map=(), allow_strikeout=True):
 
 
 def get_markup_style(arguments, allow_strikeout=True):
-    if arguments.tokenize_lines:
+    if not arguments.character_oriented:
         if arguments.file_style:
             return TOKEN_GIT_MARKUP
         return TOKEN_SCREEN_MARKUP
@@ -190,7 +190,7 @@ def _merge(parent_name, current_name, other_name, arguments):
     parent, current, other = get_text(parent_name, current_name, other_name)
 
     token_map = None
-    if arguments.tokenize_lines:
+    if not arguments.character_oriented:
         token_map, parent, current, other = tokenize(parent, current, other)
 
     with get_writer(arguments) as writer:
@@ -234,7 +234,7 @@ def diff_cli():
     original, modified = get_text(original_name, modified_name)
 
     token_map = None
-    if arguments.tokenize_lines:
+    if not arguments.character_oriented:
         token_map, original, modified = tokenize(original, modified)
 
     changes = diff(original, modified)

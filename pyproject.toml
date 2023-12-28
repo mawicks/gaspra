@@ -22,6 +22,7 @@ include = ["src/**/*.py", "LICENSE", "README.md"]
 [tool.poetry.scripts]
 gaspra-merge = "gaspra.merge_tool:merge_cli"
 gaspra-diff = "gaspra.merge_tool:diff_cli"
+gaspra-torture = "gaspra.merge_tool:torture_cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"

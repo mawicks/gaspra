@@ -6,7 +6,7 @@ import os
 
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
-from gaspra.types import Change, ChangeSequence, TokenSequence
+from gaspra.types import Change, ChangeIterable, TokenSequence
 
 
 @dataclass
@@ -39,7 +39,9 @@ class ChangesetLeaf:
     def changes(self):
         yield self
 
-    def _fragments(self, _: str):
+    def _fragments(
+        self, _: str | TokenSequence
+    ) -> Iterable[ChangeFragment | CopyFragment]:
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
@@ -51,7 +53,7 @@ class ChangesetLeaf:
                 ),
             )
 
-    def fragments(self, _: str | TokenSequence) -> ChangeSequence:
+    def fragments(self, _: str | TokenSequence) -> ChangeIterable:
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
@@ -99,28 +101,30 @@ class Changeset:
         yield self
         yield from self.suffix.changes()
 
-    def _fragments(self, original):
+    def _fragments(
+        self, original: str | TokenSequence
+    ) -> Iterable[ChangeFragment | CopyFragment]:
         yield from self.prefix._fragments(original)
         copy = original[self.common_original]
         yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix._fragments(original)
 
-    def fragments(self, original: str | TokenSequence) -> ChangeSequence:
+    def fragments(self, original: str | TokenSequence) -> ChangeIterable:
         yield from self.prefix.fragments(original)
         yield original[self.common_original]
         yield from self.suffix.fragments(original)
 
-    def apply_forward(self, original: str):
+    def apply_forward(self, original: str | TokenSequence):
         yield from self.prefix.apply_forward(original)
         yield original[self.common_original]
         yield from self.suffix.apply_forward(original)
 
-    def apply_reverse(self, modified: str):
+    def apply_reverse(self, modified: str | TokenSequence):
         yield from self.prefix.apply_reverse(modified)
         yield modified[self.common_modified]
         yield from self.suffix.apply_reverse(modified)
 
-    def show(self, original: str, modified: str):
+    def show(self, original: str, modified: str | TokenSequence):
         return (
             self.prefix.show(original, modified)
             + escape(original[self.common_original])
@@ -135,7 +139,7 @@ class Changeset:
 
 def diff(
     original: str | TokenSequence, modified: str | TokenSequence
-) -> ChangeSequence:
+) -> ChangeIterable:
     """Returns the changes between a and b.
 
     Arguments:

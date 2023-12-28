@@ -1,14 +1,12 @@
 from dataclasses import replace
 
-from os.path import commonprefix
-
 from gaspra.changesets import (
     ChangeFragment,
     ConflictFragment,
     CopyFragment,
     find_changeset,
 )
-from gaspra.common import get_joiner
+from gaspra.common import get_joiner, common_prefix_length
 from gaspra.types import Change, TokenSequence
 
 
@@ -34,7 +32,7 @@ def merge(
     return consolidate(merged, empty=empty)
 
 
-def consolidate(fragments, empty=""):
+def consolidate(fragments, empty: str | TokenSequence = ""):
     """Consolidate consecutive fragments of similar types
     into a single segment"""
 
@@ -54,7 +52,7 @@ def consolidate(fragments, empty=""):
     return
 
 
-def consolidate_conflicts(input_stack, empty=""):
+def consolidate_conflicts(input_stack, empty: str | TokenSequence = ""):
     join = get_joiner(empty)
     input_stack = list(reversed(list(input_stack)))
 
@@ -88,7 +86,7 @@ def consolidate_conflicts(input_stack, empty=""):
             yield input_stack.pop()
 
 
-def consolidate_all(staged, empty=""):
+def consolidate_all(staged, empty: str | TokenSequence = ""):
     join = get_joiner(empty)
 
     staged = list(reversed(list(staged)))
@@ -381,7 +379,10 @@ def common_prefix_lengths(
     change1: ChangeFragment,
     change2: ChangeFragment,
 ):
-    insert_length = len(commonprefix((change1.insert, change2.insert)))
-    delete_length = len(commonprefix((change1.delete, change2.delete)))
+    # Note: don't use the commonprefix() function from
+    # os.path because this one has to work on sequences of ints
+
+    insert_length = common_prefix_length(change1.insert, change2.insert)
+    delete_length = common_prefix_length(change1.delete, change2.delete)
 
     return insert_length, delete_length

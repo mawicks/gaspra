@@ -2,6 +2,7 @@ from collections.abc import Iterable
 import argparse
 import os
 
+from gaspra.common import DATA_DIR
 from gaspra.markup import console_writer, file_writer
 from gaspra.markup import (
     GIT_MARKUP,
@@ -16,7 +17,8 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.types import TokenSequence, ChangeSequence
+from gaspra.types import TokenSequence, ChangeIterable
+import gaspra.torture_test as torture_test
 
 
 def tokenize(
@@ -102,6 +104,19 @@ def get_diff_arguments():
     return args
 
 
+def get_torture_test_arguments():
+    parser = argparse.ArgumentParser(usage=torture_test.get_usage())
+    parser.add_argument("test_case")
+    add_common_arguments(parser)
+
+    parser.add_argument(
+        "-d", "--diff", action="store_true", help="Show diffs along with merge result"
+    )
+
+    args = parser.parse_args()
+    return args
+
+
 def get_markup_function(arguments, token_map=(), allow_strikeout=True):
     if arguments.tokenize_lines:
         wrapped_markup_function = token_oriented_markup_changes
@@ -115,7 +130,7 @@ def get_markup_function(arguments, token_map=(), allow_strikeout=True):
 
     def markup_function(
         writer,
-        changeset: ChangeSequence,
+        changeset: ChangeIterable,
         branch0: str,
         branch1: str,
         header: str | None = "",
@@ -123,10 +138,10 @@ def get_markup_function(arguments, token_map=(), allow_strikeout=True):
         wrapped_markup_function(
             writer,
             changeset,
-            branch0,
-            branch1,
+            os.path.basename(branch0),
+            os.path.basename(branch1),
             markup=markup,
-            header=header,
+            header=os.path.basename(header) if header else None,
             token_map=token_map,
         )
 
@@ -155,11 +170,24 @@ def get_writer(arguments):
 
 def merge_cli():
     arguments = get_merge_arguments()
-
     parent_name = arguments.parent
     current_name = arguments.into_branch_head
     other_name = arguments.from_branch_head
 
+    _merge(parent_name, current_name, other_name, arguments)
+
+
+def torture_cli():
+    arguments = get_torture_test_arguments()
+
+    test_case = arguments.test_case
+
+    parent_name, current_name, other_name = torture_test.get_filenames(test_case)
+
+    _merge(parent_name, current_name, other_name, arguments)
+
+
+def _merge(parent_name, current_name, other_name, arguments):
     parent, current, other = get_text(parent_name, current_name, other_name)
 
     token_map = None
@@ -226,10 +254,16 @@ def diff_cli():
 def get_text(*filenames: str):
     data = []
     for filename in filenames:
-        with open(os.path.join(filename), "rt", encoding="utf-8") as f:
-            data.append(f.read())
+        try:
+            with open(filename, "rt", encoding="utf-8") as f:
+                data.append(f.read())
+
+        except UnicodeDecodeError as e:
+            with open(filename, "rt", encoding="iso-8859-1") as f:
+                data.append(f.read())
+
     return tuple(data)
 
 
 if __name__ == "__main__":
-    merge_cli()
+    torture_cli()

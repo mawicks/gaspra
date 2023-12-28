@@ -1,4 +1,3 @@
-from collections.abc import Iterable
 import argparse
 import os
 
@@ -16,31 +15,9 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.types import TokenSequence, ChangeIterable
+from gaspra.tokenizers import line_tokenize
+from gaspra.types import ChangeIterable
 import gaspra.torture_test as torture_test
-
-
-def tokenize(
-    *string_set: str,
-) -> Iterable[TokenSequence]:
-    tokenized = []
-    token_dict = {}
-
-    for s in string_set:
-        lines = s.split("\n")
-        # Ignore the empty string that gets generated
-        # by an ending newline.
-
-        if len(lines) > 0 and lines[-1] == "":
-            lines = lines[:-1]
-
-        for line in s.split("\n"):
-            if line not in token_dict:
-                token_dict[line] = len(token_dict)
-
-        tokenized.append(tuple(token_dict[line] for line in lines))
-    token_map = tuple(token_dict.keys())
-    return tuple([token_map, *tokenized])
 
 
 def add_common_arguments(parser):
@@ -191,7 +168,7 @@ def _merge(parent_name, current_name, other_name, arguments):
 
     token_map = None
     if not arguments.character_oriented:
-        token_map, parent, current, other = tokenize(parent, current, other)
+        token_map, parent, current, other = line_tokenize(parent, current, other)
 
     with get_writer(arguments) as writer:
         if arguments.diff:
@@ -235,7 +212,7 @@ def diff_cli():
 
     token_map = None
     if not arguments.character_oriented:
-        token_map, original, modified = tokenize(original, modified)
+        token_map, original, modified = line_tokenize(original, modified)
 
     changes = diff(original, modified)
 

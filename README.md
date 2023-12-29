@@ -14,7 +14,7 @@ merge algorithms, and you end up with a lot of
 "conflicts" that don't really exist.  
 
 The line-oriented approach is an order of magnitude faster, and GASPRA
-allows you to chose line-oriented or character-oriented merges.  Both 
+allows you to choose line-oriented or character-oriented merges.  Both 
 will use the suffix automaton approach.  It's a matter of whether you
 view a text file as a sequence of characters or a sequence of lines.
 It's still a sequence of tokens and the suffix automaton approach works
@@ -37,9 +37,9 @@ See [Merging](#merging) for another example.
 
 # What's included
 
-* gaspra-diff - A tool for diffing two text files in either a
+* `gaspra-diff` - A tool for diffing two text files in either a
   line-oriented or a character-oriented fashion.
-* gaspra-merge - A tool for doing a 3-way merge in either a
+* `gaspra-merge` - A tool for doing a 3-way merge in either a
   line-oriented or a character-oriented fashion.
 
 GASPRA has been tested on [Bill Ritcher's set of pathological merge test
@@ -70,7 +70,7 @@ both space and time. Even the venerable `difflib`, which is part of
 Python's standard library uses quadratic-time algorithms.
 GASPRA uses efficient suffix automata
 with linear time and space complexity. The difference is dramatic.
-It's the same as the difference between a quicksort and a bubble sort.
+It's the same as the difference between a quick-sort and a bubble sort.
 Because of this difference, nobody uses a bubble sort, which is
 universally recognized as a naive approach.  Yet somehow, using
 dynamic programming to solve text matching is widely accepted.

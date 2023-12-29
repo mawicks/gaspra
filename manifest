@@ -1,5 +1,5 @@
-C Test\sthat\stokenized\sfiles\sreconstructed\susing\stheir\stoken_map
-D 2023-12-28T23:38:15.853
+C Try\sto\sshorten\sline_oriented_markup_changes
+D 2023-12-29T01:08:33.018
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md a0ad5ccc710135a595ad8f142f8a9694b4cb51c763724ba7011f353408e58150
@@ -11,7 +11,7 @@ F src/gaspra/common.py 0be83837dc005de1eb1e77ed30ca853bfa3dbded79fbc90ce86b111f9
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py c26cbaee58d2244f4bcd1b2180f8ee1bd9b3ceb18a5bbd4551c2d4f9572efcf5
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
-F src/gaspra/markup.py 56c11e2eab970fadaaccb0607bc874eb187af827ea35cdfafb6e2e85ccd2a817
+F src/gaspra/markup.py 0db45695430fe0a89ee0a600abe0034fae6a795be7d0ec254712d3db250697c8
 F src/gaspra/merge.py fe64085f15e24f83c19dfc7748452d354c6264559df0bba128a080c93cbbd07c
 F src/gaspra/merge_tool.py fa6fdcb4e6219246f9f2fc40632d5d7ba52f6fb60ce144471219966bdb4d371a
 F src/gaspra/multiple_strings.py 408cb07da91c9468eee7d2279189fa145e1dc006365d580197855de9f2e8b7ad
@@ -28,8 +28,8 @@ F tests/small/test_merge.py 123fa9b7b8087e4b26f89e7f8556878b9320c1c88be5d58d3d85
 F tests/small/test_multiple_strings.py cda3880e228b577e75b3685a96745724504c71b9207c1a38ee23e1c14463ed76
 F tests/small/test_suffix_automaton.py 3ae3c46974228f30e400c60721d68df20955277cae4b8031079278a5720906d0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 5cd542c36d7663f08a555725ab09c2f32b9cffc35848bdf53b184e986d35321c
-R 1bcab4907c4c086664003d2d9a585191
+P 3a1cd70e28514c5fe03dace6bfa11766cfe2ea43dc1c3db97d089afb23c99933
+R ebad5c818a59a451f268ec75ed8fb585
 U mwicks
-Z ae2827b6e2f9740cc7858fd26e81f4a2
+Z 4985462ec10a4a53c85161d0e3984469
 # Remove this line to create a well-formed Fossil manifest.

@@ -177,11 +177,6 @@ def line_oriented_markup_changes(
 
     finish_conflict = conflict_finisher(print, markup, name0, name1)
 
-    def foo(lines):
-        return (
-            "\n".join(escape(line) for line in lines) + "\n" if len(lines) > 0 else ""
-        )
-
     in_conflict = False
     partial_line_into = partial_line_from = ""
     for fragment in fragment_sequence:
@@ -194,13 +189,9 @@ def line_oriented_markup_changes(
                         partial_line_from,
                         lines[0] + "\n",
                     )
-                    print(
-                        escape("\n".join(lines[1:-1])) + "\n" if len(lines) > 2 else ""
-                    )
+                    print(escape(join(lines[1:-1])))
                 else:
-                    print(escape("\n".join(lines[:-1])) + "\n")
-                # If not in a conflict, partial_line_into should be
-                # exactly the same as partial_line_from.
+                    print(escape(join(lines[:-1])))
                 in_conflict = False
                 partial_line_into = partial_line_from = lines[-1]
             else:
@@ -219,7 +210,16 @@ def line_oriented_markup_changes(
             tail = ""
         finish_conflict(partial_line_into, partial_line_from, tail)
     elif partial_line_from:
+        # If not in a conflict, partial_line_into should be
+        # exactly the same as partial_line_from.
         print(escape(partial_line_from) + "\n")
+
+
+def join(lines):
+    if len(lines) > 0:
+        return "\n".join(line for line in lines) + "\n"
+    else:
+        return ""
 
 
 @contextmanager

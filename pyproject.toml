@@ -27,6 +27,7 @@ gaspra-torture = "gaspra.merge_tool:torture_cli"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+rich = "^13.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"

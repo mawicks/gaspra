@@ -18,6 +18,7 @@ authors = ["Mark Wicks <mawicks@gmail.com>"]
 keywords = ["diff", "LCS", "merge", "search", "text-processing"]
 readme = "README.md"
 include = ["src/**/*.py", "LICENSE", "README.md"]
+exclude = ["**/__pycache__", "**/test-cases/*", "**/test-results/*", "**/test_results/*", "**/data/*", "**/coverage/*"]
 
 [tool.poetry.scripts]
 gaspra-merge = "gaspra.merge_tool:merge_cli"

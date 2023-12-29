@@ -103,36 +103,46 @@ def print_line(print, line, name, line_markup):
     print(f"{prefix}{line}{suffix}")
 
 
-def markup_fragment(fragment, fragment_markup):
-    prefix = fragment_markup["prefix"]
-    suffix = fragment_markup["suffix"]
-    return f"{prefix}{fragment}{suffix}"
+def _markup_and_add_fragment(partial_line, fragment, fragment_markup):
+    if fragment:
+        prefix = fragment_markup["prefix"]
+        suffix = fragment_markup["suffix"]
+        return partial_line + f"{prefix}{fragment}{suffix}"
+    else:
+        return partial_line
 
 
-def line_oriented_markup_changes(
-    print,
-    fragment_sequence,
-    name0,
-    name1,
-    markup={},
-    header: str | None = None,
-    **__kwargs__,
+def markup_and_add_fragment(
+    partial_line_into, partial_line_from, fragment, fragment_markup
 ):
-    show_header(print, header, markup)
-    escape = markup.get("escape", lambda _: _)
-    line_markup = markup.get("line", {})
-    fragment_markup = markup.get("fragment", {})
+    partial_line_into = _markup_and_add_fragment(
+        partial_line_into, fragment[0], fragment_markup["into"]
+    )
+    partial_line_from = _markup_and_add_fragment(
+        partial_line_from, fragment[1], fragment_markup["from"]
+    )
+    return partial_line_into, partial_line_from
 
-    def finish_conflict(
-        partial_line_into, partial_line_from, name0, name1, input_fragment
+
+def update_partials(partial_line_into, partial_line_from, input_fragment):
+    if (partial_line_into and partial_line_into[-1] != "\n") or (
+        partial_line_from and partial_line_from[-1] != "\n"
     ):
+        partial_line_into = partial_line_into + input_fragment
+        partial_line_from = partial_line_from + input_fragment
+        input_fragment = ""
+    return partial_line_into, partial_line_from, input_fragment
+
+
+def conflict_finisher(print, markup, name0, name1):
+    line_markup = markup.get("line", {})
+    escape = markup.get("escape", lambda _: _)
+
+    def finish_conflict(partial_line_into, partial_line_from, input_fragment):
         input_fragment = escape(input_fragment)
-        if (partial_line_into and partial_line_into[-1] != "\n") or (
-            partial_line_from and partial_line_from[-1] != "\n"
-        ):
-            partial_line_into = partial_line_into + input_fragment
-            partial_line_from = partial_line_from + input_fragment
-            input_fragment = ""
+        partial_line_into, partial_line_from, input_fragment = update_partials(
+            partial_line_into, partial_line_from, input_fragment
+        )
 
         print_line(
             print,
@@ -149,6 +159,24 @@ def line_oriented_markup_changes(
         )
         print(input_fragment)
 
+    return finish_conflict
+
+
+def line_oriented_markup_changes(
+    print,
+    fragment_sequence,
+    name0,
+    name1,
+    markup={},
+    header: str | None = None,
+    **__kwargs__,
+):
+    show_header(print, header, markup)
+    escape = markup.get("escape", lambda _: _)
+    fragment_markup = markup.get("fragment", {})
+
+    finish_conflict = conflict_finisher(print, markup, name0, name1)
+
     in_conflict = False
     partial_line_into = partial_line_from = ""
     for fragment in fragment_sequence:
@@ -159,44 +187,39 @@ def line_oriented_markup_changes(
                     finish_conflict(
                         partial_line_into,
                         partial_line_from,
-                        name0,
-                        name1,
                         lines[0] + "\n",
                     )
-                    in_conflict = False
-                    print(
-                        escape("\n".join(lines[1:-1])) + "\n" if len(lines) > 2 else ""
-                    )
+                    print(escape(join(lines[1:-1])))
                 else:
-                    print(escape("\n".join(lines[:-1])) + "\n")
-                # If not in a conflict, partial_line_into should be
-                # exactly the same as partial_line_from.
-                partial_line_into = lines[-1]
-                partial_line_from = lines[-1]
+                    print(escape(join(lines[:-1])))
+                in_conflict = False
+                partial_line_into = partial_line_from = lines[-1]
             else:
                 partial_line_into += lines[0]
                 partial_line_from += lines[0]
 
         if isinstance(fragment, tuple):
             in_conflict = True
-            if fragment[0]:
-                partial_line_into = partial_line_into + markup_fragment(
-                    fragment[0], fragment_markup["into"]
-                )
-            if fragment[1]:
-                partial_line_from = partial_line_from + markup_fragment(
-                    fragment[1], fragment_markup["from"]
-                )
+            partial_line_into, partial_line_from = markup_and_add_fragment(
+                partial_line_into, partial_line_from, fragment, fragment_markup
+            )
     if in_conflict:
         if partial_line_into[-1:] != "\n" or partial_line_from[-1:] != "\n":
             tail = "\n"
         else:
             tail = ""
-        finish_conflict(partial_line_into, partial_line_from, name0, name1, tail)
+        finish_conflict(partial_line_into, partial_line_from, tail)
+    elif partial_line_from:
+        # If not in a conflict, partial_line_into should be
+        # exactly the same as partial_line_from.
+        print(escape(partial_line_from) + "\n")
+
+
+def join(lines):
+    if len(lines) > 0:
+        return "\n".join(line for line in lines) + "\n"
     else:
-        print(escape(partial_line_from))
-        if partial_line_from:
-            print("\n")
+        return ""
 
 
 @contextmanager

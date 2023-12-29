@@ -1,7 +1,56 @@
-# Why Gaspra exists
+# What is GASPRA
+
+GASPRA is the Generalized Automaton-based String Processing for Rapid Alignment.
+GASPRA implements an efficient algorithm to solve the Longest Common
+Substring (LCS) problem.  Specifically it uses a suffix automaton, which
+is a finite state machine and is extremely efficient at string searching
+and matching problems.  It uses the suffix automaton as a base on which
+to build diffing and merging tools.  Because it's efficient, it's
+able to apply correct merge files viewing them as sequences of characters,
+where most traditional merge programs view files as sequences of lines.
+Documents with a lot of multi-line text (e.g., markdown files, and LaTex
+files, and lengthy comments in source code) confuse line-oriented
+merge algorithms, and you end up with a lot of
+"conflicts" that don't really exist.  
+
+The line-oriented approach is an order of magnitude faster, and GASPRA
+allows you to chose line-oriented or character-oriented merges.  Both 
+will use the suffix automaton approach.  It's a matter of whether you
+view a text file as a sequence of characters or a sequence of lines.
+It's still a sequence of tokens and the suffix automaton approach works
+on both cases.
+
+Here's an example of running `gaspra-merge` on three files were the
+first had no line breaks, the second was edited (without adding line
+breaks), and the third was reflowed.  These files were merged with no
+conflicts.  Line-oriented tools show the entire paragraph as a conflict.
+The result shown is the output of the command:
+
+```
+gaspra-merge -sdc data/tale0 data/tale1-reflowed data/tale2-edited
+```
+
+![Merged a reflowed and an edited version of text](./images/text-merge.png)
+
+See [Merging](#merging) for another example.
+
+
+# What's included
+
+* gaspra-diff - A tool for diffing two text files in either a
+  line-oriented or a character-oriented fashion.
+* gaspra-merge - A tool for doing a 3-way merge in either a
+  line-oriented or a character-oriented fashion.
+
+GASPRA has been tested on [Bill Ritcher's pathological merge test
+casea](https://www.guiffy.com/SureMergeWP.html) and performs quite
+well
+
+ 
+# Why GASPRA exists
 
 Recently, I became interested in string matching. In particular, I was
-interested in the Longest Common Substring (LCS) and similar problems. I
+interested in the LCS problem and related problems. I
 discovered that efficient string matching is hard to find, especially in
 Python. Much of what you find on the internet is either slow, or in some
 cases, simply doesn't work.  I wanted a pure Python solution that is
@@ -13,7 +62,7 @@ The LCS problem is solvable in linear time, yet most online examples
 use a classical dynamic programming approach which is quadratic in
 both space and time. Even the venerable `difflib`, which is part of
 Python's standard library uses quadratic-time algorithms.
-Gaspra uses efficient suffix automata
+GASPRA uses efficient suffix automata
 with linear time and space complexity. The difference is dramatic.
 It's the same as the difference between a quicksort and a bubble sort.
 Because of this difference, nobody uses a bubble sort, which is
@@ -26,9 +75,9 @@ equal-length, random sequences of the letters a, b, and c.
 The lengths shown in the table are the combined length of
 the two strings.
 The quadratic complexity of 'difflib' is obvious.  Even though it's a pure
-Python solution, Gaspra is quite fast by comparison.
+Python solution, GASPRA is quite fast by comparison.
 
-| Length   |   Match Length |   Difflib (ms) |      Gaspra (ms) |
+| Length   |   Match Length |   Difflib (ms) |      GASPRA (ms) |
 |----------|----------------|----------------|------------------|
 | 2k       |             13 |             31 |                3 |
 | 4k       |             13 |            120 |                5 |
@@ -41,7 +90,7 @@ Python solution, Gaspra is quite fast by comparison.
 
 # Installation
 
-You can install Gaspra using `pip` (or similar compatible tools):
+You can install GASPRA using `pip` (or similar compatible tools):
 
 ```
 pip install gaspra

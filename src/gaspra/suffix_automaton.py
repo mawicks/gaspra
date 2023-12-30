@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import random
 from typing import Callable
 
-from gaspra.types import TokenSequence
+from gaspra.types import TokenSequence, Separator
 
 
 @dataclass
@@ -58,7 +58,7 @@ def wrap_node_factory(
 
 
 def build(
-    input_string: Iterable[str | int],
+    input_string: Iterable[str | int | Separator],
     reverse_links=True,
     mark_terminals=True,
     empty: str | tuple[int, ...] = "",

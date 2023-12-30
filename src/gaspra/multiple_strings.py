@@ -1,6 +1,8 @@
 from itertools import chain
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
+
+from gaspra.types import Separator, TokenSequence
 
 from gaspra.suffix_automaton import (
     build,
@@ -8,14 +10,16 @@ from gaspra.suffix_automaton import (
 )
 
 
-def concatenate_strings(string_set: Sequence[str | Sequence[int]]):
-    # Concatenate the members of string_set with end of string "tokens"
-    # to separate them. End of string "tokens" are represented by
-    # strings of length 2, e.g. "$0", "$1", etc., so there's no
-    # possibility of them matching any single unicode character.
+def concatenate_strings(
+    string_set: Sequence[str | TokenSequence],
+) -> Iterable[str | int | Separator]:
+    # Concatenate the members of string_set, adding "Separators"
+    # between them. A special type of Separator is used
+    # to prevent any possibility of the Separators being
+    # confused for tokens in the sequence.
 
     chainlets = [
-        chain(string, (f"${index}",)) for index, string in enumerate(string_set)
+        chain(string, (Separator(index),)) for index, string in enumerate(string_set)
     ]
 
     return chain(*chainlets)
@@ -68,7 +72,6 @@ def find_lcs(*string_set: str) -> tuple[tuple[int, ...], int | None]:
     # strings in `string_set` that share a given node's state.  The key
     # is the node's id.
     shared_strings = {}
-
     root = build(concatenate_strings(string_set))
     if len(string_set) == 0:
         return (), None
@@ -125,16 +128,14 @@ def get_string_offsets(positions, string_set):
 def update_shared_strings(shared_strings, top):
     shared_strings[top.id] = set()
     for token, child_node in top.transitions.items():
-        # If any of the transitions are end of string tokens, then we
+        # If any of the transitions are Separators, then we
         # know the parent state represents a substring associated with
-        #  that token. End of string "tokens" are represented by strings
-        # of length 2, e.g. "$0", "$1", etc., so there's no possibility
-        # of them matching any single unicode character or any int.
-        if not isinstance(token, str) or len(token) > 1:
+        # the string associated with the separator.
+        if type(token) is Separator:
             shared_strings[top.id].add(token)
 
         # If any of the transitions are regular charactrers then the
-        # parent inherits the child's memberships
+        # parent inherit the child's memberships
         else:
             child_memberships = shared_strings[child_node.id]
             shared_strings[top.id] = shared_strings[top.id].union(child_memberships)

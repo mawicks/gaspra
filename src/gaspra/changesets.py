@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections.abc import Iterable
+from collections.abc import Hashable, Iterable, Sequence
 from dataclasses import dataclass
 from itertools import chain
 import os
@@ -213,24 +213,22 @@ def find_changeset(
     return changeset
 
 
-def apply_forward(changeset, original: str | Iterable[int]):
-    changed = changeset.apply_forward(original)
-    if isinstance(original, str):
-        patched_original = "".join(changed)
+def join_changes(version, changed):
+    if type(version) == bytes or type(version) == str:
+        patched_version = version[0:0].join(changed)
     else:
-        patched_original = tuple(chain(*changed))
+        patched_version = tuple(chain(*changed))
+    return patched_version
 
-    return patched_original
+
+def apply_forward(changeset, original: Sequence[Hashable]):
+    changes = changeset.apply_forward(original)
+    return join_changes(original, changes)
 
 
 def apply_reverse(changeset, modified: str):
-    changed = changeset.apply_reverse(modified)
-    if isinstance(modified, str):
-        reverse_patched_modified = "".join(changed)
-    else:
-        reverse_patched_modified = tuple(chain(*changed))
-
-    return reverse_patched_modified
+    changes = changeset.apply_reverse(modified)
+    return join_changes(modified, changes)
 
 
 def escape(s):
@@ -246,17 +244,17 @@ if __name__ == "__main__":
     with open(os.path.join(DATA_DIR, "file1")) as file1, open(
         os.path.join(DATA_DIR, "file2")
     ) as file2:
-        original = file1.read()
+        version = file1.read()
         modified = file2.read()
 
-    changeset = find_changeset(original, modified)
+    changeset = find_changeset(version, modified)
 
-    markup = changeset.show(original, modified)
+    markup = changeset.show(version, modified)
 
-    patched_original = apply_forward(changeset, original)
+    patched_original = apply_forward(changeset, version)
     reverse_patched_modified = apply_reverse(changeset, modified)
 
     assert patched_original == modified
-    assert reverse_patched_modified == original
+    assert reverse_patched_modified == version
 
     console.print(markup)

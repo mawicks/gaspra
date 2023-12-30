@@ -19,6 +19,10 @@ FIND_CHANGESETS_STRING_CASES = [
     ),
 ]
 
+FIND_CHANGESETS_BYTES_CASES = [
+    (s1.encode("utf-8"), s2.encode("utf-8")) for s1, s2 in FIND_CHANGESETS_STRING_CASES
+]
+
 FIND_CHANGESETS_TOKEN_CASES = [
     (tokenize(s1), tokenize(s2)) for s1, s2 in FIND_CHANGESETS_STRING_CASES
 ]
@@ -28,13 +32,25 @@ FIND_CHANGESETS_TOKEN_CASES = [
     ["s1", "s2"],
     [
         *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
         *FIND_CHANGESETS_TOKEN_CASES,
     ],
 )
-def test_find_changesets_and_apply_reproduces_string(s1: str, s2: str):
+def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-
     assert s2 == apply_forward(changeset, s1)
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2"],
+    [
+        *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
+        *FIND_CHANGESETS_TOKEN_CASES,
+    ],
+)
+def test_find_changesets_and_apply_reverse_reproduces_string(s1: str, s2: str):
+    changeset = find_changeset(s1, s2)
     assert s1 == apply_reverse(changeset, s2)
 
 

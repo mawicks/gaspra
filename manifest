@@ -1,5 +1,5 @@
-C Begin\sadding\stests\sfor\sbytestrings
-D 2023-12-30T21:05:13.622
+C Make\sfewer\sassumptions\sabout\ssequence\stypes.
+D 2023-12-30T22:20:53.014
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -16,7 +16,7 @@ F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd
 F src/gaspra/merge.py fe64085f15e24f83c19dfc7748452d354c6264559df0bba128a080c93cbbd07c
 F src/gaspra/merge_tool.py fa6fdcb4e6219246f9f2fc40632d5d7ba52f6fb60ce144471219966bdb4d371a
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
-F src/gaspra/suffix_automaton.py 5c52693f7dbb3636dc914ac8200aa2e7aec8c174c5eee69a733499515a4f70b2
+F src/gaspra/suffix_automaton.py b5cbd6fc9a041ed3b27298e4a502466c6bb8191061685d3567a2c5e5b7e5c0c4
 F src/gaspra/test_helpers/helpers.py 2b9d91648ce932fe32d25715091012788b55efd7041328e9f237f2d5d32cf5de
 F src/gaspra/tokenizers.py 78f57e100a32fbb089c6f7b1dd5084700d54fe0be03ed4e4bfaa3550eab4f8b6
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
@@ -31,8 +31,8 @@ F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd3
 F tests/small/test_suffix_automaton.py 58adefde90c0b4e63bee56dd04b5910b1f13f98974881dadd49d3644e7ee35c0
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P b8562be645cdc3cdb63b32346c847f23b6ef67c6fa0e3af4d72a9269b44000ed
-R 5c790ae0582a6fffbc398f4efd67fef8
+P 7304a15f22c8f0201902fcaa5035675df1145ede19bfef0774c352a0d6a8aec1
+R ef670ef684a83feb7ce3560b184fc421
 U mwicks
-Z c3abc1dff03068b6ab3d164a81cca4f3
+Z 2090a363154747c36d03afbc8ef1b871
 # Remove this line to create a well-formed Fossil manifest.

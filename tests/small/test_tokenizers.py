@@ -10,12 +10,12 @@ from gaspra.tokenizers import line_tokenize
         ("\n", "\n"),
         ("\n\n", "\n\n"),
         ("\n\n\n", "\n\n\n"),
-        ("a", "a\n"),
+        ("a", "a"),
         ("a\n", "a\n"),
         ("a\n\n", "a\n\n"),
-        ("a\nb", "a\nb\n"),
+        ("a\nb", "a\nb"),
         ("a\nb\n", "a\nb\n"),
-        ("a\nb\nc", "a\nb\nc\n"),
+        ("a\nb\nc", "a\nb\nc"),
         ("a\nb\nc\n", "a\nb\nc\n"),
         ("\na\nb\nc\n", "\na\nb\nc\n"),
     ],
@@ -34,7 +34,4 @@ def test_line_tokenize(s, reconstruction):
     # Here we use "join" to insert the newlines *between* the lines,
     # and we need to artifically insert the trailing newline.
     # Empty files are empty files, i.e., zero lines.
-    if s == "":
-        assert token_stream == ()
-    else:
-        assert reconstruction == "\n".join(token_mapper[t] for t in token_stream) + "\n"
+    assert reconstruction == "\n".join(token_mapper[t] for t in token_stream)

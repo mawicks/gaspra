@@ -1,24 +1,14 @@
-from gaspra.types import TokenSequence
-
-
-from collections.abc import Iterable, Sequence
-
-
 def line_tokenize(
     *string_set: str,
 ):
     tokenized = []
     token_dict = {}
 
+    print(string_set)
     for s in string_set:
         lines = s.split("\n")
-        # Ignore the empty string that gets generated
-        # by an ending newline.
 
-        if len(lines) > 0 and lines[-1] == "":
-            lines = lines[:-1]
-
-        for line in s.split("\n"):
+        for line in lines:
             if line not in token_dict:
                 token_dict[line] = len(token_dict)
 

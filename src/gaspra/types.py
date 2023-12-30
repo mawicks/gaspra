@@ -1,7 +1,7 @@
-from collections.abc import Iterable, Sequence
+from collections.abc import Hashable, Iterable, Sequence
 from collections import namedtuple
 
-TokenSequence = Sequence[int]
+TokenSequence = Sequence[Hashable]
 Change = namedtuple("Change", ["a", "b"])
 
 Separator = namedtuple("Separator", "index")

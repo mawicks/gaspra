@@ -36,6 +36,9 @@ BUILD_AND_EXTRACT_TEST_STRINGS = [
     random_string("abc", 20, 42),
 ]
 
+BUILD_AND_EXTRACT_TEST_BYTES = [
+    sequence.encode("utf-8") for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
+]
 BUILD_AND_EXTRACT_TEST_TOKENS = [
     tokenize(sequence) for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
 ]
@@ -45,6 +48,7 @@ BUILD_AND_EXTRACT_TEST_TOKENS = [
     "token_sequence",
     [
         *BUILD_AND_EXTRACT_TEST_STRINGS,
+        *BUILD_AND_EXTRACT_TEST_BYTES,
         *BUILD_AND_EXTRACT_TEST_TOKENS,
     ],
 )

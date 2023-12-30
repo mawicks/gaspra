@@ -1,11 +1,11 @@
 from collections.abc import Sequence
 
-from gaspra.test_helpers.helpers import tokenize
 
 import pytest
 
 
 from gaspra.multiple_strings import find_lcs, concatenate_strings
+from gaspra.test_helpers.helpers import tokenize
 from gaspra.types import Separator
 
 

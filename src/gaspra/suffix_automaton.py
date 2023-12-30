@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Iterable, Sequence
+from collections.abc import Hashable, Iterator, Iterable, Sequence
 from dataclasses import dataclass, field
 import random
 from typing import Callable
@@ -282,7 +282,7 @@ def find_lcs(root: Node, s: str | TokenSequence) -> tuple[int, int, int]:
     )
 
 
-def all_suffixes(current: Node) -> Iterator[str | tuple[int, ...]]:
+def all_suffixes(current: Node) -> Iterator[str | bytes | TokenSequence]:
     """Iterate over every suffix in the automaton.
 
     The only purpose for this is in a test that ensures the automaton
@@ -293,10 +293,12 @@ def all_suffixes(current: Node) -> Iterator[str | tuple[int, ...]]:
 
     for token, node in current.transitions.items():
         for substring in all_suffixes(node):
-            if isinstance(token, str) and isinstance(substring, str):
+            if type(token) is int and type(substring) is bytes:
+                yield bytes((token,)) + substring
+            elif type(token) is str and type(substring) is str:
                 yield token + substring
-            elif isinstance(token, int) and isinstance(substring, tuple):
-                yield (token,) + substring  # (character,)  # + substring
+            elif isinstance(token, Hashable) and isinstance(substring, tuple):
+                yield (token,) + substring
             else:
                 raise ValueError(f"Unexpected type {type(token)}")
 

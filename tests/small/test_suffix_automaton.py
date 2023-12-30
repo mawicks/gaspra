@@ -71,7 +71,11 @@ def test_automaton_generates_only_suffixes(token_sequence):
 
 @pytest.mark.parametrize(
     "token_sequence",
-    [*BUILD_AND_EXTRACT_TEST_STRINGS, *BUILD_AND_EXTRACT_TEST_TOKENS],
+    [
+        *BUILD_AND_EXTRACT_TEST_STRINGS,
+        *BUILD_AND_EXTRACT_TEST_BYTES,
+        *BUILD_AND_EXTRACT_TEST_TOKENS,
+    ],
 )
 def test_automaton_generates_each_length_once(token_sequence):
     """
@@ -100,8 +104,13 @@ FIND_SUBSTRING_STRING_CASES = [
     # Below are technically true substring cases which are also tested separately.
     ("anything", "", 0),
     ("", "", 0),
-    ((), (), 0),
 ]
+
+FIND_SUBSTRING_BYTES_CASES = [
+    (automaton_string.encode("utf-8"), query_string.encode("utf-8"), position)
+    for (automaton_string, query_string, position) in FIND_SUBSTRING_STRING_CASES
+]
+
 FIND_SUBSTRING_TOKEN_CASES = [
     (tokenize(automaton_string), tokenize(query_string), position)
     for (automaton_string, query_string, position) in FIND_SUBSTRING_STRING_CASES
@@ -112,6 +121,7 @@ FIND_SUBSTRING_TOKEN_CASES = [
     ["automaton_string", "query_string", "position"],
     [
         *FIND_SUBSTRING_STRING_CASES,
+        *FIND_SUBSTRING_BYTES_CASES,
         *FIND_SUBSTRING_TOKEN_CASES,
     ],
 )
@@ -127,6 +137,7 @@ def test_find_substring(automaton_string, query_string, position):
     "token_sequence",
     [
         *BUILD_AND_EXTRACT_TEST_STRINGS,
+        *BUILD_AND_EXTRACT_TEST_BYTES,
         *BUILD_AND_EXTRACT_TEST_TOKENS,
     ],
 )
@@ -199,6 +210,13 @@ FIND_SUBSTRING_ALL_CASES = [
     ("bananas", "xbananas", ()),
 ]
 
+
+FIND_SUBSTRING_BYTES_CASES = [
+    (automaton_string.encode("utf-8"), query_string.encode("utf-8"), positions)
+    for (automaton_string, query_string, positions) in FIND_SUBSTRING_ALL_CASES
+]
+
+
 FIND_SUBSTRING_ALL_TOKEN_CASES = [
     (tokenize(automaton_string), tokenize(query_string), positions)
     for (automaton_string, query_string, positions) in FIND_SUBSTRING_ALL_CASES
@@ -209,6 +227,7 @@ FIND_SUBSTRING_ALL_TOKEN_CASES = [
     ["automaton_sequence", "query_sequence", "positions"],
     [
         *FIND_SUBSTRING_ALL_CASES,
+        *FIND_SUBSTRING_BYTES_CASES,
         *FIND_SUBSTRING_ALL_TOKEN_CASES,
     ],
 )
@@ -235,6 +254,11 @@ LCS_TEST_STRINGS = [
     (S1, S2, len(COMMON)),
 ]
 
+LCS_TEST_BYTES = [
+    (s1.encode("utf-8"), s2.encode("utf-8"), length)
+    for (s1, s2, length) in LCS_TEST_STRINGS
+]
+
 LCS_TEST_TOKENS = [
     (tokenize(s1), tokenize(s2), length) for (s1, s2, length) in LCS_TEST_STRINGS
 ]
@@ -244,6 +268,7 @@ LCS_TEST_TOKENS = [
     ["s1", "s2", "__lcs_length__"],
     [
         *LCS_TEST_STRINGS,
+        *LCS_TEST_BYTES,
         *LCS_TEST_TOKENS,
     ],
 )
@@ -271,6 +296,7 @@ def test_find_lcs_finds_a_common_sequence(
     ["s1", "s2", "lcs_length"],
     [
         *LCS_TEST_STRINGS,
+        *LCS_TEST_BYTES,
         *LCS_TEST_TOKENS,
     ],
 )
@@ -312,6 +338,12 @@ NULL_TEST_CASES_STRINGS = (
     ("abc", ""),
     ("", ""),
 )
+
+NULL_TEST_CASES_BYTES = [
+    (build.encode("utf-8"), query.encode("utf-8"))
+    for build, query in NULL_TEST_CASES_STRINGS
+]
+
 NULL_TEST_CASES_TOKENS = [
     (tokenize(build), tokenize(query)) for build, query in NULL_TEST_CASES_STRINGS
 ]
@@ -321,6 +353,7 @@ NULL_TEST_CASES_TOKENS = [
     ["build_sequence", "query_sequence"],
     (
         *NULL_TEST_CASES_STRINGS,
+        *NULL_TEST_CASES_BYTES,
         *NULL_TEST_CASES_TOKENS,
     ),
 )

@@ -1,5 +1,5 @@
-C Make\sfewer\sassumptions\sabout\ssequence\stypes.
-D 2023-12-30T22:20:53.014
+C Add\sbytestrings\sto\sall\stests\sof\ssuffix_automaton.
+D 2023-12-30T22:29:52.720
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -28,11 +28,11 @@ F tests/small/test_helpers.py 593dfa53a6c52445b9a3e4d6f1a26c31f544f785f1d25dc336
 F tests/small/test_markup.py 591e40211dbb7a9db60ed5e9d403dcaa7ae63bf3197f8837d14efa22dc75def4
 F tests/small/test_merge.py 123fa9b7b8087e4b26f89e7f8556878b9320c1c88be5d58d3d854bc6c0fec058
 F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd341331110beb9b937b321dbb
-F tests/small/test_suffix_automaton.py 58adefde90c0b4e63bee56dd04b5910b1f13f98974881dadd49d3644e7ee35c0
+F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 7304a15f22c8f0201902fcaa5035675df1145ede19bfef0774c352a0d6a8aec1
-R ef670ef684a83feb7ce3560b184fc421
+P 896cfa2ae430eeb6d1bd706bd45388b4f03af30c993e3452fd1d13420b24d3a3
+R bcb4c893e97817d77e44fbe66b7f9afc
 U mwicks
-Z 2090a363154747c36d03afbc8ef1b871
+Z dcf3fc2964fe1f5f12aa8d7585001915
 # Remove this line to create a well-formed Fossil manifest.

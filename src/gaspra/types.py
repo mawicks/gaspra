@@ -2,10 +2,11 @@ from collections.abc import Hashable, Iterable, Sequence
 from collections import namedtuple
 
 TokenSequence = Sequence[Hashable]
-Change = namedtuple("Change", ["a", "b"])
+
+StringIterable = Iterable[str]
+BytesIterable = Iterable[bytes]
+TokenSequenceIterable = Iterable[TokenSequence]
 
 Separator = namedtuple("Separator", "index")
-
+Change = namedtuple("Change", ["a", "b"])
 ChangeIterable = Iterable[str | TokenSequence | Change]
-StringIterable = Iterable[str]
-TokenSequenceIterable = Iterable[TokenSequence]

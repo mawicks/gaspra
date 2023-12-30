@@ -20,3 +20,13 @@ def tokenize(string_or_fragment_list):
         return tuple(tokenize(fragment) for fragment in string_or_fragment_list)
     else:
         raise TypeError(f"Unsupported fragment type: {type(string_or_fragment_list)}")
+
+
+def byteize(string_or_fragment_list):
+    if isinstance(string_or_fragment_list, str):
+        return string_or_fragment_list.encode("utf-8")
+
+    elif isinstance(string_or_fragment_list, tuple | list):
+        return tuple(byteize(fragment) for fragment in string_or_fragment_list)
+    else:
+        raise TypeError(f"Unsupported fragment type: {type(string_or_fragment_list)}")

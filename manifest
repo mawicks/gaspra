@@ -1,5 +1,5 @@
-C Begin\sadding\sbytes\stests\scases\sto\stest_changesets.py
-D 2023-12-30T22:49:05.067
+C Finish\sadding\sbytes\stest\scases\sin\stest_changesets.py
+D 2023-12-30T23:11:49.160
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -23,7 +23,7 @@ F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6
 F src/gaspra/types.py 35635f4f9f201ca1c3c71a73f4a6aca0d1b77bd256d67e879bb571069aa8e84a
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py a81c524575a314f0c5e1f4dd3e6d8a182f5243a9586d7312b33a88c954e371c8
-F tests/small/test_changesets.py dcdcabc596e3ca428a06f9d19da708e8ec7723138d81937e3a3f5cd49d1b058c
+F tests/small/test_changesets.py 014c9eac3aa8733c4e70e342750470d0deef5b4911240d264f82ff6476d2fadb
 F tests/small/test_helpers.py 593dfa53a6c52445b9a3e4d6f1a26c31f544f785f1d25dc336a050dd1da38a3e
 F tests/small/test_markup.py 591e40211dbb7a9db60ed5e9d403dcaa7ae63bf3197f8837d14efa22dc75def4
 F tests/small/test_merge.py 123fa9b7b8087e4b26f89e7f8556878b9320c1c88be5d58d3d854bc6c0fec058
@@ -31,8 +31,8 @@ F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd3
 F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 3e2e9a0bc7a9b5f2ede1be87fae8234c9e15e2928a1090af9228e79b6216f5d6
-R 4754fa4664db4295530ac83d9b2f58bd
+P 3793bab2af7a79f7b31efaf73cbdb12ae2477d7bb7c9a820056d29aa60e8d011
+R 2314139e608f61eaf6ee5af993b30e10
 U mwicks
-Z 087cbcccc782600e18755b0a916e13f6
+Z 609633cf49ab9b45dde32ec46e6e4ac4
 # Remove this line to create a well-formed Fossil manifest.

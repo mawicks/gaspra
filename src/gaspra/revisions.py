@@ -43,12 +43,12 @@ class Tree:
     """
 
     root: Node | None = None
-    index: dict[int | str, Node] = field(default_factory=dict)
+    index: dict[Hashable, Node] = field(default_factory=dict)
 
-    def add(self, node_name: Hashable):
+    def add(self, node_tag: Hashable):
         node_id = len(self.index)
         old_root = self.root
-        new_root = Node(node_name, node_id)
+        new_root = Node(node_tag, node_id)
         new_root.set_left(old_root)
 
         # Link in the other direction
@@ -64,17 +64,17 @@ class Tree:
                 new_root.set_right(best_split)
 
         self.root = new_root
-        self.index[node_id] = new_root
+        self.index[node_tag] = new_root
 
     def edges(self):
         if self.root:
             yield from self.root.edges()
 
-    def path_to(self, node_name: Hashable) -> tuple[int | str, ...]:
+    def path_to(self, node_tag: Hashable) -> tuple[int | str, ...]:
         path = []
-        current = self.index[node_name]
+        current = self.index[node_tag]
         while current:
-            path.append(current.node_name)
+            path.append(current.node_tag)
             current = current.parent
         return tuple(reversed(path))
 
@@ -96,7 +96,7 @@ class Tree:
         """
         This shouldn't be very useful except in testing. To avoid
         exposing the implementaiton, we avoid returning a Node type to
-        the user and nol return the data.
+        the user and only return the data.
         """
         node = self.index.get(node_id)
         if node:
@@ -105,7 +105,7 @@ class Tree:
 
 @dataclass
 class Node:
-    node_name: Hashable
+    node_tag: Hashable
     node_id: int
     left: Node | None = None
     right: Node | None = None
@@ -155,10 +155,10 @@ class Node:
 
     def edges(self):
         if self.left:
-            yield (self.node_id, self.left.node_id)
+            yield (self.node_tag, self.left.node_tag)
             yield from self.left.edges()
         if self.right:
-            yield (self.node_id, self.right.node_id)
+            yield (self.node_tag, self.right.node_tag)
             yield from self.right.edges()
 
 

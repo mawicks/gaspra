@@ -1,9 +1,7 @@
 from __future__ import annotations
-from collections.abc import Hashable
+from collections.abc import Hashable, Iterable
 from enum import Enum
 from dataclasses import dataclass, field
-import math
-from time import perf_counter_ns
 
 
 class Direction(Enum):
@@ -45,26 +43,55 @@ class Tree:
     root: Node | None = None
     index: dict[Hashable, Node] = field(default_factory=dict)
 
-    def add(self, node_tag: Hashable):
-        node_id = len(self.index)
+    def add(
+        self, node_tag: Hashable
+    ) -> tuple[
+        Iterable[tuple[Hashable, Hashable]], Iterable[tuple[Hashable, Hashable]]
+    ]:
+        """
+        Insert node_tag into the revision tree, notifying caller of
+        inserted and removed edges.
+
+        Arguments:
+            node_tag: Hashable - A unique tag to reference the node
+                being added.
+
+        Returns:
+            Iterable[tuple[Hashable, Hashable]] - Sequence of inserted
+            edges as tuple(from, to).
+            Iterable[tuple[Hashable, Hashable]] - Sequence of removed
+            edges as tuple(from, to)
+
+        """
+        inserted_edges = []
+        removed_edges = []
+
         old_root = self.root
-        new_root = Node(node_tag, node_id)
+        new_root = Node(node_tag, node_id=len(self.index))
         new_root.set_left(old_root)
 
-        # Link in the other direction
         if old_root:
+            inserted_edges.append((new_root.node_tag, old_root.node_tag))
+
+            # Link in the other direction
             best_split, direction = find_and_detach_best_split(old_root)
-            # Detach best_split from tree
-            if best_split and best_split.parent:
-                if direction == Direction.LEFT:
-                    best_split.parent.set_left(None)
-                else:
-                    best_split.parent.set_right(None)
             if best_split != old_root:
+                if best_split and best_split.parent:
+                    # Detach best_split from tree
+                    removed_edges.append(
+                        (best_split.parent.node_tag, best_split.node_tag)
+                    )
+                    if direction == Direction.LEFT:
+                        best_split.parent.set_left(None)
+                    else:
+                        best_split.parent.set_right(None)
+                # Add the new link.
+                inserted_edges.append((new_root.node_tag, best_split.node_tag))
                 new_root.set_right(best_split)
 
         self.root = new_root
         self.index[node_tag] = new_root
+        return inserted_edges, removed_edges
 
     def edges(self):
         if self.root:
@@ -194,6 +221,9 @@ def find_and_detach_best_split(root: Node):
 
 
 def timing_experiment():  # pragma: no cover
+    from time import perf_counter_ns
+    import math
+
     N_RATIO = 10
     N1 = 5_000
     N2 = N_RATIO * N1

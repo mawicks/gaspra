@@ -21,16 +21,43 @@ TREES = (
     (("y", "x"), ("y", "z"), ("x", "c"), ("z", "b"), ("c", "a")),
     (("q", "y"), ("q", "c"), ("y", "x"), ("y", "z"), ("z", "b"), ("c", "a")),
 )
+INSERTED_EDGES = (
+    (),
+    (("b", "a"),),
+    (("c", "b"), ("c", "a")),
+    (("z", "c"), ("z", "b")),
+    (("x", "z"), ("x", "c")),
+    (("y", "x"), ("y", "z")),
+    (("q", "y"), ("q", "c")),
+)
+REMOVED_EDGES = (
+    (),
+    (),
+    (("b", "a"),),
+    (("c", "b"),),
+    (("z", "c"),),
+    (("x", "z"),),
+    (("x", "c"),),
+)
 
 
 def test_add_revision():
-    tree = Tree()
+    test_tree = Tree()
 
-    for node_tag, expected_tree in zip(NODE_TAGS, TREES):
-        test_edges = {edge for edge in expected_tree}
+    for node_tag, tree, inserted_edges, removed_edges in zip(
+        NODE_TAGS, TREES, INSERTED_EDGES, REMOVED_EDGES
+    ):
+        edges = {edge for edge in tree}
+        inserted_edges = {edge for edge in inserted_edges}
+        removed_edges = {edge for edge in removed_edges}
 
-        tree.add(node_tag)
-        assert test_edges == {edge for edge in tree.edges()}
+        test_inserted_edges, test_removed_edges = test_tree.add(node_tag)
+        test_inserted_edges = {edge for edge in test_inserted_edges}
+        test_removed_edges = {edge for edge in test_removed_edges}
+
+        assert edges == {edge for edge in test_tree.edges()}
+        assert test_inserted_edges == inserted_edges
+        assert test_removed_edges == removed_edges
 
 
 @pytest.fixture

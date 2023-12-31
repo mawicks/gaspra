@@ -1,6 +1,8 @@
 from __future__ import annotations
 from enum import Enum
 from dataclasses import dataclass, field
+import math
+from time import perf_counter_ns
 
 
 class Direction(Enum):
@@ -26,11 +28,13 @@ class Tree:
     second child of the root node is a branch of the tree that is split
     off to "balance" the tree's path length.  From the construction of
     the tree it's easy to show that construction is O(n) in storage.
-    The max path length appears to be O(n^(1/2) (unproven).  If that's
-    true, finding the branch to split and splitting it would be
-    O(n^(1/2)), making construction potentially as O(n^{3/2).  Also, the
-    reevaluate() call, which is only necessary when initializing a
-    pre-existing tree, would be O(n).
+    The max path length appears to be O(n^(1/2) (unproven, but it
+    appears to lay the nodes on a nearly square grid).  If that's true,
+    finding which branch to split, and splitting it, would be O(n^(1/2)),
+    making construction O(n^{3/2). That matches timing experiments
+    very precisely. Under that assumption, the reevaluate() call,
+    which is only necessary when initializing a pre-existing tree, would
+    be O(n).
     """
 
     root: Node | None = None
@@ -182,3 +186,29 @@ def find_and_detach_best_split(current: Node):
         else:
             raise RuntimeError("This should not happen!")
     return current, direction
+
+
+def timing_experiment():
+    N_RATIO = 10
+    N1 = 5_000
+    N2 = N_RATIO * N1
+    start = perf_counter_ns()
+    tree = Tree()
+    for node in range(N1):
+        tree.add(node)
+    duration1 = perf_counter_ns() - start
+
+    start = perf_counter_ns()
+    tree = Tree()
+    for node in range(N2):
+        tree.add(node)
+    duration2 = perf_counter_ns() - start
+
+    # Compare to O(n^(3/2))
+    ratio = duration2 / duration1
+    complexity_exponent = math.log(ratio) / math.log(N_RATIO)
+    print(f"Time complexity assuming O[N^(3/2)]: {complexity_exponent:.2f}")
+
+
+if __name__ == "__main__":
+    timing_experiment()

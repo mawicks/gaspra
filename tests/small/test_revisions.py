@@ -56,6 +56,10 @@ def test_add_revision():
         test_removed_edges = {edge for edge in test_removed_edges}
 
         assert edges == {edge for edge in test_tree.edges()}
+
+        # Check that inserted_edges and removed edges are as expected.
+        # These are tested more extensively in
+        # test_inserted_and_removed_edges_agree_with_edges()
         assert test_inserted_edges == inserted_edges
         assert test_removed_edges == removed_edges
 
@@ -84,6 +88,17 @@ def test_reevaluate(tree):
         original_state = tree._get_state(node_name)
         new_state = tree_copy._get_state(node_name)
         assert original_state == new_state
+
+
+def test_inserted_and_removed_edges_agree_with_edges():
+    tree = Tree()
+    accumulated_edges = set()
+    for node in NODE_TAGS:
+        inserted_edges, removed_edges = tree.add(node)
+        accumulated_edges.update(inserted_edges)
+        accumulated_edges.difference_update(removed_edges)
+
+        assert set(tree.edges()) == accumulated_edges
 
 
 def test_revision_tree_properties(tree):

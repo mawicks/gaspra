@@ -1,5 +1,5 @@
-C Return\sinserted\sand\sremoved\sedges\sfrom\s\sNode.add()
-D 2023-12-31T22:44:40.192
+C Add\smore\stests\sfor\sreported\sinserted\sand\sremoved\sedges.
+D 2023-12-31T22:50:48.723
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -29,12 +29,12 @@ F tests/small/test_helpers.py 593dfa53a6c52445b9a3e4d6f1a26c31f544f785f1d25dc336
 F tests/small/test_markup.py 591e40211dbb7a9db60ed5e9d403dcaa7ae63bf3197f8837d14efa22dc75def4
 F tests/small/test_merge.py deab8a12a48ae36f881bd8f4268419085069f61e587b4d327bc539e4b7ae3332
 F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd341331110beb9b937b321dbb
-F tests/small/test_revisions.py 7c795acec037cfad9f41daec18c571e8dffbcaa5e64eebce4c5e809d65b21f5c
+F tests/small/test_revisions.py 209aebd6feb18982921ffb4ebc1adccfc8149ca2c9f2f60cf956782c6ef1f4b2
 F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P b5ca81ab47a94dc80206cc207dbc9667da21e5bdb82388b673fd19c39dc53525
-R 85a3e745dd493fae85a88ea7a92681bf
+P 2dd8866703064059f08ee6fddccde986c1323b688ad3415eb42e6e763940d798
+R e459a4b3f1a36df57512be8b491318b2
 U mwicks
-Z eebc9e76ab705b3cb318f161a0c2a3f5
+Z b15fdd29a48047ce59456a0eff9b7d0b
 # Remove this line to create a well-formed Fossil manifest.

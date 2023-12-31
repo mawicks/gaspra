@@ -37,20 +37,20 @@ def tree():
 
 
 def test_all_paths_lead_to_root(tree):
-    for node_id in range(TREE_FIXTURE_SIZE):
-        path = tree.path_to(node_id)
+    for node_name in range(TREE_FIXTURE_SIZE):
+        path = tree.path_to(node_name)
         assert len(path) > 0
         assert path[0] == TREE_FIXTURE_SIZE - 1
-        assert path[-1] == node_id
+        assert path[-1] == node_name
 
 
 def test_reevaluate(tree):
     tree_copy = deepcopy(tree)
     tree_copy._invalidate()
     tree_copy.reevaluate()
-    for node_id in range(TREE_FIXTURE_SIZE):
-        original_state = tree._get_state(node_id)
-        new_state = tree_copy._get_state(node_id)
+    for node_name in range(TREE_FIXTURE_SIZE):
+        original_state = tree._get_state(node_name)
+        new_state = tree_copy._get_state(node_name)
         assert original_state == new_state
 
 

@@ -1,5 +1,5 @@
-C Separate\snotions\sof\snode_name\s(arbitrary\sname)\sand\snode_id\s(a\ssequential\sID).
-D 2023-12-31T18:24:52.314
+C Elimination\suse\sof\sname\s'node_id'\sin\stest_revisions.py
+D 2023-12-31T18:27:24.547
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -29,12 +29,12 @@ F tests/small/test_helpers.py 593dfa53a6c52445b9a3e4d6f1a26c31f544f785f1d25dc336
 F tests/small/test_markup.py 591e40211dbb7a9db60ed5e9d403dcaa7ae63bf3197f8837d14efa22dc75def4
 F tests/small/test_merge.py 76b456820247c07dcbce2146e71d6e325fba21adc3e868919d8e7693a339cc7a
 F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd341331110beb9b937b321dbb
-F tests/small/test_revisions.py 3d413fd0c40bbd01b534911d6e880bddf356ee0bc65cd2a39f846807c4e6b08c
+F tests/small/test_revisions.py ebd28d40948f1b3fcc26a2e2894ba43980483c0c4c8e9ede4fee4c19e4af6a44
 F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P e424255d51399d46eac98f8d08c29c67e631eb5d26e6f6397d43a84985251793
-R f651b11fa069565efa4157146d90fa8f
+P 9dc04ba07d6d40f49f40a4ed5f3f184d6562c3889dc27c68bef91805060981d5
+R 01091073abea806cbdef666670447132
 U mwicks
-Z b1dba9f9a28e3b066fc4f4f0d50410c0
+Z 293579ef2d29b42a221a6785127b978d
 # Remove this line to create a well-formed Fossil manifest.

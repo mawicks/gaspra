@@ -75,7 +75,7 @@ def consolidate_conflicts(input_stack, empty: str | TokenSequence = ""):
                     fragment.insert,
                     fragment.delete,
                 )
-            else:
+            else:  # pragma: no cover
                 raise ValueError(f"Unexpected fragment type: {type(fragment)}")
 
         # For now, just copy the other fragment types.  They will be
@@ -181,7 +181,7 @@ def process_fragments(fragment0, fragment1, within_conflict: bool):
     elif isinstance(fragment0, ChangeFragment) and isinstance(fragment1, CopyFragment):
         output, tail1, tail0 = copy_change(fragment1, fragment0)
 
-    else:
+    else:  # pragma: no cover
         raise RuntimeError(f"Unexpected types: {type(fragment0)} or {type(fragment1)}")
 
     return output, tail0, tail1, within_conflict
@@ -254,6 +254,8 @@ def change_change(fragment0: ChangeFragment, fragment1: ChangeFragment):
     insert_length, delete_length = common_prefix_lengths(fragment0, fragment1)
 
     # Exactly the same changeset can simply be passed along.
+    # This is an optimization.  The ordinary_conflict() function below
+    # should also remove even if this test is omitted.
     if are_identical_changes(fragment0, fragment1, insert_length, delete_length):
         return fragment0, None, None, False
 
@@ -292,7 +294,7 @@ def compose_changes(fragment0, fragment1):
             fragment0.length,
         )
         return None, tail0, None
-    else:
+    else:  # pragma: no cover
         raise ValueError("Changes are not composable")
 
 

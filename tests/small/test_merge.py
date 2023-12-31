@@ -11,8 +11,11 @@ CONFLICT_FREE_MERGES_STRING_CASES = [
     # No changes, non-empty
     ("a", "a", "a", "a"),
     #
-    # Same change both branches, beginning from empty
+    # Identical change both branches, beginning from empty
     ("", "a", "a", "a"),
+    #
+    # Identical change both branches, beginning from non-empty
+    ("abc", "ac", "ac", "ac"),
     #
     # Remove everything on both branches
     ("a", "", "", ""),

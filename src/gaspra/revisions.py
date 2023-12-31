@@ -102,8 +102,6 @@ class Tree:
         if node:
             return node.count, node.length
 
-        return None
-
 
 @dataclass
 class Node:
@@ -164,23 +162,23 @@ class Node:
             yield from self.right.edges()
 
 
-def find_and_detach_best_split(current: Node):
+def find_and_detach_best_split(root: Node):
     depth = 1
     direction = Direction.NONE
+    current = root
     while current is not None and depth < current.length:
         if current.right is not None and current.left is not None:
             if current.right.length > current.left.length:
                 current = current.right
                 direction = Direction.RIGHT
-            elif current.left.length > current.right.length:
-                current = current.left
-                direction = Direction.LEFT
-            elif current.left.node_id > current.right.node_id:
-                current = current.left
-                direction = Direction.LEFT
             else:
-                current = current.right
-                direction = Direction.RIGHT
+                # This is the path for right length < left length *and*
+                # also the case of a tie.  In a tie, we're intentionally
+                # using the left node because it will always be the
+                # newer revision.  This is a consequence of how
+                # revisions get inserted.
+                current = current.left
+                direction = Direction.LEFT
             depth += 1
         elif current.right is not None:
             current = current.right
@@ -190,12 +188,12 @@ def find_and_detach_best_split(current: Node):
             current = current.left
             direction = Direction.LEFT
             depth += 1
-        else:
+        else:  # pragma: no cover
             raise RuntimeError("This should not happen!")
     return current, direction
 
 
-def timing_experiment():
+def timing_experiment():  # pragma: no cover
     N_RATIO = 10
     N1 = 5_000
     N2 = N_RATIO * N1
@@ -217,5 +215,5 @@ def timing_experiment():
     print(f"Time complexity assuming O[N^(3/2)]: {complexity_exponent:.2f}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     timing_experiment()

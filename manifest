@@ -1,5 +1,5 @@
-C Finish\sadding\sbytes\stest\scases.
-D 2023-12-30T23:54:05.118
+C Explore\srevisions\sidea.
+D 2023-12-31T14:33:34.656
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 5fb0529663f1d5d899d80f0223aed4d7ffc8e46ce3d8932a4fe9d5d089e9fb40
@@ -16,6 +16,7 @@ F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd
 F src/gaspra/merge.py fe64085f15e24f83c19dfc7748452d354c6264559df0bba128a080c93cbbd07c
 F src/gaspra/merge_tool.py fa6fdcb4e6219246f9f2fc40632d5d7ba52f6fb60ce144471219966bdb4d371a
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
+F src/gaspra/revisions.py e06297a184a1630196611c8f4dbba61eab6b3925b22c9b4c8ed9ea7739bf2eea
 F src/gaspra/suffix_automaton.py b5cbd6fc9a041ed3b27298e4a502466c6bb8191061685d3567a2c5e5b7e5c0c4
 F src/gaspra/test_helpers/helpers.py 50bf880b98609242e4488c74c2c5dd9dfe03f415041b61be8f244977fb42c6fd
 F src/gaspra/tokenizers.py 78f57e100a32fbb089c6f7b1dd5084700d54fe0be03ed4e4bfaa3550eab4f8b6
@@ -28,11 +29,15 @@ F tests/small/test_helpers.py 593dfa53a6c52445b9a3e4d6f1a26c31f544f785f1d25dc336
 F tests/small/test_markup.py 591e40211dbb7a9db60ed5e9d403dcaa7ae63bf3197f8837d14efa22dc75def4
 F tests/small/test_merge.py 76b456820247c07dcbce2146e71d6e325fba21adc3e868919d8e7693a339cc7a
 F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd341331110beb9b937b321dbb
+F tests/small/test_revisions.py 5a35bf34438ccdce69a2a3026e60b06b0a3d1fb6fd5e00b93e86b6b7d10d5e0e
 F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P e24be4bbbb65aaddf7a0fef689bc7fe3e563a7be42c7405f20f458c550e00f01
-R bac11cf0a7922f9750c4f926d96bca92
+P 7935ac55f7634065b4e941434bc2cc969c6ddf12a91e4ed738f6cd290740b5a3
+R 79ceec569cc4f396e7598142d0ca1930
+T *branch * experiment
+T *sym-experiment *
+T -sym-trunk *
 U mwicks
-Z 0b1b0803e32d74e1f22274dd18f0d7e4
+Z 16d382052ed124e8539738983966e460
 # Remove this line to create a well-formed Fossil manifest.

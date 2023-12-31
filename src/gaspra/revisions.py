@@ -11,6 +11,28 @@ class Direction(Enum):
 
 @dataclass
 class Tree:
+    """
+    Implement a tree having several properties useful for revision
+    control.  Edges represent diffs.  The idea is to have a path from
+    the current version, which is stored verbatime in the root node, to
+    the previous version.  Only the changes are stored for non-root
+    versions.  The idea was to keep the path from the root to any
+    version "short" and the number of diffs stored "small".  When adding
+    a node we wnat to minimize the number of diffs to recompute.  A
+    number of constraints make this different from a typical binary tree
+    implementation.  One is the requirement that the most recent node
+    needs to be at the root.  Also, recent versions needs to be near the
+    top, so one child of the root node is the previous version.  The
+    second child of the root node is a branch of the tree that is split
+    off to "balance" the tree's path length.  From the construction of
+    the tree it's easy to show that construction is O(n) in storage.
+    The max path length appears to be O(n^(1/2) (unproven).  If that's
+    true, finding the branch to split and splitting it would be
+    O(n^(1/2)), making construction potentially as O(n^{3/2).  Also, the
+    reevaluate() call, which is only necessary when initializing a
+    pre-existing tree, would be O(n).
+    """
+
     root: Node | None = None
     index: dict[int | str, Node] = field(default_factory=dict)
 

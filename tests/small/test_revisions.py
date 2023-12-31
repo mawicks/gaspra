@@ -1,5 +1,7 @@
 import pytest
 
+from copy import deepcopy
+
 from gaspra.revisions import Tree
 
 TREES = (
@@ -34,18 +36,22 @@ def tree():
     return fixture_tree
 
 
-def test_all_nodes_are_indexed(tree):
-    for node_id in range(TREE_FIXTURE_SIZE):
-        found = tree.find(node_id)
-        assert found is not None and found.node_id == node_id
-
-
 def test_all_paths_lead_to_root(tree):
     for node_id in range(TREE_FIXTURE_SIZE):
-        current = tree.find(node_id)
-        while current.parent is not None:
-            current = current.parent
-        assert current is not None and current.node_id == TREE_FIXTURE_SIZE - 1
+        path = tree.path_to(node_id)
+        assert len(path) > 0
+        assert path[0] == TREE_FIXTURE_SIZE - 1
+        assert path[-1] == node_id
+
+
+def test_reevaluate(tree):
+    tree_copy = deepcopy(tree)
+    tree_copy._invalidate()
+    tree_copy.reevaluate()
+    for node_id in range(TREE_FIXTURE_SIZE):
+        original_state = tree._get_state(node_id)
+        new_state = tree_copy._get_state(node_id)
+        assert original_state == new_state
 
 
 def test_revision_tree_properties(tree):

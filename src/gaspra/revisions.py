@@ -1,6 +1,6 @@
 from __future__ import annotations
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class Direction(Enum):
@@ -12,8 +12,9 @@ class Direction(Enum):
 @dataclass
 class Tree:
     root: Node | None = None
+    index: dict[int | str, Node] = field(default_factory=dict)
 
-    def add(self, node_id):
+    def add(self, node_id: int | str):
         old_root = self.root
         new_root = Node(node_id)
         new_root.set_left(old_root)
@@ -31,15 +32,19 @@ class Tree:
                 new_root.set_right(best_split)
 
         self.root = new_root
+        self.index[node_id] = new_root
 
     def edges(self):
         if self.root:
             yield from self.root.edges()
 
+    def find(self, node_id) -> Node | None:
+        return self.index.get(node_id)
+
 
 @dataclass
 class Node:
-    node_id: int
+    node_id: int | str
     left: Node | None = None
     right: Node | None = None
     parent: Node | None = None

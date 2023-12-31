@@ -1,4 +1,5 @@
 from __future__ import annotations
+from collections.abc import Hashable
 from enum import Enum
 from dataclasses import dataclass, field
 import math
@@ -44,9 +45,10 @@ class Tree:
     root: Node | None = None
     index: dict[int | str, Node] = field(default_factory=dict)
 
-    def add(self, node_id: int | str):
+    def add(self, node_name: Hashable):
+        node_id = len(self.index)
         old_root = self.root
-        new_root = Node(node_id)
+        new_root = Node(node_name, node_id)
         new_root.set_left(old_root)
 
         # Link in the other direction
@@ -68,11 +70,11 @@ class Tree:
         if self.root:
             yield from self.root.edges()
 
-    def path_to(self, node_id) -> tuple[int | str, ...]:
+    def path_to(self, node_name: Hashable) -> tuple[int | str, ...]:
         path = []
-        current = self.index[node_id]
+        current = self.index[node_name]
         while current:
-            path.append(current.node_id)
+            path.append(current.node_name)
             current = current.parent
         return tuple(reversed(path))
 
@@ -105,7 +107,8 @@ class Tree:
 
 @dataclass
 class Node:
-    node_id: int | str
+    node_name: Hashable
+    node_id: int
     left: Node | None = None
     right: Node | None = None
     parent: Node | None = None
@@ -172,12 +175,12 @@ def find_and_detach_best_split(current: Node):
             elif current.left.length > current.right.length:
                 current = current.left
                 direction = Direction.LEFT
-            elif current.right.node_id > current.left.node_id:
-                current = current.right
-                direction = Direction.RIGHT
-            else:
+            elif current.left.node_id > current.right.node_id:
                 current = current.left
                 direction = Direction.LEFT
+            else:
+                current = current.right
+                direction = Direction.RIGHT
             depth += 1
         elif current.right is not None:
             current = current.right

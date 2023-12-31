@@ -34,7 +34,11 @@ class Tree:
     making construction O(n^{3/2). That matches timing experiments
     very precisely. Under that assumption, the reevaluate() call,
     which is only necessary when initializing a pre-existing tree, would
-    be O(n).
+    be O(n).  Here are some coplexity extimates:
+
+    Adding a node to an existing tree: O(sqrt(n))
+    Calling path_to(): O(sqrt(n))
+    Loading an existing tree and calling reevaluate(): O(n)
     """
 
     root: Node | None = None

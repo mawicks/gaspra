@@ -62,7 +62,8 @@ class ChangesetLeaf:
     def apply_reverse(self, _: str | TokenSequence):
         yield self.original
 
-    def __str__(self):
+    # Exclude __str__ from coverage because it's only used for debugging.
+    def __str__(self):  # pragma: no cover
         result = ""
         if self.original:
             result += f"original: {self.original}\n"
@@ -102,7 +103,8 @@ class Changeset:
         yield modified[self.common_modified]
         yield from self.suffix.apply_reverse(modified)
 
-    def __str__(self):
+    # Exclude __str__ from coverage because it's only used for debugging.
+    def __str__(self):  # pragma: no cover
         s_original = f"{self.common_original.start}:{self.common_original.stop}"
         s_modified = f"{self.common_modified.start}:{self.common_modified.stop}"
         return f"original[{s_original}]/modified[{s_modified}]\n"

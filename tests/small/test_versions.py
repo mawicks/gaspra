@@ -6,9 +6,9 @@ VERSIONS = {
     0: "a b c d e f g",
     1: "a c e f g",
     2: "a c d x y g",
-    # 3: "a c d x y g x y z",
-    # 4: "d x y g x y z",
-    # 5: "d x y g x y z q r s",
+    3: "a c d x y g x y z",
+    4: "d x y g x y z",
+    5: "d x y g x y z q r s",
 }
 
 
@@ -22,3 +22,4 @@ def test_revisions():
         retrieved_version = versions.retrieve(id)
 
         assert retrieved_version == version
+    "DONE"

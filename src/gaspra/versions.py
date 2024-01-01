@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Sequence, Iterable
+from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 from typing import Callable, cast
 
@@ -24,8 +24,8 @@ class Versions:
     tokens: dict[bytes, int] = field(default_factory=dict)
     token_map: tuple[bytes, ...] = field(default_factory=tuple)
 
-    def save(self, version_id: Hashable, version: bytes):
-        changesets_to_create, changesets_to_remove = self.tree.insert(version_id)
+    def save(self, tag: Hashable, version: bytes):
+        changesets_to_create, changesets_to_remove = self.tree.insert(tag)
 
         if self.tokenizer is None:
             tokenized = version
@@ -33,7 +33,7 @@ class Versions:
             tokenized = self.tokenizer(version, self.tokens)
             self.token_map = tuple(self.tokens.keys())
 
-        self.versions[version_id] = tokenized
+        self.versions[tag] = tokenized
 
         for current_tag, older_tag in changesets_to_create:
             current_version = self.retrieve(current_tag)
@@ -58,6 +58,11 @@ class Versions:
 
     def _remove_branch(self, current_tag, older_tag):
         del self.diffs[current_tag, older_tag]
+
+        # This "if" should not be necessary because
+        # parent[older_tag] should already have been overwritten.  It
+        # currently doesn't get executed, but we'll leave it here
+        # in case the order of calls ever gets changed.
         if self.parents.get(older_tag) == current_tag:
             del self.parents[older_tag]
 
@@ -65,10 +70,7 @@ class Versions:
         """
         Function to retrieve the path to a version.
         """
-        if tag in self.versions:
-            return [tag]
-
-        if tag not in self.parents:
+        if tag not in self.parents:  # pragma: no cover
             raise ValueError(f"{tag} is not a valid version.")
 
         path = [tag]
@@ -94,14 +96,14 @@ class Versions:
 
         return patched
 
-    def retrieve(self, version_id: Hashable) -> TokenSequence:
+    def retrieve(self, tag: Hashable) -> TokenSequence:
         """
-        Retrieve a specific version.
+        Retrieve a specific version using its tag.
         """
-        if version_id in self.versions:
-            tokenized = self.versions[version_id]
+        if tag in self.versions:
+            tokenized = self.versions[tag]
         else:
-            path = self._path_to(version_id)
+            path = self._path_to(tag)
             tokenized = self._retrieve_using_path(path)
 
         if self.tokenizer is None:

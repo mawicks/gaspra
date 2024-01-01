@@ -19,8 +19,8 @@ def line_tokenize(
     return tuple([token_map, *tokenized])
 
 
-def line_tokenize_v2(string: str, token_dict: dict[str, int]):
-    lines = string.split("\n")
+def line_tokenize_bytes(contents: bytes, token_dict: dict[bytes, int]):
+    lines = contents.split(b"\n")
 
     for line in lines:
         if line not in token_dict:

@@ -14,16 +14,16 @@ from gaspra.types import TokenSequence, ReducedChangeIterable
 
 @dataclass
 class Versions:
-    root_version: TokenSequence = ""
+    root_version: TokenSequence = b""
     root_tag: Hashable | None = None
 
     tree: Tree = field(default_factory=Tree)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
-    tokenizer: Callable | None = None
-    tokens: dict[str, int] = field(default_factory=dict)
-    token_map: tuple[str, ...] = field(default_factory=tuple)
+    tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
+    tokens: dict[bytes, int] = field(default_factory=dict)
+    token_map: tuple[bytes, ...] = field(default_factory=tuple)
 
-    def save(self, version_id: Hashable, version: str):
+    def save(self, version_id: Hashable, version: bytes):
         required_changesets, expired_changesets, removed_paths = self.tree.insert(
             version_id
         )
@@ -94,4 +94,4 @@ class Versions:
         if self.tokenizer is None:
             return tokenized
         else:
-            return "\n".join(self.token_map[t] for t in cast(Sequence[int], tokenized))
+            return b"\n".join(self.token_map[t] for t in cast(Sequence[int], tokenized))

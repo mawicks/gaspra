@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
+from typing import Callable, cast
 
 from gaspra.changesets import (
     find_changeset,
@@ -18,11 +19,21 @@ class Versions:
 
     tree: Tree = field(default_factory=Tree)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
+    tokenizer: Callable | None = None
+    tokens: dict[str, int] = field(default_factory=dict)
+    token_map: tuple[str, ...] = field(default_factory=tuple)
 
-    def save(self, version_id: Hashable, version: TokenSequence):
+    def save(self, version_id: Hashable, version: str):
         required_changesets, expired_changesets, removed_paths = self.tree.insert(
             version_id
         )
+
+        if self.tokenizer is None:
+            tokenized = version
+        else:
+            tokenized = self.tokenizer(version, self.tokens)
+            self.token_map = tuple(self.tokens.keys())
+
         for current_tag, older_tag in required_changesets:
             # The first tag should always match version_id (the version
             # being added).
@@ -38,14 +49,14 @@ class Versions:
                 older_version = self._retrieve_using_path(tuple(old_path))
 
             self.diffs[current_tag, older_tag] = tuple(
-                find_changeset(version, older_version).change_stream()
+                find_changeset(tokenized, older_version).change_stream()
             )
 
         for current_tag, older_tag in expired_changesets:
             del self.diffs[current_tag, older_tag]
 
         self.root_tag = version_id
-        self.root_version = version
+        self.root_version = tokenized
         return
 
     def _retrieve_using_path(self, path: Sequence[Hashable]):
@@ -68,12 +79,19 @@ class Versions:
         return patched
 
     def retrieve(self, version_id: Hashable) -> TokenSequence:
+        """
+        Retrieve a specific version.
+        """
         if self.root_version is None:  # pragma: no cover
             raise ValueError("Versions have not been initialized.")
 
         if version_id == self.root_tag and self.root_version:
-            return self.root_version
+            tokenized = self.root_version
+        else:
+            path = self.tree.path_to(version_id)
+            tokenized = self._retrieve_using_path(path)
 
-        path = self.tree.path_to(version_id)
-
-        return self._retrieve_using_path(path)
+        if self.tokenizer is None:
+            return tokenized
+        else:
+            return "\n".join(self.token_map[t] for t in cast(Sequence[int], tokenized))

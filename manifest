@@ -1,5 +1,5 @@
-C Clarify\sdifferent\soutput\sstreams\sfor\sChangesets\swith\snames\sand\scomments.
-D 2024-01-01T05:40:26.513
+C Allow\stokenizer\sto\sbe\spassed\sto\sVersions().
+D 2024-01-01T17:44:18.051
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -19,10 +19,10 @@ F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a
 F src/gaspra/revision_tree.py 07957560f098345e4bfa9801ceca00257252484060965fdfd2a812ba183f9f7d
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
 F src/gaspra/test_helpers/helpers.py 870274cd964830773eccce8a98ef2f180b30fcd3923383f289c3d1240f847cc4
-F src/gaspra/tokenizers.py 78f57e100a32fbb089c6f7b1dd5084700d54fe0be03ed4e4bfaa3550eab4f8b6
+F src/gaspra/tokenizers.py be09953417e5560056f8237058520299640ab18a1c95fa411cba753c5393bf36
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py 3eb3bc73e1cef9041fa3401bb5b13675bb307171af338068281c6cee7cb79c8d
-F src/gaspra/versions.py c4149eed09f1a4130a9deec012d5934d993da628da500a8cb21a23fab13e2743
+F src/gaspra/versions.py 640a077099e297142d0f42fc39f8c366b3e3d867832e20d7adc66a18481eeb42
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 8cd90599762671972da77ac430fa7e137d4180740674d07bafb8ad8a626fb163
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py e9dbd57af03e5d42f5735350d3a4938f83d3a22c00e311ca765e68bf4947cc89
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 199032c88aa4457630187d3480a9c1d2188b5448a2a8275c5752f6d6153695ce
-R 1590ffeb74bc65ff665458524bf55625
+P d418bc518faa0601e248938b2d47d6008c0110c72d8345ccba0c26d1ef994ff1
+R 8d78780d8814dddceb9af1755ee6d371
 U mwicks
-Z acab169a97b9edfe8a0745705d31002c
+Z 6c99ea29af62779021a90301dac83562
 # Remove this line to create a well-formed Fossil manifest.

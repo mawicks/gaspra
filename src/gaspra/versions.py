@@ -10,7 +10,7 @@ from gaspra.types import TokenSequence
 
 @dataclass
 class Versions:
-    root_version: TokenSequence | None = None
+    root_version: TokenSequence = ""
     root_tag: Hashable | None = None
 
     tree: Tree = field(default_factory=Tree)

@@ -188,7 +188,7 @@ def find_changeset(
 
 
 def join_changes(version, changed):
-    if type(version) == bytes or type(version) == str:
+    if type(version) is bytes or type(version) is str:
         patched_version = version[0:0].join(changed)
     else:
         patched_version = tuple(chain(*changed))

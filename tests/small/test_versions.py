@@ -1,5 +1,3 @@
-import pytest
-
 from gaspra.versions import Versions
 
 VERSIONS = {

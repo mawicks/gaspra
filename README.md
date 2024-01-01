@@ -42,11 +42,17 @@ See [Merging](#merging) for another example.
 * `gaspra-merge` - A tool for doing a 3-way merge in either a
   line-oriented or a character-oriented fashion.
 
-GASPRA has been tested on [Bill Ritcher's pathological merge test
-casea](https://www.guiffy.com/SureMergeWP.html) and performs quite
-well
+GASPRA has been tested on [Bill Ritcher's set of pathological merge test
+cases](https://www.guiffy.com/SureMergeWP.html) and performs quite
+well.  In cases where there should have been no conflict, GASPRA
+showed no conflict.  When there were conflicts, the GASPRA merges
+were reasonably interpretable.  There was one case where 
+Guiffy would have drawn attention to a change that was technically
+not a conflict.  GASPRA merged it with no warning.  There was also a
+case where GASPRA duplicated some code, but GASPRA's merge was arguably
+correct.  In all other cases, GASPRA's merges and conflict flags
+were very appropriate.
 
- 
 # Why GASPRA exists
 
 Recently, I became interested in string matching. In particular, I was

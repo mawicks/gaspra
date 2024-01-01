@@ -1,23 +1,34 @@
 from collections.abc import Sequence
 
-from gaspra.test_helpers.helpers import tokenize
 
 import pytest
 
 
 from gaspra.multiple_strings import find_lcs, concatenate_strings
+from gaspra.test_helpers.helpers import tokenize
+from gaspra.types import Separator
 
 
 def test_concatenate_strings():
     concatenation = list(concatenate_strings(["ab", "cd", "ef"]))
 
-    assert concatenation == ["a", "b", "$0", "c", "d", "$1", "e", "f", "$2"]
+    assert concatenation == [
+        "a",
+        "b",
+        Separator(0),
+        "c",
+        "d",
+        Separator(1),
+        "e",
+        "f",
+        Separator(2),
+    ]
 
 
 def test_concatenate_strings_on_tokens():
     concatenation = list(concatenate_strings([(1, 2), (3, 4), (5, 6)]))
 
-    assert concatenation == [1, 2, "$0", 3, 4, "$1", 5, 6, "$2"]
+    assert concatenation == [1, 2, Separator(0), 3, 4, Separator(1), 5, 6, Separator(2)]
 
 
 MULTIPLE_STRING_TEST_CASES = [

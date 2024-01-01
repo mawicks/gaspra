@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Iterator, Iterable, Sequence
+from collections.abc import Hashable, Iterator, Iterable, Sequence
 from dataclasses import dataclass, field
 import random
 from typing import Callable
@@ -12,7 +12,7 @@ from gaspra.types import TokenSequence
 class Node:
     id: int
     length: int = 0
-    transitions: dict[str | int, Node] = field(default_factory=dict)
+    transitions: dict[Hashable, Node] = field(default_factory=dict)
     first_endpos: int = 0  # First possible ending position of substring.
     is_terminal: bool = False  # Is this a terminal state?
     link: Node | None = None
@@ -58,16 +58,16 @@ def wrap_node_factory(
 
 
 def build(
-    input_string: Iterable[str | int],
+    tokens: Iterable[Hashable],
     reverse_links=True,
     mark_terminals=True,
-    empty: str | tuple[int, ...] = "",
+    empty: Sequence[Hashable] | None = None,
 ) -> Node:
     """Build a suffix automaton from `input_string`.
 
     Arguments:
-        input_string:  Iterable[str | int]
-            Character or byte sequence representing the input.
+        input_string:  Iterable[Hashable]
+            Sequence representing the input.
         reverse_links: bool
             If true, construct reverse_links (needed to find *all*
             occurrences of a string.
@@ -76,6 +76,9 @@ def build(
             back from automaton).  This is typically very fast.
 
     """
+    if empty is None:
+        empty = tokens[0:0] if isinstance(tokens, Sequence) else ()
+
     # Create a list to capture all created nodes to make it easier to
     # iterate over them later.
     node_list = []
@@ -89,8 +92,8 @@ def build(
     root = node_factory()
     current = root
 
-    for character in input_string:
-        current = extend(character, current, node_factory)
+    for token in tokens:
+        current = extend(token, current, node_factory)
 
     if mark_terminals:
         mark_terminal_nodes(current)
@@ -102,15 +105,15 @@ def build(
 
 
 def extend(
-    character: str | int,
+    token: Hashable,
     last: Node,
     node_factory: Callable[..., Node],
 ):
-    """Extend a partially constructed automaton by one additional character
+    """Extend a partially constructed automaton by one additional token.
 
     Given a suffix automaton that recognizes the suffixes of some string
     "s", extend that automoton to recognize the suffixes of `s +
-    character`
+    token`
 
     """
     new_node = node_factory(
@@ -120,25 +123,25 @@ def extend(
 
     previous = None
     current = last
-    while current is not None and character not in current.transitions:
-        current.transitions[character] = new_node
+    while current is not None and token not in current.transitions:
+        current.transitions[token] = new_node
         previous = current
         current = current.link
 
     if current is None:
         new_node.link = previous
     else:
-        q = current.transitions[character]
+        q = current.transitions[token]
         if q.length == current.length + 1:
             new_node.link = q
         else:
-            new_node.link = insert_node(character, current, q, node_factory)
+            new_node.link = insert_node(token, current, q, node_factory)
 
     return new_node
 
 
 def insert_node(
-    character: str | int,
+    token: Hashable,
     p: Node,
     q: Node,
     node_factory: Callable[..., Node],
@@ -154,10 +157,10 @@ def insert_node(
     current = p
     while (
         current is not None
-        and character in current.transitions
-        and current.transitions[character] == q
+        and token in current.transitions
+        and current.transitions[token] == q
     ):
-        current.transitions[character] = clone
+        current.transitions[token] = clone
         current = current.link
 
     return clone
@@ -204,8 +207,8 @@ def _get_all_start_positions(current, length):
 
 def _find_match_node(root: Node, s: Iterable[str | int]) -> Node | None:
     current = root
-    for character in s:
-        current = current.transitions.get(character)
+    for token in s:
+        current = current.transitions.get(token)
         if current is None:
             return None
     return current
@@ -258,9 +261,9 @@ def find_lcs(root: Node, s: str | TokenSequence) -> tuple[int, int, int]:
     longest_match_s1_endpos = longest_match_s2_endpos = 0
 
     current = root
-    for position, character in enumerate(s):
+    for position, token in enumerate(s):
         while (
-            next := current.transitions.get(character)
+            next := current.transitions.get(token)
         ) is None and current.link is not None:
             current = current.link
             current_match_length = current.length
@@ -282,7 +285,7 @@ def find_lcs(root: Node, s: str | TokenSequence) -> tuple[int, int, int]:
     )
 
 
-def all_suffixes(current: Node) -> Iterator[str | tuple[int, ...]]:
+def all_suffixes(current: Node) -> Iterator[str | bytes | TokenSequence]:
     """Iterate over every suffix in the automaton.
 
     The only purpose for this is in a test that ensures the automaton
@@ -293,15 +296,21 @@ def all_suffixes(current: Node) -> Iterator[str | tuple[int, ...]]:
 
     for token, node in current.transitions.items():
         for substring in all_suffixes(node):
-            if isinstance(token, str) and isinstance(substring, str):
+            if type(token) is int and type(substring) is bytes:
+                yield bytes((token,)) + substring
+            elif type(token) is str and type(substring) is str:
                 yield token + substring
-            elif isinstance(token, int) and isinstance(substring, tuple):
-                yield (token,) + substring  # (character,)  # + substring
-            else:
+            elif isinstance(token, Hashable) and isinstance(substring, tuple):
+                yield (token,) + substring
+            else:  # pragma: no cover
                 raise ValueError(f"Unexpected type {type(token)}")
 
 
-def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
+# Exclude dump() from coverage because it's primarily a debugging tool
+# and not used anywhere else.
+def dump(
+    root: Node, indent: int = 0, dumped: set[int] | None = None
+):  # pragma: no cover
     if dumped is None:
         dumped = set()
 
@@ -313,18 +322,18 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
         f"is_terminal:{root.is_terminal})"
     )
     if root.transitions.items():
-        for character, node in root.transitions.items():
-            print(f"{' '*indent}  {character} -> {node.id}")
+        for token, node in root.transitions.items():
+            print(f"{' '*indent}  {token} -> {node.id}")
     else:
         print(f"{' '*indent}  No transitions")
 
     dumped.add(root.id)
 
-    for character, node in root.transitions.items():
+    for token, node in root.transitions.items():
         dump(node, indent, dumped)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     random_string = "".join(random.choices("XYZ", k=10))
     for string in ("abcbc", "bananas", random_string):
         print(f"\n{string}")

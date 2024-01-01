@@ -1,6 +1,6 @@
 import pytest
 from gaspra.merge import merge
-from gaspra.test_helpers.helpers import tokenize
+from gaspra.test_helpers.helpers import byteize, tokenize
 from gaspra.types import Change
 
 
@@ -11,8 +11,11 @@ CONFLICT_FREE_MERGES_STRING_CASES = [
     # No changes, non-empty
     ("a", "a", "a", "a"),
     #
-    # Same change both branches, beginning from empty
+    # Identical change both branches, beginning from empty
     ("", "a", "a", "a"),
+    #
+    # Identical change both branches, beginning from non-empty
+    ("abc", "ac", "ac", "ac"),
     #
     # Remove everything on both branches
     ("a", "", "", ""),
@@ -70,6 +73,16 @@ CONFLICT_FREE_MERGES_STRING_CASES = [
     ("abcdefghij", "abxyzefghij", "abcdefgpqrij", "abxyzefgpqrij"),
 ]
 
+CONFLICT_FREE_MERGES_BYTES_CASES = [
+    (
+        parent.encode("utf-8"),
+        branch1.encode("utf-8"),
+        branch2.encode("utf-8"),
+        merged.encode("utf-8"),
+    )
+    for parent, branch1, branch2, merged in CONFLICT_FREE_MERGES_STRING_CASES
+]
+
 CONFLICT_FREE_MERGES_TOKEN_CASES = [
     (tokenize(parent), tokenize(branch1), tokenize(branch2), tokenize(merged))
     for parent, branch1, branch2, merged in CONFLICT_FREE_MERGES_STRING_CASES
@@ -80,6 +93,7 @@ CONFLICT_FREE_MERGES_TOKEN_CASES = [
     ["parent", "branch1", "branch2", "merged"],
     [
         *CONFLICT_FREE_MERGES_STRING_CASES,
+        *CONFLICT_FREE_MERGES_BYTES_CASES,
         *CONFLICT_FREE_MERGES_TOKEN_CASES,
     ],
 )
@@ -161,6 +175,18 @@ MERGES_HAVING_CONFLICT_STRING_CASES = [
     ),
     ("abcdefgh", "aqdrgh", "abseth", ("a", ("qdrg", "bset"), "h")),
 ]
+
+MERGES_HAVING_CONFLICT_BYTES_CASES = [
+    (
+        byteize(parent),
+        byteize(branch1),
+        byteize(branch2),
+        byteize(merged),
+    )
+    for parent, branch1, branch2, merged in MERGES_HAVING_CONFLICT_STRING_CASES
+]
+
+
 MERGES_HAVING_CONFLICT_TOKEN_CASES = [
     (tokenize(parent), tokenize(branch1), tokenize(branch2), tokenize(merged))
     for parent, branch1, branch2, merged in MERGES_HAVING_CONFLICT_STRING_CASES
@@ -171,12 +197,11 @@ MERGES_HAVING_CONFLICT_TOKEN_CASES = [
     ["parent", "branch1", "branch2", "merged"],
     [
         *MERGES_HAVING_CONFLICT_STRING_CASES,
+        *MERGES_HAVING_CONFLICT_BYTES_CASES,
         *MERGES_HAVING_CONFLICT_TOKEN_CASES,
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):
-    # For now, we only testing that the test cases have
-    # some kind of merge conflict, not specifically what that is.
     result = merge(parent, branch1, branch2)
     assert tuple(merged) == tuple(result)
 
@@ -193,10 +218,13 @@ def test_merge_conflict(parent, branch1, branch2, merged):
 
 @pytest.mark.parametrize(
     ["parent", "branch1", "branch2", "__merged__"],
-    MERGES_HAVING_CONFLICT_STRING_CASES,
+    [
+        *MERGES_HAVING_CONFLICT_STRING_CASES,
+        *MERGES_HAVING_CONFLICT_BYTES_CASES,
+    ],
 )
 def test_all_string_merge_tuples_are_typed(parent, branch1, branch2, __merged__):
     merged = merge(parent, branch1, branch2)
     assert all(
-        isinstance(change, Change) or isinstance(change, str) for change in merged
+        isinstance(change, Change) or type(change) in (bytes, str) for change in merged
     )

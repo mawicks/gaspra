@@ -43,7 +43,7 @@ def test_construction_time_is_approximately_linear():
     time_ratio = time_2 / time_1
     string_ratio = len(string_2) / len(string_1)
 
-    if string_ratio < 2.0 * COMPLEXITY_TEST_COEFFICIENT:
+    if string_ratio < 2.0 * COMPLEXITY_TEST_COEFFICIENT:  # pragma: no cover
         raise ValueError("Choose test strings with a larger ratio of their lengths")
 
     # Use two tests in case k gets changed above.

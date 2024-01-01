@@ -57,9 +57,8 @@ class Versions:
 
         for n1, n2 in zip(path, path[1:]):
             changeset = self.diffs[n1, n2]
-            reduced_fragments = changeset.reduced_fragments(patched)
-            # patched = old_apply_forward(changeset, patched)
-            patched = apply_forward(reduced_fragments, patched)
+            reduced_changeset = changeset.reduce()
+            patched = apply_forward(reduced_changeset, patched)
 
         return patched
 

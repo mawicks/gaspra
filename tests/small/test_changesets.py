@@ -58,7 +58,7 @@ def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_and_alt_apply_forward_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    alt_changeset = changeset.reduced_fragments(s1)
+    alt_changeset = changeset.reduce()
     assert s2 == apply_forward(alt_changeset, s1)
 
 
@@ -85,7 +85,7 @@ def test_find_changesets_and_apply_reverse_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_and_alt_apply_reverse_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    reduced_changeset = list(changeset.reduced_fragments(s2))
+    reduced_changeset = list(changeset.reduce())
     assert s1 == apply_reverse(reduced_changeset, s2)
 
 

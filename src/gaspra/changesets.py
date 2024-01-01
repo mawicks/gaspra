@@ -56,9 +56,15 @@ class ChangesetLeaf:
         if self.modified or self.original:
             yield Change(self.modified, self.original)
 
-    def reduced_fragments(self, _: str | TokenSequence) -> ReducedChangeIterable:
-        # Construction of the tree creates "empty" changesets.
-        # Omit those from the output stream.
+    def reduce(self) -> ReducedChangeIterable:
+        # Produce a simple output stream of 1) tuple with pairs of
+        # slices of common fragments from the two strings and 2) named
+        # tuple pairs of type `Change` for fragments that are different.
+        # The simpler objects can returned to a caller without exposing
+        # the Change tree implementation.
+
+        # Construction of the tree creates "empty" changesets.  Omit
+        # those from the output stream.
         if self.modified or self.original:
             yield Change(self.modified, self.original)
 
@@ -99,10 +105,10 @@ class Changeset:
         yield original[self.common_original]
         yield from self.suffix.fragments(original)
 
-    def reduced_fragments(self, original: str | TokenSequence) -> ReducedChangeIterable:
-        yield from self.prefix.reduced_fragments(original)
+    def reduce(self) -> ReducedChangeIterable:
+        yield from self.prefix.reduce()
         yield (self.common_original, self.common_modified)
-        yield from self.suffix.reduced_fragments(original)
+        yield from self.suffix.reduce()
 
     def old_apply_forward(self, original: str | TokenSequence):
         yield from self.prefix.old_apply_forward(original)

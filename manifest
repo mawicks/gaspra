@@ -1,5 +1,5 @@
-C Lint\sremoval.
-D 2024-01-01T02:33:13.655
+C Merge\sWIP.
+D 2024-01-01T02:33:29.035
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py e9dbd57af03e5d42f5735350d3a4938f83d3a22c00e311ca765e68bf4947cc89
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 22fa6fc2fd00dc7da8d74e7da706fe1611992da83cad72aee5759fc993a876b0
+P 60aee7bfac16b5b13d59724b8fcb895e6cba894e450a59c4cf8a913caa88c3f0
 R bb73f43c0ed19661b165760628fbecf2
 U mwicks
-Z 6a0d5030f28a2c32f991b9c1fc4f822f
+Z f944e77a9de4cd7e59b9c9bd74abbf16
 # Remove this line to create a well-formed Fossil manifest.

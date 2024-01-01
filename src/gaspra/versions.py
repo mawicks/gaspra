@@ -12,6 +12,19 @@ from gaspra.revision_tree import Tree
 from gaspra.types import TokenSequence, ReducedChangeIterable
 
 
+def check_connectivity(edges_to_create, edges_to_remove):
+    """
+    This is a sanity check that we don't destroy connectivity
+    by removing an edge to a node without replacing it with
+    another path.
+    """
+    new_destinations = set(pair[1] for pair in edges_to_create)
+    if not all(pair[1] in new_destinations for pair in edges_to_remove):
+        raise RuntimeError(
+            "Removing an edge to a node without replacing it with another path"
+        )
+
+
 @dataclass
 class Versions:
     tree: Tree = field(default_factory=Tree)
@@ -26,6 +39,7 @@ class Versions:
 
     def save(self, tag: Hashable, version: bytes):
         edges_to_create, edges_to_remove = self.tree.insert(tag)
+        check_connectivity(edges_to_create, edges_to_remove)
 
         if self.tokenizer is None:
             tokenized = version

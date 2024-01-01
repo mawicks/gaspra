@@ -43,14 +43,12 @@ def get_joiner(empty) -> StringJoiner | BytesJoiner | TokenJoiner:
 
 
 def common_prefix_length(a: str | TokenSequence, b: str | TokenSequence):
-    length = min(len(a), len(b))
-
     for length, (x, y) in enumerate(zip(a, b)):
         if x != y:
             return length
 
-    return length
+    return min(len(a), len(b))
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     print(DATA_DIR)

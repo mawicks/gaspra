@@ -36,9 +36,6 @@ class ChangesetLeaf:
     original_slice: slice
     modified_slice: slice
 
-    def changes(self):
-        yield self
-
     def _fragments(
         self, _: str | TokenSequence
     ) -> Iterable[ChangeFragment | CopyFragment]:
@@ -65,21 +62,8 @@ class ChangesetLeaf:
     def apply_reverse(self, _: str | TokenSequence):
         yield self.original
 
-    def show(
-        self, __original__: str | TokenSequence, __modified__: str | TokenSequence
-    ) -> str:
-        result = ""
-
-        if self.original:
-            result += f"[red strike]{escape(self.original)}[/]"
-            # result += f"[delete]{escape(self.original_str)}[/delete]"
-        if self.modified:
-            result += f"[green]{escape(self.modified)}[/]"
-        # result += f"[insert]{escape(self.modified_str)}[/insert]"
-
-        return result
-
-    def __str__(self):
+    # Exclude __str__ from coverage because it's only used for debugging.
+    def __str__(self):  # pragma: no cover
         result = ""
         if self.original:
             result += f"original: {self.original}\n"
@@ -95,11 +79,6 @@ class Changeset:
 
     prefix: Changeset | ChangesetLeaf
     suffix: Changeset | ChangesetLeaf
-
-    def changes(self):
-        yield from self.prefix.changes()
-        yield self
-        yield from self.suffix.changes()
 
     def _fragments(
         self, original: str | TokenSequence
@@ -124,14 +103,8 @@ class Changeset:
         yield modified[self.common_modified]
         yield from self.suffix.apply_reverse(modified)
 
-    def show(self, original: str, modified: str | TokenSequence):
-        return (
-            self.prefix.show(original, modified)
-            + escape(original[self.common_original])
-            + self.suffix.show(original, modified)
-        )
-
-    def __str__(self):
+    # Exclude __str__ from coverage because it's only used for debugging.
+    def __str__(self):  # pragma: no cover
         s_original = f"{self.common_original.start}:{self.common_original.stop}"
         s_modified = f"{self.common_modified.start}:{self.common_modified.stop}"
         return f"original[{s_original}]/modified[{s_modified}]\n"
@@ -150,12 +123,13 @@ def diff(
 
     Returns:
         Iterable[str]
-            The changes between a and b.  Each item in the sequence
-            is either a string or a tuple of two strings.  If the item
-            is a string, it is unchanged test between `original` and
-            ``modified`.  If the item is a tuple, the first string is the
-            string inserted at that point in `original` to get `modified`
-            and the second string is the string that was deleted.
+            The changes between a and b.  Each item in the sequence is
+            either a string or a tuple of two strings.  If the item is a
+            string, it is unchanged test between `original` and
+            ``modified`.  If the item is a [named] tuple, the first
+            string is the string inserted at that point in `original` to
+            get `modified` and the second string is the string that was
+            deleted.
 
     """
     changeset = find_changeset(original, modified)
@@ -231,12 +205,7 @@ def apply_reverse(changeset, modified: str):
     return join_changes(modified, changes)
 
 
-def escape(s):
-    return s.replace("[", r"\[")
-    # return s
-
-
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     from rich.console import Console
 
     console = Console(highlight=False)
@@ -249,12 +218,8 @@ if __name__ == "__main__":
 
     changeset = find_changeset(version, modified)
 
-    markup = changeset.show(version, modified)
-
     patched_original = apply_forward(changeset, version)
     reverse_patched_modified = apply_reverse(changeset, modified)
 
     assert patched_original == modified
     assert reverse_patched_modified == version
-
-    console.print(markup)

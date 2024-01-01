@@ -302,11 +302,15 @@ def all_suffixes(current: Node) -> Iterator[str | bytes | TokenSequence]:
                 yield token + substring
             elif isinstance(token, Hashable) and isinstance(substring, tuple):
                 yield (token,) + substring
-            else:
+            else:  # pragma: no cover
                 raise ValueError(f"Unexpected type {type(token)}")
 
 
-def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
+# Exclude dump() from coverage because it's primarily a debugging tool
+# and not used anywhere else.
+def dump(
+    root: Node, indent: int = 0, dumped: set[int] | None = None
+):  # pragma: no cover
     if dumped is None:
         dumped = set()
 
@@ -329,7 +333,7 @@ def dump(root: Node, indent: int = 0, dumped: set[int] | None = None):
         dump(node, indent, dumped)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     random_string = "".join(random.choices("XYZ", k=10))
     for string in ("abcbc", "bananas", random_string):
         print(f"\n{string}")

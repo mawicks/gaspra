@@ -21,34 +21,41 @@ class Versions:
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
 
     def save(self, version_id: Hashable, version: TokenSequence):
-        required_changesets, expired_changesets, old_path = self.tree.insert(version_id)
-        for tag_1, tag_2 in required_changesets:
-            # tag_1 should always match version_id
-            if tag_1 == version_id:
-                version_1 = version
-            else:
-                raise RuntimeError(f"{tag_1} was expected to be {version_id}")
+        required_changesets, expired_changesets, removed_paths = self.tree.insert(
+            version_id
+        )
+        for current_tag, older_tag in required_changesets:
+            # The first tag should always match version_id (the version
+            # being added).
+            if current_tag != version_id:  # pragma: no cover
+                raise RuntimeError(f"{current_tag} was expected to be {version_id}")
 
-            # tag_2 should never be version_id but could be root_tag
-            # or some other tag.
-            if tag_2 == self.root_tag:
-                version_2 = self.root_version
+            # tag_2 should never be version_id.  It will be either
+            # the root_tag or the tag associated with old_path.
+            if older_tag == self.root_tag:
+                older_version = self.root_version
             else:
-                version_2 = self.retrieve_using_path(tuple(old_path))
+                old_path = removed_paths[older_tag]
+                older_version = self._retrieve_using_path(tuple(old_path))
 
-            self.diffs[tag_1, tag_2] = tuple(
-                find_changeset(version_1, version_2).reduce()
+            self.diffs[current_tag, older_tag] = tuple(
+                find_changeset(version, older_version).reduce()
             )
 
-        for tag_1, tag_2 in expired_changesets:
-            del self.diffs[tag_1, tag_2]
+        for current_tag, older_tag in expired_changesets:
+            del self.diffs[current_tag, older_tag]
 
         self.root_tag = version_id
         self.root_version = version
         return
 
-    def retrieve_using_path(self, path: Sequence[Hashable]):
-        if self.root_version is None:
+    def _retrieve_using_path(self, path: Sequence[Hashable]):
+        """
+        Function to retrieve a version give its path.
+
+        This is intended for internal use in this module.
+        """
+        if self.root_version is None:  # pragma: no cover
             raise ValueError("Versions have not been initialized.")
 
         # Initialize with root_version,
@@ -62,7 +69,7 @@ class Versions:
         return patched
 
     def retrieve(self, version_id: Hashable) -> TokenSequence:
-        if self.root_version is None:
+        if self.root_version is None:  # pragma: no cover
             raise ValueError("Versions have not been initialized.")
 
         if version_id == self.root_tag and self.root_version:
@@ -70,4 +77,4 @@ class Versions:
 
         path = self.tree.path_to(version_id)
 
-        return self.retrieve_using_path(path)
+        return self._retrieve_using_path(path)

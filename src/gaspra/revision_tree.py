@@ -48,7 +48,7 @@ class Tree:
     ) -> tuple[
         Iterable[tuple[Hashable, Hashable]],
         Iterable[tuple[Hashable, Hashable]],
-        Iterable[Hashable],
+        dict[Hashable, Iterable[Hashable]],
     ]:
         """
         Insert node_tag into the revision tree, notifying caller of
@@ -63,18 +63,21 @@ class Tree:
             edges as tuple(from, to).
             Iterable[tuple[Hashable, Hashable]] - Sequence of removed
             edges as tuple(from, to)
-            Iterable[Hashable] - The old path to the relocated node (if
-                nay).  There can be at most one relocated node.
+            dict[Hashable, Iterable[Hashable]] - A dictionary of paths
+               that were removed (if nay).  The key is a node tag whose
+               connectivity was changed and the value is the path
+               leading to that node that no longer exists.  Currently,
+               there is at most ne relocated node.
 
 
         """
         inserted_edges = []
         removed_edges = []
+        removed_paths = {}
 
         old_root = self.root
         new_root = Node(node_tag, node_id=len(self.index))
 
-        path_to = ()
         if old_root:
             inserted_edges.append((new_root.node_tag, old_root.node_tag))
 
@@ -83,7 +86,9 @@ class Tree:
             if best_split != old_root:
                 if best_split and best_split.parent:
                     # Save the original path before destroying it!
-                    path_to = self.path_to(best_split.node_tag)
+                    removed_paths[best_split.node_tag] = self.path_to(
+                        best_split.node_tag
+                    )
                     # Detach best_split from tree
                     removed_edges.append(
                         (best_split.parent.node_tag, best_split.node_tag)
@@ -99,7 +104,7 @@ class Tree:
         new_root.set_left(old_root)
         self.root = new_root
         self.index[node_tag] = new_root
-        return inserted_edges, removed_edges, path_to
+        return inserted_edges, removed_edges, removed_paths
 
     def edges(self):
         if self.root:

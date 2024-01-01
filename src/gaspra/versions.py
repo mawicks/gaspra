@@ -5,7 +5,6 @@ from dataclasses import dataclass, field
 
 from gaspra.changesets import (
     find_changeset,
-    old_apply_forward,
     apply_forward,
 )
 from gaspra.revision_tree import Tree
@@ -30,8 +29,8 @@ class Versions:
             if current_tag != version_id:  # pragma: no cover
                 raise RuntimeError(f"{current_tag} was expected to be {version_id}")
 
-            # tag_2 should never be version_id.  It will be either
-            # the root_tag or the tag associated with old_path.
+            # The second tag should never be version_id.  It will be either
+            # the root_tag a tag associated with removed_paths.
             if older_tag == self.root_tag:
                 older_version = self.root_version
             else:

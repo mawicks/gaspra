@@ -1,5 +1,5 @@
-C Resolve\smerge\sconflict.
-D 2024-01-01T04:42:14.705
+C Adjust\scomment\sabout\stags\sretued\sby\sTree.insert()\sin\sversions.py
+D 2024-01-01T04:47:27.246
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -22,7 +22,7 @@ F src/gaspra/test_helpers/helpers.py 870274cd964830773eccce8a98ef2f180b30fcd3923
 F src/gaspra/tokenizers.py 78f57e100a32fbb089c6f7b1dd5084700d54fe0be03ed4e4bfaa3550eab4f8b6
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py 3eb3bc73e1cef9041fa3401bb5b13675bb307171af338068281c6cee7cb79c8d
-F src/gaspra/versions.py fb0a307d9f052fd40625f118f186c897e5cca24072abbcace6773b6d5a9f91df
+F src/gaspra/versions.py 49782913b2f2ab878830f8b71abadae0e97333a7c92019c749e5d3613e7a0d6d
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py f2428a74ccc57f4f77c318d345e5fa1c9260a7676ed468ec3a150c69bb7c06a5
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py e9dbd57af03e5d42f5735350d3a4938f83d3a22c00e311ca765e68bf4947cc89
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 74c3be608b6a04ca281229b93699d3676408b50bbf5a633f07ab7c24840db75e 3627b631543084df5eadc911fe98b62b6cfd8ef24fa48b7279a4fb04b60ce49f
-R 2e236556be4b71d610981b01a42deb52
+P f318c652f7002a630268e238f7ebabeccfacf3962d021de2d05ffc982d6d1d32
+R ff72f0511e8a13f5e679c50317453242
 U mwicks
-Z a7716a548c4874d1de8200f1658a6c9e
+Z 2976d7da643664770f8c0a59b1b66e23
 # Remove this line to create a well-formed Fossil manifest.

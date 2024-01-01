@@ -5,7 +5,7 @@ from dataclasses import dataclass, field
 import random
 from typing import Callable
 
-from gaspra.types import TokenSequence
+from gaspra.types import TokenSequence, TokenSequenceIterable
 
 
 @dataclass
@@ -205,7 +205,7 @@ def _get_all_start_positions(current, length):
     return positions
 
 
-def _find_match_node(root: Node, s: Iterable[str | int]) -> Node | None:
+def _find_match_node(root: Node, s: Iterable[Hashable]) -> Node | None:
     current = root
     for token in s:
         current = current.transitions.get(token)
@@ -285,7 +285,7 @@ def find_lcs(root: Node, s: str | TokenSequence) -> tuple[int, int, int]:
     )
 
 
-def all_suffixes(current: Node) -> Iterator[str | bytes | TokenSequence]:
+def all_suffixes(current: Node) -> TokenSequenceIterable:
     """Iterate over every suffix in the automaton.
 
     The only purpose for this is in a test that ensures the automaton

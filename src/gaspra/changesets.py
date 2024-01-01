@@ -36,11 +36,12 @@ class ChangesetLeaf:
     original_slice: slice
     modified_slice: slice
 
-    def _fragments(
+    def _stream(
         self, _: str | TokenSequence
     ) -> Iterable[ChangeFragment | CopyFragment]:
-        # Construction of the tree creates "empty" changesets.
-        # Omit those from the output stream.
+        """Turn tree into a stream for additional processing.
+        Construction of the tree creates "empty" changesets.  Omit those
+        from the output stream."""
         if self.modified or self.original:
             yield ChangeFragment(
                 insert=self.modified,
@@ -50,18 +51,23 @@ class ChangesetLeaf:
                 ),
             )
 
-    def fragments(self, _: str | TokenSequence) -> ChangeIterable:
+    def diff_stream(self, _: str | TokenSequence) -> ChangeIterable:
+        """Produce a simpler output stream than _stream() suitable
+        or building diff output."""
+
         # Construction of the tree creates "empty" changesets.
         # Omit those from the output stream.
         if self.modified or self.original:
             yield Change(self.modified, self.original)
 
-    def reduce(self) -> ReducedChangeIterable:
-        # Produce a simple output stream of 1) tuple with pairs of
-        # slices of common fragments from the two strings and 2) named
-        # tuple pairs of type `Change` for fragments that are different.
-        # The simpler objects can returned to a caller without exposing
-        # the Change tree implementation.
+    def change_stream(self) -> ReducedChangeIterable:
+        """Produce a simple output stream containing only changes.
+
+        Elements of the stream are 1) tuple with pairs of
+        slices of common fragments from the two strings and 2) named
+        tuple pairs of type `Change` for fragments that are different.
+        The simpler objects can returned to a caller without exposing
+        the Change tree implementation."""
 
         # Construction of the tree creates "empty" changesets.  Omit
         # those from the output stream.
@@ -92,23 +98,39 @@ class Changeset:
     prefix: Changeset | ChangesetLeaf
     suffix: Changeset | ChangesetLeaf
 
-    def _fragments(
+    def _stream(
         self, original: str | TokenSequence
     ) -> Iterable[ChangeFragment | CopyFragment]:
-        yield from self.prefix._fragments(original)
+        """Turn tree into a stream for additional processing."""
+
+        # Construction of the tree creates "empty" changesets.  Omit
+        # those from the output stream.
+
+        yield from self.prefix._stream(original)
         copy = original[self.common_original]
         yield CopyFragment(insert=copy, length=len(copy))
-        yield from self.suffix._fragments(original)
+        yield from self.suffix._stream(original)
 
-    def fragments(self, original: str | TokenSequence) -> ChangeIterable:
-        yield from self.prefix.fragments(original)
+    def diff_stream(self, original: str | TokenSequence) -> ChangeIterable:
+        """Produce a simpler output stream than _stream() suitable
+        or building diff output."""
+
+        yield from self.prefix.diff_stream(original)
         yield original[self.common_original]
-        yield from self.suffix.fragments(original)
+        yield from self.suffix.diff_stream(original)
 
-    def reduce(self) -> ReducedChangeIterable:
-        yield from self.prefix.reduce()
+    def change_stream(self) -> ReducedChangeIterable:
+        """Produce a simple output stream containing only changes.
+
+        Elements of the stream are 1) tuple with pairs of
+        slices of common fragments from the two strings and 2) named
+        tuple pairs of type `Change` for fragments that are different.
+        The simpler objects can returned to a caller without exposing
+        the Change tree implementation."""
+
+        yield from self.prefix.change_stream()
         yield (self.common_original, self.common_modified)
-        yield from self.suffix.reduce()
+        yield from self.suffix.change_stream()
 
     def old_apply_forward(self, original: str | TokenSequence):
         yield from self.prefix.old_apply_forward(original)
@@ -150,7 +172,7 @@ def diff(
 
     """
     changeset = find_changeset(original, modified)
-    yield from changeset.fragments(original)
+    yield from changeset.diff_stream(original)
 
 
 def find_changeset(

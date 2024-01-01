@@ -38,7 +38,7 @@ class Versions:
                 older_version = self._retrieve_using_path(tuple(old_path))
 
             self.diffs[current_tag, older_tag] = tuple(
-                find_changeset(version, older_version).reduce()
+                find_changeset(version, older_version).change_stream()
             )
 
         for current_tag, older_tag in expired_changesets:

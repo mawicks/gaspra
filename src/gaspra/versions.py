@@ -4,14 +4,12 @@ from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 
 from gaspra.changesets import (
-    Changeset,
-    ChangesetLeaf,
     find_changeset,
     old_apply_forward,
     apply_forward,
 )
 from gaspra.revision_tree import Tree
-from gaspra.types import TokenSequence
+from gaspra.types import TokenSequence, ReducedChangeIterable
 
 
 @dataclass
@@ -20,7 +18,7 @@ class Versions:
     root_tag: Hashable | None = None
 
     tree: Tree = field(default_factory=Tree)
-    diffs: dict[Hashable, Changeset | ChangesetLeaf] = field(default_factory=dict)
+    diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
 
     def save(self, version_id: Hashable, version: TokenSequence):
         required_changesets, expired_changesets, old_path = self.tree.insert(version_id)
@@ -38,7 +36,9 @@ class Versions:
             else:
                 version_2 = self.retrieve_using_path(tuple(old_path))
 
-            self.diffs[tag_1, tag_2] = find_changeset(version_1, version_2)
+            self.diffs[tag_1, tag_2] = tuple(
+                find_changeset(version_1, version_2).reduce()
+            )
 
         for tag_1, tag_2 in expired_changesets:
             del self.diffs[tag_1, tag_2]
@@ -56,8 +56,7 @@ class Versions:
         patched = self.root_version
 
         for n1, n2 in zip(path, path[1:]):
-            changeset = self.diffs[n1, n2]
-            reduced_changeset = changeset.reduce()
+            reduced_changeset = self.diffs[n1, n2]
             patched = apply_forward(reduced_changeset, patched)
 
         return patched

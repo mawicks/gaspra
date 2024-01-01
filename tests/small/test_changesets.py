@@ -1,7 +1,14 @@
 import pytest
 
 
-from gaspra.changesets import apply_forward, apply_reverse, diff, find_changeset
+from gaspra.changesets import (
+    old_apply_forward,
+    old_apply_reverse,
+    diff,
+    find_changeset,
+    apply_forward,
+    apply_reverse,
+)
 from gaspra.test_helpers.helpers import random_string, tokenize
 from gaspra.types import Change
 
@@ -38,7 +45,21 @@ FIND_CHANGESETS_TOKEN_CASES = [
 )
 def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    assert s2 == apply_forward(changeset, s1)
+    assert s2 == old_apply_forward(changeset, s1)
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2"],
+    [
+        *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
+        *FIND_CHANGESETS_TOKEN_CASES,
+    ],
+)
+def test_find_changesets_and_alt_apply_forward_reproduces_string(s1: str, s2: str):
+    changeset = find_changeset(s1, s2)
+    alt_changeset = changeset.reduced_fragments(s1)
+    assert s2 == apply_forward(alt_changeset, s1)
 
 
 @pytest.mark.parametrize(
@@ -51,7 +72,21 @@ def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_and_apply_reverse_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    assert s1 == apply_reverse(changeset, s2)
+    assert s1 == old_apply_reverse(changeset, s2)
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2"],
+    [
+        *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
+        *FIND_CHANGESETS_TOKEN_CASES,
+    ],
+)
+def test_find_changesets_and_alt_apply_reverse_reproduces_string(s1: str, s2: str):
+    changeset = find_changeset(s1, s2)
+    reduced_changeset = list(changeset.reduced_fragments(s2))
+    assert s1 == apply_reverse(reduced_changeset, s2)
 
 
 # We use "named" tuples for the "diffs" in the sequence so that we can

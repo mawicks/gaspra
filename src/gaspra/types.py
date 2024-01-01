@@ -9,4 +9,5 @@ TokenSequenceIterable = Iterable[TokenSequence]
 
 Separator = namedtuple("Separator", "index")
 Change = namedtuple("Change", ["a", "b"])
-ChangeIterable = Iterable[str | TokenSequence | Change]
+ChangeIterable = Iterable[TokenSequence | Change]
+ReducedChangeIterable = Iterable[tuple[slice, slice] | Change]

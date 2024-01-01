@@ -6,7 +6,7 @@ import os
 
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
-from gaspra.types import Change, ChangeIterable, TokenSequence
+from gaspra.types import Change, ChangeIterable, ReducedChangeIterable, TokenSequence
 
 
 @dataclass
@@ -56,10 +56,16 @@ class ChangesetLeaf:
         if self.modified or self.original:
             yield Change(self.modified, self.original)
 
-    def apply_forward(self, _: str | TokenSequence):
+    def reduced_fragments(self, _: str | TokenSequence) -> ReducedChangeIterable:
+        # Construction of the tree creates "empty" changesets.
+        # Omit those from the output stream.
+        if self.modified or self.original:
+            yield Change(self.modified, self.original)
+
+    def old_apply_forward(self, _: str | TokenSequence):
         yield self.modified
 
-    def apply_reverse(self, _: str | TokenSequence):
+    def old_apply_reverse(self, _: str | TokenSequence):
         yield self.original
 
     # Exclude __str__ from coverage because it's only used for debugging.
@@ -93,15 +99,20 @@ class Changeset:
         yield original[self.common_original]
         yield from self.suffix.fragments(original)
 
-    def apply_forward(self, original: str | TokenSequence):
-        yield from self.prefix.apply_forward(original)
-        yield original[self.common_original]
-        yield from self.suffix.apply_forward(original)
+    def reduced_fragments(self, original: str | TokenSequence) -> ReducedChangeIterable:
+        yield from self.prefix.reduced_fragments(original)
+        yield (self.common_original, self.common_modified)
+        yield from self.suffix.reduced_fragments(original)
 
-    def apply_reverse(self, modified: str | TokenSequence):
-        yield from self.prefix.apply_reverse(modified)
+    def old_apply_forward(self, original: str | TokenSequence):
+        yield from self.prefix.old_apply_forward(original)
+        yield original[self.common_original]
+        yield from self.suffix.old_apply_forward(original)
+
+    def old_apply_reverse(self, modified: str | TokenSequence):
+        yield from self.prefix.old_apply_reverse(modified)
         yield modified[self.common_modified]
-        yield from self.suffix.apply_reverse(modified)
+        yield from self.suffix.old_apply_reverse(modified)
 
     # Exclude __str__ from coverage because it's only used for debugging.
     def __str__(self):  # pragma: no cover
@@ -195,14 +206,43 @@ def join_changes(version, changed):
     return patched_version
 
 
-def apply_forward(changeset, original: Sequence[Hashable]):
-    changes = changeset.apply_forward(original)
+def old_apply_forward(changeset, original: Sequence[Hashable]):
+    changes = changeset.old_apply_forward(original)
     return join_changes(original, changes)
 
 
-def apply_reverse(changeset, modified: str):
-    changes = changeset.apply_reverse(modified)
+def apply_forward(
+    reduced_changeset: ReducedChangeIterable, original: Sequence[Hashable]
+):
+    def apply():
+        for item in reduced_changeset:
+            if type(item) is Change:
+                yield item.a
+            else:
+                # item is a slice
+                original_slice = item[0]
+                yield original[original_slice]
+
+    return join_changes(original, apply())
+
+
+def old_apply_reverse(changeset, modified: str):
+    changes = changeset.old_apply_reverse(modified)
     return join_changes(modified, changes)
+
+
+def apply_reverse(
+    reduced_changeset: ReducedChangeIterable, modified: Sequence[Hashable]
+):
+    def apply():
+        for item in reduced_changeset:
+            if type(item) is Change:
+                yield item.b
+            else:
+                modified_slice = item[1]
+                yield modified[modified_slice]
+
+    return join_changes(modified, apply())
 
 
 if __name__ == "__main__":  # pragma: no cover
@@ -218,8 +258,8 @@ if __name__ == "__main__":  # pragma: no cover
 
     changeset = find_changeset(version, modified)
 
-    patched_original = apply_forward(changeset, version)
-    reverse_patched_modified = apply_reverse(changeset, modified)
+    patched_original = old_apply_forward(changeset, version)
+    reverse_patched_modified = old_apply_reverse(changeset, modified)
 
     assert patched_original == modified
     assert reverse_patched_modified == version

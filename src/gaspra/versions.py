@@ -3,7 +3,13 @@ from __future__ import annotations
 from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 
-from gaspra.changesets import Changeset, ChangesetLeaf, find_changeset, apply_forward
+from gaspra.changesets import (
+    Changeset,
+    ChangesetLeaf,
+    find_changeset,
+    old_apply_forward,
+    apply_forward,
+)
 from gaspra.revision_tree import Tree
 from gaspra.types import TokenSequence
 
@@ -51,7 +57,9 @@ class Versions:
 
         for n1, n2 in zip(path, path[1:]):
             changeset = self.diffs[n1, n2]
-            patched = apply_forward(changeset, patched)
+            reduced_fragments = changeset.reduced_fragments(patched)
+            # patched = old_apply_forward(changeset, patched)
+            patched = apply_forward(reduced_fragments, patched)
 
         return patched
 

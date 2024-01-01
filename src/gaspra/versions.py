@@ -25,7 +25,7 @@ class Versions:
     token_map: tuple[bytes, ...] = field(default_factory=tuple)
 
     def save(self, tag: Hashable, version: bytes):
-        changesets_to_create, changesets_to_remove = self.tree.insert(tag)
+        edges_to_create, edges_to_remove = self.tree.insert(tag)
 
         if self.tokenizer is None:
             tokenized = version
@@ -35,9 +35,9 @@ class Versions:
 
         self.versions[tag] = tokenized
 
-        for current_tag, older_tag in changesets_to_create:
-            current_version = self.retrieve(current_tag)
-            older_version = self.retrieve(older_tag)
+        for current_tag, older_tag in edges_to_create:
+            current_version = self._retrieve_raw(current_tag)
+            older_version = self._retrieve_raw(older_tag)
 
             self._save_diff(
                 current_tag,
@@ -45,7 +45,7 @@ class Versions:
                 tuple(find_changeset(current_version, older_version).change_stream()),
             )
 
-        for current_tag, older_tag in changesets_to_remove:
+        for current_tag, older_tag in edges_to_remove:
             self._remove_branch(current_tag, older_tag)
 
         return
@@ -96,17 +96,26 @@ class Versions:
 
         return patched
 
+    def _retrieve_raw(self, tag: Hashable) -> TokenSequence:
+        """
+        Retrieve a specific raw (meaning it's left tokenized) version
+        using its tag.
+        """
+        if tag in self.versions:
+            raw = self.versions[tag]
+        else:
+            path = self._path_to(tag)
+            raw = self._retrieve_using_path(path)
+
+        return raw
+
     def retrieve(self, tag: Hashable) -> TokenSequence:
         """
         Retrieve a specific version using its tag.
         """
-        if tag in self.versions:
-            tokenized = self.versions[tag]
-        else:
-            path = self._path_to(tag)
-            tokenized = self._retrieve_using_path(path)
+        raw = self._retrieve_raw(tag)
 
         if self.tokenizer is None:
-            return tokenized
+            return raw
         else:
-            return b"\n".join(self.token_map[t] for t in cast(Sequence[int], tokenized))
+            return b"\n".join(self.token_map[t] for t in cast(Sequence[int], raw))

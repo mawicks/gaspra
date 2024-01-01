@@ -2,7 +2,7 @@ import pytest
 
 from copy import deepcopy
 
-from gaspra.revisions import Tree
+from gaspra.versions import Tree
 
 # These are intentially not in alphabetical order to make
 # sure the tree doesn't depend on ordering in some way
@@ -51,7 +51,9 @@ def test_add_revision():
         inserted_edges = {edge for edge in inserted_edges}
         removed_edges = {edge for edge in removed_edges}
 
-        test_inserted_edges, test_removed_edges = test_tree.add(node_tag)
+        test_inserted_edges, test_removed_edges, test_old_path = test_tree.insert(
+            node_tag
+        )
         test_inserted_edges = {edge for edge in test_inserted_edges}
         test_removed_edges = {edge for edge in test_removed_edges}
 
@@ -68,7 +70,7 @@ def test_add_revision():
 def tree():
     fixture_tree = Tree()
     for node in NODE_TAGS:
-        fixture_tree.add(node)
+        fixture_tree.insert(node)
     return fixture_tree
 
 
@@ -94,7 +96,7 @@ def test_inserted_and_removed_edges_agree_with_edges():
     tree = Tree()
     accumulated_edges = set()
     for node in NODE_TAGS:
-        inserted_edges, removed_edges = tree.add(node)
+        inserted_edges, removed_edges, old_path = tree.insert(node)
         accumulated_edges.update(inserted_edges)
         accumulated_edges.difference_update(removed_edges)
 

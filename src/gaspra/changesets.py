@@ -123,12 +123,13 @@ def diff(
 
     Returns:
         Iterable[str]
-            The changes between a and b.  Each item in the sequence
-            is either a string or a tuple of two strings.  If the item
-            is a string, it is unchanged test between `original` and
-            ``modified`.  If the item is a tuple, the first string is the
-            string inserted at that point in `original` to get `modified`
-            and the second string is the string that was deleted.
+            The changes between a and b.  Each item in the sequence is
+            either a string or a tuple of two strings.  If the item is a
+            string, it is unchanged test between `original` and
+            ``modified`.  If the item is a [named] tuple, the first
+            string is the string inserted at that point in `original` to
+            get `modified` and the second string is the string that was
+            deleted.
 
     """
     changeset = find_changeset(original, modified)

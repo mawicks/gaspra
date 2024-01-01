@@ -1,6 +1,6 @@
 import io
 from gaspra.suffix_automaton import build, Node
-from gaspra.revisions import Tree
+from gaspra.revision_tree import Tree
 
 
 def dump(node: Node, f: io.TextIOWrapper):
@@ -52,7 +52,7 @@ def test_dot_dump():
 def test_revision_dot_dump():
     tree = Tree()
     for node_id in range(100):
-        tree.add(node_id)
+        tree.insert(node_id)
 
     revision_dot_dump(tree, "revision.dot")
 

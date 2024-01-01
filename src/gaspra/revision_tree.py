@@ -43,10 +43,12 @@ class Tree:
     root: Node | None = None
     index: dict[Hashable, Node] = field(default_factory=dict)
 
-    def add(
+    def insert(
         self, node_tag: Hashable
     ) -> tuple[
-        Iterable[tuple[Hashable, Hashable]], Iterable[tuple[Hashable, Hashable]]
+        Iterable[tuple[Hashable, Hashable]],
+        Iterable[tuple[Hashable, Hashable]],
+        Iterable[Hashable],
     ]:
         """
         Insert node_tag into the revision tree, notifying caller of
@@ -61,6 +63,9 @@ class Tree:
             edges as tuple(from, to).
             Iterable[tuple[Hashable, Hashable]] - Sequence of removed
             edges as tuple(from, to)
+            Iterable[Hashable] - The old path to the relocated node (if
+                nay).  There can be at most one relocated node.
+
 
         """
         inserted_edges = []
@@ -68,8 +73,8 @@ class Tree:
 
         old_root = self.root
         new_root = Node(node_tag, node_id=len(self.index))
-        new_root.set_left(old_root)
 
+        path_to = ()
         if old_root:
             inserted_edges.append((new_root.node_tag, old_root.node_tag))
 
@@ -77,6 +82,8 @@ class Tree:
             best_split, direction = find_and_detach_best_split(old_root)
             if best_split != old_root:
                 if best_split and best_split.parent:
+                    # Save the original path before destroying it!
+                    path_to = self.path_to(best_split.node_tag)
                     # Detach best_split from tree
                     removed_edges.append(
                         (best_split.parent.node_tag, best_split.node_tag)
@@ -89,9 +96,10 @@ class Tree:
                 inserted_edges.append((new_root.node_tag, best_split.node_tag))
                 new_root.set_right(best_split)
 
+        new_root.set_left(old_root)
         self.root = new_root
         self.index[node_tag] = new_root
-        return inserted_edges, removed_edges
+        return inserted_edges, removed_edges, path_to
 
     def edges(self):
         if self.root:
@@ -230,13 +238,13 @@ def timing_experiment():  # pragma: no cover
     start = perf_counter_ns()
     tree = Tree()
     for node in range(N1):
-        tree.add(node)
+        tree.insert(node)
     duration1 = perf_counter_ns() - start
 
     start = perf_counter_ns()
     tree = Tree()
     for node in range(N2):
-        tree.add(node)
+        tree.insert(node)
     duration2 = perf_counter_ns() - start
 
     # Compare to O(n^(3/2))

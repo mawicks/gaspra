@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
-from enum import Enum
 
 from gaspra.changesets import Changeset, ChangesetLeaf, find_changeset, apply_forward
 from gaspra.revision_tree import Tree

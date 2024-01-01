@@ -51,9 +51,7 @@ def test_add_revision():
         inserted_edges = {edge for edge in inserted_edges}
         removed_edges = {edge for edge in removed_edges}
 
-        test_inserted_edges, test_removed_edges, test_old_path = test_tree.insert(
-            node_tag
-        )
+        test_inserted_edges, test_removed_edges = test_tree.insert(node_tag)
         test_inserted_edges = {edge for edge in test_inserted_edges}
         test_removed_edges = {edge for edge in test_removed_edges}
 
@@ -96,7 +94,7 @@ def test_inserted_and_removed_edges_agree_with_edges():
     tree = Tree()
     accumulated_edges = set()
     for node in NODE_TAGS:
-        inserted_edges, removed_edges, old_path = tree.insert(node)
+        inserted_edges, removed_edges = tree.insert(node)
         accumulated_edges.update(inserted_edges)
         accumulated_edges.difference_update(removed_edges)
 

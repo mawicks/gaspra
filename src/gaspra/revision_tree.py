@@ -48,7 +48,6 @@ class Tree:
     ) -> tuple[
         Iterable[tuple[Hashable, Hashable]],
         Iterable[tuple[Hashable, Hashable]],
-        dict[Hashable, Iterable[Hashable]],
     ]:
         """
         Insert node_tag into the revision tree, notifying caller of
@@ -73,7 +72,6 @@ class Tree:
         """
         inserted_edges = []
         removed_edges = []
-        removed_paths = {}
 
         old_root = self.root
         new_root = Node(node_tag, node_id=len(self.index))
@@ -85,10 +83,6 @@ class Tree:
             best_split, direction = find_and_detach_best_split(old_root)
             if best_split != old_root:
                 if best_split and best_split.parent:
-                    # Save the original path before destroying it!
-                    removed_paths[best_split.node_tag] = self.path_to(
-                        best_split.node_tag
-                    )
                     # Detach best_split from tree
                     removed_edges.append(
                         (best_split.parent.node_tag, best_split.node_tag)
@@ -104,7 +98,7 @@ class Tree:
         new_root.set_left(old_root)
         self.root = new_root
         self.index[node_tag] = new_root
-        return inserted_edges, removed_edges, removed_paths
+        return inserted_edges, removed_edges
 
     def edges(self):
         if self.root:

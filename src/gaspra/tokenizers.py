@@ -1,4 +1,4 @@
-from collections.abc import Iterable, Hashable, Sequence
+from collections.abc import Iterable, Sequence
 
 
 def line_tokenize(

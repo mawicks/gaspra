@@ -34,8 +34,17 @@ class Versions:
     parents: dict[Hashable, Hashable] = field(default_factory=dict)
 
     tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
+    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
     tokens: dict[bytes, int] = field(default_factory=dict)
     token_map: tuple[bytes, ...] = field(default_factory=tuple)
+
+    def __post_init__(self):
+        if (self.tokenizer is not None and self.decoder is None) or (
+            self.tokenizer is None and self.decoder is not None
+        ):
+            raise ValueError(
+                "Either both tokenizer and decoder must be set or neither."
+            )
 
     def save(self, tag: Hashable, version: bytes):
         edges_to_create, edges_to_remove = self.tree.insert(tag)
@@ -110,7 +119,7 @@ class Versions:
 
         return patched
 
-    def _retrieve_raw(self, tag: Hashable) -> TokenSequence:
+    def _retrieve_raw(self, tag: Hashable) -> Sequence[Hashable]:
         """
         Retrieve a specific raw (meaning it's left tokenized) version
         using its tag.
@@ -129,7 +138,7 @@ class Versions:
         """
         raw = self._retrieve_raw(tag)
 
-        if self.tokenizer is None:
+        if self.decoder is None:
             return raw
         else:
-            return b"\n".join(self.token_map[t] for t in cast(Sequence[int], raw))
+            return self.decoder(cast(Sequence[int], raw), self.token_map)

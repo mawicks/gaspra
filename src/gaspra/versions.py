@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Hashable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Callable, cast
 
 from gaspra.changesets import (
@@ -19,10 +19,20 @@ def check_connectivity(edges_to_create, edges_to_remove):
     another path.
     """
     new_destinations = set(pair[1] for pair in edges_to_create)
-    if not all(pair[1] in new_destinations for pair in edges_to_remove):
+
+    if not all(
+        pair[1] in new_destinations for pair in edges_to_remove
+    ):  # pragma: no cover
         raise RuntimeError(
             "Removing an edge to a node without replacing it with another path"
         )
+
+
+@dataclass
+class Linkage:
+    parent: Hashable | None = None
+    children: set[Hashable] = field(default_factory=set)
+    depth: int = 1
 
 
 @dataclass
@@ -31,7 +41,7 @@ class Versions:
 
     versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
-    parents: dict[Hashable, Hashable] = field(default_factory=dict)
+    linkage: dict[Hashable, Linkage] = field(default_factory=dict)
 
     tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
@@ -41,7 +51,7 @@ class Versions:
     def __post_init__(self):
         if (self.tokenizer is not None and self.decoder is None) or (
             self.tokenizer is None and self.decoder is not None
-        ):
+        ):  # pragma: no cover
             raise ValueError(
                 "Either both tokenizer and decoder must be set or neither."
             )
@@ -57,49 +67,82 @@ class Versions:
             self.token_map = tuple(self.tokens.keys())
 
         self.versions[tag] = tokenized
+        self.linkage[tag] = Linkage()
 
         for current_tag, older_tag in edges_to_create:
             current_version = self._retrieve_raw(current_tag)
             older_version = self._retrieve_raw(older_tag)
 
-            self._save_diff(
+            self._add_edge(
                 current_tag,
                 older_tag,
                 tuple(find_changeset(current_version, older_version).change_stream()),
             )
 
         for current_tag, older_tag in edges_to_remove:
-            self._remove_branch(current_tag, older_tag)
+            self._remove_edge(current_tag, older_tag)
 
         return
 
-    def _save_diff(self, current_tag, older_tag, changeset):
-        self.diffs[current_tag, older_tag] = changeset
-        self.parents[older_tag] = current_tag
-        if older_tag in self.versions:
-            del self.versions[older_tag]
+    def _add_edge(self, parent_tag, child_tag, changeset):
+        self.diffs[parent_tag, child_tag] = changeset
 
-    def _remove_branch(self, current_tag, older_tag):
-        del self.diffs[current_tag, older_tag]
+        # It's a spanning tree so a node can have only one
+        # parent.  When adding an edge, the new parent
+        # steals the child from any pre-existing parent.
+        self._change_parent(child_tag, parent_tag)
 
-        # This "if" should not be necessary because
-        # parent[older_tag] should already have been overwritten.  It
-        # currently doesn't get executed, but we'll leave it here
-        # in case the order of calls ever gets changed.
-        if self.parents.get(older_tag) == current_tag:
-            del self.parents[older_tag]
+        # Older tag is no longer at the head of a branch
+        # so remove it from versions.
+        if child_tag in self.versions:
+            del self.versions[child_tag]
+
+    def _change_parent(self, tag, new_parent):
+        existing_linkage = self.linkage[tag]
+
+        if (
+            existing_linkage.parent in self.linkage
+            and tag in self.linkage[existing_linkage.parent].children
+        ):
+            self.linkage[existing_linkage.parent].children.remove(tag)
+
+        linkage = replace(existing_linkage, parent=new_parent)
+
+        self.linkage[tag] = linkage
+
+        if linkage.parent is not None:
+            self.linkage[linkage.parent].children.add(tag)
+
+        while linkage.parent is not None:
+            tag = linkage.parent
+            linkage = self.linkage[tag]
+            if linkage.children:
+                child_depth = max(
+                    [self.linkage[child].depth for child in linkage.children]
+                )
+            else:
+                child_depth = 0
+            self.linkage[tag] = replace(linkage, depth=child_depth + 1)
+
+    def _remove_edge(self, parent_tag, child_tag):
+        # Don't remove the edge if current_tag is still the parent of
+        # older_tag.
+        if self.linkage[parent_tag].parent != child_tag:
+            del self.diffs[parent_tag, child_tag]
+        else:  # pragma: no cover
+            raise RuntimeError(f"Trying to remove an essential edge")
 
     def _path_to(self, tag: Hashable) -> Sequence[Hashable]:
         """
         Function to retrieve the path to a version.
         """
-        if tag not in self.parents:  # pragma: no cover
+        if tag not in self.linkage:  # pragma: no cover
             raise ValueError(f"{tag} is not a valid version.")
 
-        path = [tag]
-        while tag in self.parents:
-            tag = self.parents[tag]
+        path = []
+        while tag is not None:
             path.append(tag)
+            tag = self.linkage[tag].parent
 
         return tuple(reversed(path))
 

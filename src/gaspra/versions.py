@@ -8,7 +8,6 @@ from gaspra.changesets import (
     find_changeset,
     apply_forward,
 )
-from gaspra.revision_tree import Tree
 from gaspra.types import TokenSequence, ReducedChangeIterable
 
 
@@ -68,17 +67,32 @@ class Versions:
         # among its descendents
         if len(self.versions):
             existing_head = list(self.versions.keys())[0]
-            split = self._get_split(existing_head)
+            split, path_to_split = self._get_split(existing_head)
         else:
-            split = existing_head = None
+            split = existing_head = path_to_split = None
 
         # Add the new version to the tree without
         # any connections.
         self.versions[tag] = tokenized
         self.linkage[tag] = Linkage()
 
-        # If there is an existing head, connect the new version
-        # to it.
+        # `tag` always get existing_head as a child. It also
+        # gets `split` as a child if it exists.  The order
+        # of adding children is important to establish the
+        # convention that older nodes appear in the child list
+        # first.
+
+        # If there is an appropriate split, move it up to be a child of `tag`
+        if split is not None and path_to_split is not None and split != existing_head:
+            split_version = self._retrieve_using_path(path_to_split)
+            self._add_edge(
+                tag,
+                split,
+                tuple(find_changeset(tokenized, split_version).change_stream()),
+            )
+            self._change_parent(split, tag)
+
+        # If there was a pre-existing head, make it a child of `tag`
         if existing_head is not None:
             existing_head_version = self.versions[existing_head]
             self._add_edge(
@@ -86,16 +100,6 @@ class Versions:
                 existing_head,
                 tuple(find_changeset(tokenized, existing_head_version).change_stream()),
             )
-
-        # If there is an appropriate split, move it up to be a child of `tag`
-        if split is not None and split != existing_head:
-            split_version = self._retrieve_raw(split)
-            self._add_edge(
-                tag,
-                split,
-                tuple(find_changeset(tokenized, split_version).change_stream()),
-            )
-            self._change_parent(split, tag)
 
         return
 
@@ -105,30 +109,26 @@ class Versions:
         identify a node near the middle.  The path will be split at that
         node.  This node and the old root will become children of a new
         root.  In the case of a tie for the longest path, follow the
-        path with that was added to the network more recently (which is
-        actually the one added *first* to the child list because we
-        always create the child list beginning with the most recent node
-        and add older notes to it), so that we favor faster access to
-        more recent history.
+        path with that was added to the network more recently (which
+        should be the one with the largest index in children)
 
         """
         linkage = self.linkage[tag]
-
+        path_to_split = [tag]
         depth = 1
         # All leaves have a depth of one, so within this
         # loop there will always be children.
         while depth < linkage.depth:
-            # We want the largest depth and the *smallest* index
-            # in case of a tie on the depth, so we negate the index.
-            next_child_index = -max(
-                (self.linkage[child].depth, -index)
+            next_child_index = max(
+                (self.linkage[child].depth, index)
                 for index, child in enumerate(linkage.children)
             )[1]
             depth += 1
             tag = linkage.children[next_child_index]
             linkage = self.linkage[tag]
+            path_to_split.append(tag)
 
-        return tag
+        return tag, path_to_split
 
     def _add_edge(self, parent_tag, child_tag, changeset):
         self.diffs[parent_tag, child_tag] = changeset
@@ -175,7 +175,7 @@ class Versions:
         if self.linkage[parent_tag].parent != child_tag:
             del self.diffs[parent_tag, child_tag]
         else:  # pragma: no cover
-            raise RuntimeError(f"Trying to remove an essential edge")
+            raise RuntimeError("Trying to remove an essential edge")
 
     def _update_metrics(self, tag):
         """

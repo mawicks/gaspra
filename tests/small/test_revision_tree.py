@@ -2,7 +2,7 @@ import pytest
 
 from copy import deepcopy
 
-from gaspra.versions import Tree
+from gaspra.revision_tree import Tree
 
 # These are intentially not in alphabetical order to make
 # sure the tree doesn't depend on ordering in some way

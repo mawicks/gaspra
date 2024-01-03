@@ -31,7 +31,7 @@ def check_connectivity(edges_to_create, edges_to_remove):
 @dataclass
 class Linkage:
     parent: Hashable | None = None
-    children: set[Hashable] = field(default_factory=set)
+    children: list[Hashable] = field(default_factory=list)
     depth: int = 1
     descendents: int = 1
 
@@ -58,7 +58,13 @@ class Versions:
             )
 
     def save(self, tag: Hashable, version: bytes):
+        if len(self.versions):
+            x = self._get_split(next(iter(self.versions.keys())))
+        else:
+            x = None
         edges_to_create, edges_to_remove = self.tree.insert(tag)
+        edges_to_create = tuple(edges_to_create)
+        assert x is None or edges_to_create[-1][1] == x
         check_connectivity(edges_to_create, edges_to_remove)
 
         if self.tokenizer is None:
@@ -84,6 +90,37 @@ class Versions:
             self._remove_edge(current_tag, older_tag)
 
         return
+
+    def _get_split(self, tag: Hashable):
+        """
+        Find the longest path beginning from `tag` to a leaf and
+        identify a node near the middle.  The path will be split at that
+        node.  This node and the old root will become children of a new
+        root.  In the case of a tie for the longest path, follow the
+        path with that was added to the network more recently (which is
+        actually the one added *first* to the child list because we
+        always create the child list beginning with the most recent node
+        and add older notes to it), so that we favor faster access to
+        more recent history.
+
+        """
+        linkage = self.linkage[tag]
+
+        depth = 1
+        # All leaves have a depth of one, so within this
+        # loop there will always be children.
+        while depth < linkage.depth:
+            # We want the largest depth and the *smallest* index
+            # in case of a tie on the depth, so we negate the index.
+            next_child_index = -max(
+                (self.linkage[child].depth, -index)
+                for index, child in enumerate(linkage.children)
+            )[1]
+            depth += 1
+            tag = linkage.children[next_child_index]
+            linkage = self.linkage[tag]
+
+        return tag
 
     def _add_edge(self, parent_tag, child_tag, changeset):
         self.diffs[parent_tag, child_tag] = changeset
@@ -114,14 +151,22 @@ class Versions:
 
         # Add "tag" to its new parent's set of children.
         if linkage.parent is not None:
-            self.linkage[linkage.parent].children.add(tag)
-            self.update_metrics(linkage.parent)
+            self.linkage[linkage.parent].children.append(tag)
+            self._update_metrics(linkage.parent)
 
         # Recompute spanning tree metrics.
         if original_linkage.parent is not None:
-            self.update_metrics(original_linkage.parent)
+            self._update_metrics(original_linkage.parent)
 
-    def update_metrics(self, tag):
+    def _remove_edge(self, parent_tag, child_tag):
+        # Don't remove the edge if current_tag is still the parent of
+        # older_tag.
+        if self.linkage[parent_tag].parent != child_tag:
+            del self.diffs[parent_tag, child_tag]
+        else:  # pragma: no cover
+            raise RuntimeError(f"Trying to remove an essential edge")
+
+    def _update_metrics(self, tag):
         """
         Update metrics *above* a node that was moded.  When a node is
         moved from one parent to another, update_metrics() should be
@@ -143,14 +188,6 @@ class Versions:
                 linkage, depth=child_depth + 1, descendents=descendents + 1
             )
             tag = linkage.parent
-
-    def _remove_edge(self, parent_tag, child_tag):
-        # Don't remove the edge if current_tag is still the parent of
-        # older_tag.
-        if self.linkage[parent_tag].parent != child_tag:
-            del self.diffs[parent_tag, child_tag]
-        else:  # pragma: no cover
-            raise RuntimeError(f"Trying to remove an essential edge")
 
     def _path_to(self, tag: Hashable) -> Sequence[Hashable]:
         """

@@ -1,5 +1,5 @@
-C Use\smore\sconventional\sterms:\slinkage->node;\sdepth->height;\sdescendents->size
-D 2024-01-03T12:57:41.525
+C Change\snames\sin\srevision_tree\ssimilar\sto\sthose\sin\sversions.py
+D 2024-01-03T13:01:12.228
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -16,7 +16,7 @@ F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd
 F src/gaspra/merge.py c1ea0c1299610ddb32d66c6368db31a758443aff305fdd2392eba4b838ee922b
 F src/gaspra/merge_tool.py fa6fdcb4e6219246f9f2fc40632d5d7ba52f6fb60ce144471219966bdb4d371a
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
-F src/gaspra/revision_tree.py d27fd8580cdb19cbe988ec55e326bd418dfd8da165386cb1a82adf5c315ef0fb
+F src/gaspra/revision_tree.py 8d87c6dc80e773f21e049725d781cef08b693997de278cc681df46eb0592f7db
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
 F src/gaspra/test_helpers/helpers.py 870274cd964830773eccce8a98ef2f180b30fcd3923383f289c3d1240f847cc4
 F src/gaspra/tokenizers.py 8af0ae8868d3274e8260c5e0dac139211d29d6c87149b7d8f6a15178f8b8d2f9
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py ff1f1ea756696602887920b9045642a4a668cc468b5b921bad6283db2fbff836
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P db3ef25baf383a9e67b8e2f2ac8f3434ebbc33460891143af565f8159c8f3fbd
-R 1c8a1279a7b26936fed9fcdd10eb1719
+P 533608a42f8c066b7778b2e3fab8ad23dceef5e4f6b5140bb5b8c72a1a4df964
+R 7be3200fa41a413f7fe3948c1b1f882f
 U mwicks
-Z c0ad25da4d14fdbe31877c35aff5284c
+Z dcf18ab748b3149c586c0eaf19dc646b
 # Remove this line to create a well-formed Fossil manifest.

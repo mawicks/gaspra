@@ -134,7 +134,7 @@ class Tree:
         """
         node = self.index.get(node_id)
         if node:
-            return node.count, node.length
+            return node.size, node.height
 
 
 @dataclass
@@ -145,8 +145,8 @@ class Node:
     right: Node | None = None
     parent: Node | None = None
 
-    length: int = 1
-    count: int = 1
+    height: int = 1
+    size: int = 1
 
     def update_states(self):
         # Can't update just a single node.
@@ -158,22 +158,22 @@ class Node:
             length = 1
 
             if current.left:
-                count += current.left.count
-                length += current.left.length
+                count += current.left.size
+                length += current.left.height
 
             if current.right:
-                count += current.right.count
-                length += current.right.length
+                count += current.right.size
+                length += current.right.height
 
-            current.count = count
-            current.length = length
+            current.size = count
+            current.height = length
             current = current.parent
 
     def _clear_state(self):
         """This exists only for testing.  Don't call outside of a test."""
 
-        self.count = 0
-        self.length = 0
+        self.size = 0
+        self.height = 0
 
     def set_left(self, node):
         self.left = node
@@ -200,9 +200,9 @@ def find_and_detach_best_split(root: Node):
     depth = 1
     direction = Direction.NONE
     current = root
-    while current is not None and depth < current.length:
+    while current is not None and depth < current.height:
         if current.right is not None and current.left is not None:
-            if current.right.length > current.left.length:
+            if current.right.height > current.left.height:
                 current = current.right
                 direction = Direction.RIGHT
             else:

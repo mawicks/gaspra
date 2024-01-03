@@ -33,6 +33,7 @@ class Linkage:
     parent: Hashable | None = None
     children: set[Hashable] = field(default_factory=set)
     depth: int = 1
+    descendents: int = 1
 
 
 @dataclass
@@ -98,31 +99,50 @@ class Versions:
             del self.versions[child_tag]
 
     def _change_parent(self, tag, new_parent):
-        existing_linkage = self.linkage[tag]
+        original_linkage = self.linkage[tag]
 
+        # Remove "tag" from its parents set of children.
         if (
-            existing_linkage.parent in self.linkage
-            and tag in self.linkage[existing_linkage.parent].children
+            original_linkage.parent is not None
+            and tag in self.linkage[original_linkage.parent].children
         ):
-            self.linkage[existing_linkage.parent].children.remove(tag)
+            self.linkage[original_linkage.parent].children.remove(tag)
 
-        linkage = replace(existing_linkage, parent=new_parent)
-
+        # Replace tag's parent.
+        linkage = replace(original_linkage, parent=new_parent)
         self.linkage[tag] = linkage
 
+        # Add "tag" to its new parent's set of children.
         if linkage.parent is not None:
             self.linkage[linkage.parent].children.add(tag)
+            self.update_metrics(linkage.parent)
 
-        while linkage.parent is not None:
-            tag = linkage.parent
+        # Recompute spanning tree metrics.
+        if original_linkage.parent is not None:
+            self.update_metrics(original_linkage.parent)
+
+    def update_metrics(self, tag):
+        """
+        Update metrics *above* a node that was moded.  When a node is
+        moved from one parent to another, update_metrics() should be
+        called for both of the parents (not the node moved)
+        """
+        while tag is not None:
             linkage = self.linkage[tag]
             if linkage.children:
                 child_depth = max(
                     [self.linkage[child].depth for child in linkage.children]
                 )
+                descendents = sum(
+                    [self.linkage[child].descendents for child in linkage.children]
+                )
             else:
                 child_depth = 0
-            self.linkage[tag] = replace(linkage, depth=child_depth + 1)
+                descendents = 0
+            self.linkage[tag] = replace(
+                linkage, depth=child_depth + 1, descendents=descendents + 1
+            )
+            tag = linkage.parent
 
     def _remove_edge(self, parent_tag, child_tag):
         # Don't remove the edge if current_tag is still the parent of

@@ -1,5 +1,5 @@
-C Add\s_get_split();\sconfirm\sit\sreturns\sidentical\sresults\sas\stree.insert()
-D 2024-01-03T10:47:17.030
+C Remove\suse\sof\stree.Tree()\sin\sversions.py
+D 2024-01-03T11:36:09.005
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -22,7 +22,7 @@ F src/gaspra/test_helpers/helpers.py 870274cd964830773eccce8a98ef2f180b30fcd3923
 F src/gaspra/tokenizers.py 8af0ae8868d3274e8260c5e0dac139211d29d6c87149b7d8f6a15178f8b8d2f9
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py 3eb3bc73e1cef9041fa3401bb5b13675bb307171af338068281c6cee7cb79c8d
-F src/gaspra/versions.py dba682bacf695a50330086b10d00f960ed3194d5e61ba0374855503376410a75
+F src/gaspra/versions.py 467752472ea5320d096891e9b38f03a176c36c5e1ccd6d207da26cf7a58773d0
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 8cd90599762671972da77ac430fa7e137d4180740674d07bafb8ad8a626fb163
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py ff1f1ea756696602887920b9045642a4a668cc468b5b921bad6283db2fbff836
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P bcaedde07c08db0acd8680393359ec0c0287124ccba355e8d878157195562e03
-R a6cd1a262c4099d247b07a7dd452dfc0
+P 0283d23c2e69270c45d5bc6a52cd7e5d38e22be8344a5324db55de5d64577190
+R 98d3f9ba9ce9a4b89bac6c1915a30dbc
 U mwicks
-Z 2c3e6515dcaa8763269cc05dda1c3319
+Z ef79110ab146ffd36d4a03285e75ce53
 # Remove this line to create a well-formed Fossil manifest.

@@ -38,8 +38,6 @@ class Linkage:
 
 @dataclass
 class Versions:
-    tree: Tree = field(default_factory=Tree)
-
     versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
     linkage: dict[Hashable, Linkage] = field(default_factory=dict)
@@ -58,14 +56,7 @@ class Versions:
             )
 
     def save(self, tag: Hashable, version: bytes):
-        if len(self.versions):
-            x = self._get_split(next(iter(self.versions.keys())))
-        else:
-            x = None
-        edges_to_create, edges_to_remove = self.tree.insert(tag)
-        edges_to_create = tuple(edges_to_create)
-        assert x is None or edges_to_create[-1][1] == x
-        check_connectivity(edges_to_create, edges_to_remove)
+        # Tokenize `version` if requested
 
         if self.tokenizer is None:
             tokenized = version
@@ -73,21 +64,38 @@ class Versions:
             tokenized = self.tokenizer(version, self.tokens)
             self.token_map = tuple(self.tokens.keys())
 
+        # Find the pre-existing head (if any) and find best split
+        # among its descendents
+        if len(self.versions):
+            existing_head = list(self.versions.keys())[0]
+            split = self._get_split(existing_head)
+        else:
+            split = existing_head = None
+
+        # Add the new version to the tree without
+        # any connections.
         self.versions[tag] = tokenized
         self.linkage[tag] = Linkage()
 
-        for current_tag, older_tag in edges_to_create:
-            current_version = self._retrieve_raw(current_tag)
-            older_version = self._retrieve_raw(older_tag)
-
+        # If there is an existing head, connect the new version
+        # to it.
+        if existing_head is not None:
+            existing_head_version = self.versions[existing_head]
             self._add_edge(
-                current_tag,
-                older_tag,
-                tuple(find_changeset(current_version, older_version).change_stream()),
+                tag,
+                existing_head,
+                tuple(find_changeset(tokenized, existing_head_version).change_stream()),
             )
 
-        for current_tag, older_tag in edges_to_remove:
-            self._remove_edge(current_tag, older_tag)
+        # If there is an appropriate split, move it up to be a child of `tag`
+        if split is not None and split != existing_head:
+            split_version = self._retrieve_raw(split)
+            self._add_edge(
+                tag,
+                split,
+                tuple(find_changeset(tokenized, split_version).change_stream()),
+            )
+            self._change_parent(split, tag)
 
         return
 
@@ -159,6 +167,9 @@ class Versions:
             self._update_metrics(original_linkage.parent)
 
     def _remove_edge(self, parent_tag, child_tag):
+        """
+        This is deprecated in favor of _change_parent().
+        """
         # Don't remove the edge if current_tag is still the parent of
         # older_tag.
         if self.linkage[parent_tag].parent != child_tag:

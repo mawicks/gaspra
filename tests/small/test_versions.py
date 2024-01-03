@@ -12,25 +12,37 @@ VERSIONS = {
 }
 
 
-def test_revisions():
+def test_versions():
     versions = Versions()
 
+    base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"))
+        versions.save(id, version.encode("utf-8"), base)
+        base = id
 
+    base = None
     for id, version in VERSIONS.items():
-        retrieved_version = versions.retrieve(id)
+        retrieved_version, base_version = versions.retrieve(id)
 
         assert retrieved_version == version.encode("utf-8")
+        assert base_version == base
+
+        base = id
 
 
-def test_revisions_with_tokenizer():
+def test_versions_with_tokenizer():
     versions = Versions(tokenizer=space_tokenizer, decoder=space_token_decoder)
 
+    base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"))
+        versions.save(id, version.encode("utf-8"), base)
+        base = id
 
+    base = None
     for id, version in VERSIONS.items():
-        retrieved_version = versions.retrieve(id)
+        retrieved_version, base_version = versions.retrieve(id)
 
         assert retrieved_version == version.encode("utf-8")
+        assert base_version == base
+
+        base = id

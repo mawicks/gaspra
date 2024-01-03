@@ -122,7 +122,8 @@ class Tree:
                     current = current.parent
 
     def _invalidate(self):
-        """This exists only for testing reevaluate().  Don't call outside of a test."""
+        """This exists only for testing reevaluate().  Don't call
+        outside of a test."""
         for node in self.index.values():
             node._clear_state()
 
@@ -154,19 +155,19 @@ class Node:
         # propagate the state up the tree.
         current = self
         while current:
-            count = 1
-            length = 1
+            size = 1
+            height = 1
 
             if current.left:
-                count += current.left.size
-                length += current.left.height
+                size += current.left.size
+                height += current.left.height
 
             if current.right:
-                count += current.right.size
-                length += current.right.height
+                size += current.right.size
+                height += current.right.height
 
-            current.size = count
-            current.height = length
+            current.size = size
+            current.height = height
             current = current.parent
 
     def _clear_state(self):

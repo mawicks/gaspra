@@ -30,6 +30,7 @@ def check_connectivity(edges_to_create, edges_to_remove):
 @dataclass
 class Node:
     order_id: int
+    base_version: Hashable | None = None
     parent: Hashable | None = None
     children: list[Hashable] = field(default_factory=list)
     height: int = 1
@@ -55,7 +56,9 @@ class Versions:
                 "Either both tokenizer and decoder must be set or neither."
             )
 
-    def save(self, tag: Hashable, version: bytes):
+    def save(
+        self, tag: Hashable, version: bytes, existing_head: Hashable | None = None
+    ):
         # Tokenize `version` if requested
 
         if self.tokenizer is None:
@@ -64,10 +67,8 @@ class Versions:
             tokenized = self.tokenizer(version, self.tokens)
             self.token_map = tuple(self.tokens.keys())
 
-        # Find the pre-existing head (if any) and find best split
-        # among its descendants
-        if len(self.versions):
-            existing_head = list(self.versions.keys())[0]
+        # Find the best split best split among the descendants of existing_head.
+        if existing_head is not None:
             split, path_to_split = self._get_split(existing_head)
         else:
             split = existing_head = path_to_split = None
@@ -75,7 +76,7 @@ class Versions:
         # Add the new version to the tree without
         # any connections.
         self.versions[tag] = tokenized
-        self.nodes[tag] = Node(order_id=len(self.nodes))
+        self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
         # `tag` always get existing_head as a child. It also
         # gets `split` as a child if it exists.  The order
@@ -241,13 +242,14 @@ class Versions:
 
         return raw
 
-    def retrieve(self, tag: Hashable) -> TokenSequence:
+    def retrieve(self, tag: Hashable) -> tuple[TokenSequence, Hashable]:
         """
         Retrieve a specific version using its tag.
         """
         raw = self._retrieve_raw(tag)
+        base_version = self.nodes[tag].base_version
 
         if self.decoder is None:
-            return raw
+            return raw, base_version
         else:
-            return self.decoder(cast(Sequence[int], raw), self.token_map)
+            return self.decoder(cast(Sequence[int], raw), self.token_map), base_version

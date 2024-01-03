@@ -29,6 +29,7 @@ def check_connectivity(edges_to_create, edges_to_remove):
 
 @dataclass
 class Linkage:
+    order_id: int
     parent: Hashable | None = None
     children: list[Hashable] = field(default_factory=list)
     depth: int = 1
@@ -74,7 +75,7 @@ class Versions:
         # Add the new version to the tree without
         # any connections.
         self.versions[tag] = tokenized
-        self.linkage[tag] = Linkage()
+        self.linkage[tag] = Linkage(order_id=len(self.linkage))
 
         # `tag` always get existing_head as a child. It also
         # gets `split` as a child if it exists.  The order
@@ -120,9 +121,9 @@ class Versions:
         # loop there will always be children.
         while depth < linkage.depth:
             next_child_index = max(
-                (self.linkage[child].depth, index)
+                (self.linkage[child].depth, self.linkage[child].order_id, index)
                 for index, child in enumerate(linkage.children)
-            )[1]
+            )[2]
             depth += 1
             tag = linkage.children[next_child_index]
             linkage = self.linkage[tag]

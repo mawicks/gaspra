@@ -1,5 +1,5 @@
-C Re-order\schildren\sin\sLinkage;\ssave\spath\sto\ssplit;\slint\sremoval.
-D 2024-01-03T12:35:26.254
+C Add\sorder_id\sto\sLinkage
+D 2024-01-03T12:45:17.004
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -22,7 +22,7 @@ F src/gaspra/test_helpers/helpers.py 870274cd964830773eccce8a98ef2f180b30fcd3923
 F src/gaspra/tokenizers.py 8af0ae8868d3274e8260c5e0dac139211d29d6c87149b7d8f6a15178f8b8d2f9
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py 3eb3bc73e1cef9041fa3401bb5b13675bb307171af338068281c6cee7cb79c8d
-F src/gaspra/versions.py cf3f3f291cd3a323896671a65bfc25b73ee8bfe63ef03199b7e78c374d5eb459
+F src/gaspra/versions.py 71475096718120ba5792a1cd21334a619f4bc5411af0bd0fdde301b2f5dcb833
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 8cd90599762671972da77ac430fa7e137d4180740674d07bafb8ad8a626fb163
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py ff1f1ea756696602887920b9045642a4a668cc468b5b921bad6283db2fbff836
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P cfb10b11050b3fb44116596bd752ea750dfe7dff2ba1c18d82b4c4aa90acde41
-R 99857aace8aa2a2db9b6a1c757b564d2
+P dd2b9ff127d9e503072004a94b5e080a501a70811fa30f3c10c6ca71c3713b13
+R 7cea2178a8cc0254f6dadde28320a66f
 U mwicks
-Z 730f935350b63e9b90897884e8fc4307
+Z e7f2f90ae0757ecd41398e6c63fe715b
 # Remove this line to create a well-formed Fossil manifest.

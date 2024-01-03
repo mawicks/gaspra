@@ -28,7 +28,7 @@ def check_connectivity(edges_to_create, edges_to_remove):
 
 
 @dataclass
-class Linkage:
+class Node:
     order_id: int
     parent: Hashable | None = None
     children: list[Hashable] = field(default_factory=list)
@@ -40,7 +40,7 @@ class Linkage:
 class Versions:
     versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
-    linkage: dict[Hashable, Linkage] = field(default_factory=dict)
+    linkage: dict[Hashable, Node] = field(default_factory=dict)
 
     tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
@@ -75,7 +75,7 @@ class Versions:
         # Add the new version to the tree without
         # any connections.
         self.versions[tag] = tokenized
-        self.linkage[tag] = Linkage(order_id=len(self.linkage))
+        self.linkage[tag] = Node(order_id=len(self.linkage))
 
         # `tag` always get existing_head as a child. It also
         # gets `split` as a child if it exists.  The order

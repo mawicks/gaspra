@@ -32,15 +32,15 @@ class Node:
     order_id: int
     parent: Hashable | None = None
     children: list[Hashable] = field(default_factory=list)
-    depth: int = 1
-    descendents: int = 1
+    height: int = 1
+    size: int = 1
 
 
 @dataclass
 class Versions:
     versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
     diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
-    linkage: dict[Hashable, Node] = field(default_factory=dict)
+    nodes: dict[Hashable, Node] = field(default_factory=dict)
 
     tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
@@ -65,7 +65,7 @@ class Versions:
             self.token_map = tuple(self.tokens.keys())
 
         # Find the pre-existing head (if any) and find best split
-        # among its descendents
+        # among its descendants
         if len(self.versions):
             existing_head = list(self.versions.keys())[0]
             split, path_to_split = self._get_split(existing_head)
@@ -75,7 +75,7 @@ class Versions:
         # Add the new version to the tree without
         # any connections.
         self.versions[tag] = tokenized
-        self.linkage[tag] = Node(order_id=len(self.linkage))
+        self.nodes[tag] = Node(order_id=len(self.nodes))
 
         # `tag` always get existing_head as a child. It also
         # gets `split` as a child if it exists.  The order
@@ -114,19 +114,20 @@ class Versions:
         should be the one with the largest index in children)
 
         """
-        linkage = self.linkage[tag]
+        node = self.nodes[tag]
         path_to_split = [tag]
         depth = 1
-        # All leaves have a depth of one, so within this
-        # loop there will always be children.
-        while depth < linkage.depth:
+        # All leaves have a height of one, so within this
+        # loop there will always be children.  Because depth
+        # starts at one, you cannot enter this loop for a leaf.
+        while depth < node.height:
             next_child_index = max(
-                (self.linkage[child].depth, self.linkage[child].order_id, index)
-                for index, child in enumerate(linkage.children)
+                (self.nodes[child].height, self.nodes[child].order_id, index)
+                for index, child in enumerate(node.children)
             )[2]
             depth += 1
-            tag = linkage.children[next_child_index]
-            linkage = self.linkage[tag]
+            tag = node.children[next_child_index]
+            node = self.nodes[tag]
             path_to_split.append(tag)
 
         return tag, path_to_split
@@ -145,27 +146,27 @@ class Versions:
             del self.versions[child_tag]
 
     def _change_parent(self, tag, new_parent):
-        original_linkage = self.linkage[tag]
+        original_node = self.nodes[tag]
 
         # Remove "tag" from its parents set of children.
         if (
-            original_linkage.parent is not None
-            and tag in self.linkage[original_linkage.parent].children
+            original_node.parent is not None
+            and tag in self.nodes[original_node.parent].children
         ):
-            self.linkage[original_linkage.parent].children.remove(tag)
+            self.nodes[original_node.parent].children.remove(tag)
 
         # Replace tag's parent.
-        linkage = replace(original_linkage, parent=new_parent)
-        self.linkage[tag] = linkage
+        node = replace(original_node, parent=new_parent)
+        self.nodes[tag] = node
 
         # Add "tag" to its new parent's set of children.
-        if linkage.parent is not None:
-            self.linkage[linkage.parent].children.append(tag)
-            self._update_metrics(linkage.parent)
+        if node.parent is not None:
+            self.nodes[node.parent].children.append(tag)
+            self._update_metrics(node.parent)
 
         # Recompute spanning tree metrics.
-        if original_linkage.parent is not None:
-            self._update_metrics(original_linkage.parent)
+        if original_node.parent is not None:
+            self._update_metrics(original_node.parent)
 
     def _remove_edge(self, parent_tag, child_tag):
         """
@@ -173,7 +174,7 @@ class Versions:
         """
         # Don't remove the edge if current_tag is still the parent of
         # older_tag.
-        if self.linkage[parent_tag].parent != child_tag:
+        if self.nodes[parent_tag].parent != child_tag:
             del self.diffs[parent_tag, child_tag]
         else:  # pragma: no cover
             raise RuntimeError("Trying to remove an essential edge")
@@ -185,33 +186,29 @@ class Versions:
         called for both of the parents (not the node moved)
         """
         while tag is not None:
-            linkage = self.linkage[tag]
-            if linkage.children:
-                child_depth = max(
-                    [self.linkage[child].depth for child in linkage.children]
+            node = self.nodes[tag]
+            if node.children:
+                child_height = max(
+                    [self.nodes[child].height for child in node.children]
                 )
-                descendents = sum(
-                    [self.linkage[child].descendents for child in linkage.children]
-                )
+                size = sum([self.nodes[child].size for child in node.children])
             else:
-                child_depth = 0
-                descendents = 0
-            self.linkage[tag] = replace(
-                linkage, depth=child_depth + 1, descendents=descendents + 1
-            )
-            tag = linkage.parent
+                child_height = 0
+                size = 0
+            self.nodes[tag] = replace(node, height=child_height + 1, size=size + 1)
+            tag = node.parent
 
     def _path_to(self, tag: Hashable) -> Sequence[Hashable]:
         """
         Function to retrieve the path to a version.
         """
-        if tag not in self.linkage:  # pragma: no cover
+        if tag not in self.nodes:  # pragma: no cover
             raise ValueError(f"{tag} is not a valid version.")
 
         path = []
         while tag is not None:
             path.append(tag)
-            tag = self.linkage[tag].parent
+            tag = self.nodes[tag].parent
 
         return tuple(reversed(path))
 

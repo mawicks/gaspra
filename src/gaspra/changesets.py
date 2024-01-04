@@ -258,11 +258,6 @@ def join_changes(version, changed):
     return patched_version
 
 
-def old_apply_forward(changeset, original: Sequence[Hashable]):
-    changes = changeset.old_apply_forward(original)
-    return join_changes(original, changes)
-
-
 def apply(stripped_changeset: StrippedChangeIterable, version: Sequence[Hashable]):
     """
     Apply a changeset to a version sequence.
@@ -284,35 +279,23 @@ def apply(stripped_changeset: StrippedChangeIterable, version: Sequence[Hashable
 def apply_forward(
     reduced_changeset: ReducedChangeIterable, original: Sequence[Hashable]
 ):
-    def apply():
-        for item in reduced_changeset:
-            if type(item) is Change:
-                yield item.a
-            else:
-                # item is a slice
-                original_slice = item[0]
-                yield original[original_slice]
-
-    return join_changes(original, apply())
-
-
-def old_apply_reverse(changeset, modified: str):
-    changes = changeset.old_apply_reverse(modified)
-    return join_changes(modified, changes)
+    return apply(strip_forward(reduced_changeset), original)
 
 
 def apply_reverse(
     reduced_changeset: ReducedChangeIterable, modified: Sequence[Hashable]
 ):
-    def apply():
-        for item in reduced_changeset:
-            if type(item) is Change:
-                yield item.b
-            else:
-                modified_slice = item[1]
-                yield modified[modified_slice]
+    return apply(strip_reverse(reduced_changeset), modified)
 
-    return join_changes(modified, apply())
+
+def old_apply_forward(changeset, original: Sequence[Hashable]):
+    changes = changeset.old_apply_forward(original)
+    return join_changes(original, changes)
+
+
+def old_apply_reverse(changeset, modified: str):
+    changes = changeset.old_apply_reverse(modified)
+    return join_changes(modified, changes)
 
 
 if __name__ == "__main__":  # pragma: no cover

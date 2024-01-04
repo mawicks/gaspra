@@ -1,5 +1,5 @@
-C Add\sstrip_forward(),\sstrip_reverse(),\sand\sapply()\sto\schangesets.py
-D 2024-01-04T12:29:51.187
+C Implement\sapply_forward()\sand\sapply_reverse()\susing\sapply(),\sstrip_forward(),\sand\sstrip_revserse()
+D 2024-01-04T12:32:23.432
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -7,7 +7,7 @@ F images/text-merge.png eb11a6e79dc30b2587f677063174a91e07479f9296bcd7bbc3dd02c8
 F poetry.lock fd150f0c904d2bb772db9f59b9efd2d419748902e43a22e1fba4543ba0784753
 F pyproject.toml 1c2f418579660fcd542987567a746e717e86b597ee7b290c2555bda5a963af99
 F src/gaspra/__init__.py c21cacf184fed79fa9c11fb5ebb15047d77c8bfe7a868213e4c9fc3f0e322d92
-F src/gaspra/changesets.py 36a60c468ed705cca2b53b3bd9c43c1cd714fb78183a2959d307808a97966c77
+F src/gaspra/changesets.py 6946b6c0b1abbc3990b9f4884e16d58ff63c0a61268b7282da589e3cbe2dfb47
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
@@ -36,8 +36,8 @@ F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
 F tests/small/test_versions.py 6e75559909cb99159c8f5f986b98a4df7ebf95075e93ea2ccfc5b4eb156a17b0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P b50867e128a35b887df7407db9f2814a81b989ed6b548ac41ee4b77ab193ce3c
-R a4b5384d035d0167f28b3a390de3897e
+P 5eb2398c2f03ec0efe790a584fb3c3ee207d86e4328b99d8ae67e6af129fba81
+R 43aea2a273a41cf203b6965f9f692978
 U mwicks
-Z 7293da091c9debb0ee257c32d3058b56
+Z 2e6df9bc7a2dd736e120dce0943bb4f3
 # Remove this line to create a well-formed Fossil manifest.

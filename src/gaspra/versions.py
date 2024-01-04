@@ -6,7 +6,8 @@ from typing import Callable, cast
 
 from gaspra.changesets import (
     find_changeset,
-    apply_forward,
+    apply,
+    strip_forward,
 )
 from gaspra.types import Tag, Token, TokenSequence, ReducedChangeIterable
 
@@ -90,7 +91,11 @@ class Versions:
             self._add_edge(
                 tag,
                 split,
-                tuple(find_changeset(tokenized, split_version).change_stream()),
+                tuple(
+                    strip_forward(
+                        find_changeset(tokenized, split_version).change_stream()
+                    )
+                ),
             )
             self._change_parent(split, tag)
 
@@ -100,7 +105,11 @@ class Versions:
             self._add_edge(
                 tag,
                 existing_head,
-                tuple(find_changeset(tokenized, existing_head_version).change_stream()),
+                tuple(
+                    strip_forward(
+                        find_changeset(tokenized, existing_head_version).change_stream()
+                    )
+                ),
             )
 
         return
@@ -224,8 +233,8 @@ class Versions:
         patched = self.versions[path[0]]
 
         for n1, n2 in zip(path, path[1:]):
-            reduced_changeset = self.diffs[n1, n2]
-            patched = apply_forward(reduced_changeset, patched)
+            stripped_changeset = self.diffs[n1, n2]
+            patched = apply(stripped_changeset, patched)
 
         return patched
 

@@ -6,7 +6,13 @@ import os
 
 from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
-from gaspra.types import Change, ChangeIterable, ReducedChangeIterable, TokenSequence
+from gaspra.types import (
+    Change,
+    ChangeIterable,
+    ReducedChangeIterable,
+    StrippedChangeIterable,
+    TokenSequence,
+)
 
 
 @dataclass
@@ -149,6 +155,24 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
+def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+    """Return just the forward changes from a changeset."""
+    for change in stream:
+        if isinstance(change, Change):
+            yield change.a
+        else:
+            yield change[0]
+
+
+def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+    """Return just the reverse changes from a changeset."""
+    for change in stream:
+        if isinstance(change, Change):
+            yield change.b
+        else:
+            yield change[1]
+
+
 def diff(
     original: str | TokenSequence, modified: str | TokenSequence
 ) -> ChangeIterable:
@@ -237,6 +261,24 @@ def join_changes(version, changed):
 def old_apply_forward(changeset, original: Sequence[Hashable]):
     changes = changeset.old_apply_forward(original)
     return join_changes(original, changes)
+
+
+def apply(stripped_changeset: StrippedChangeIterable, version: Sequence[Hashable]):
+    """
+    Apply a changeset to a version sequence.
+
+    A StrippedChangeIterable is produced from strip_forward() or strip_reverse()
+    has no sense of direction.  It just applies the changes to the string.
+    """
+
+    def _apply():
+        for item in stripped_changeset:
+            if type(item) is slice:
+                yield version[item]
+            else:
+                yield item
+
+    return join_changes(version, _apply())
 
 
 def apply_forward(

@@ -1,7 +1,11 @@
 from collections.abc import Hashable, Iterable, Sequence
 from collections import namedtuple
+from typing import TypeVar
 
-TokenSequence = Sequence[Hashable]
+Token = TypeVar("Token", bound=Hashable)
+Tag = TypeVar("Tag", bound=Hashable)
+TokenSequence = Sequence[Token]
+# TokenSequence = Sequence[Hashable]
 
 StringIterable = Iterable[str]
 BytesIterable = Iterable[bytes]
@@ -11,3 +15,4 @@ Separator = namedtuple("Separator", "index")
 Change = namedtuple("Change", ["a", "b"])
 ChangeIterable = Iterable[TokenSequence | Change]
 ReducedChangeIterable = Iterable[tuple[slice, slice] | Change]
+StrippedChangeIterable = Iterable[slice | TokenSequence]

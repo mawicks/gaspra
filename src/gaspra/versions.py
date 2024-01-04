@@ -8,7 +8,7 @@ from gaspra.changesets import (
     find_changeset,
     apply_forward,
 )
-from gaspra.types import TokenSequence, ReducedChangeIterable
+from gaspra.types import Tag, Token, TokenSequence, ReducedChangeIterable
 
 
 def check_connectivity(edges_to_create, edges_to_remove):
@@ -242,7 +242,7 @@ class Versions:
 
         return raw
 
-    def retrieve(self, tag: Hashable) -> tuple[TokenSequence, Hashable]:
+    def retrieve(self, tag: Hashable) -> tuple[bytes, Hashable]:
         """
         Retrieve a specific version using its tag.
         """
@@ -250,6 +250,6 @@ class Versions:
         base_version = self.nodes[tag].base_version
 
         if self.decoder is None:
-            return raw, base_version
+            return cast(bytes, raw), base_version
         else:
             return self.decoder(cast(Sequence[int], raw), self.token_map), base_version

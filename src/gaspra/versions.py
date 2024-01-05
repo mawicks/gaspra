@@ -9,7 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
-from gaspra.types import Tag, Token, TokenSequence, ReducedChangeIterable
+from gaspra.types import Change, Tag, Token, TokenSequence, StrippedChangeSequence
 
 
 def check_connectivity(edges_to_create, edges_to_remove):
@@ -29,6 +29,13 @@ def check_connectivity(edges_to_create, edges_to_remove):
 
 
 @dataclass
+class VersionInfo:
+    base_version: Hashable | None = None
+    token_count: int = 0
+    change_count: int = 0
+
+
+@dataclass
 class Node:
     order_id: int
     base_version: Hashable | None = None
@@ -41,7 +48,7 @@ class Node:
 @dataclass
 class Versions:
     versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
-    diffs: dict[Hashable, ReducedChangeIterable] = field(default_factory=dict)
+    diffs: dict[Hashable, StrippedChangeSequence] = field(default_factory=dict)
     nodes: dict[Hashable, Node] = field(default_factory=dict)
 
     tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
@@ -262,3 +269,24 @@ class Versions:
             return cast(bytes, raw), base_version
         else:
             return self.decoder(cast(Sequence[int], raw), self.token_map), base_version
+
+    def version_info(self, tag: Hashable) -> VersionInfo | None:
+        """
+        Return information about a version.
+        """
+        if tag not in self.nodes:
+            return None
+
+        last_edge = tuple(self._path_to(tag)[-2:])
+        if len(last_edge) >= 2:
+            changeset = self.diffs[last_edge]
+            token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
+            change_count = len(changeset)
+        else:
+            token_count = len(self.versions[tag])
+            change_count = 0
+        return VersionInfo(
+            base_version=self.nodes[tag].base_version,
+            token_count=token_count,
+            change_count=change_count,
+        )

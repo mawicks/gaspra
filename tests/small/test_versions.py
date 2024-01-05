@@ -12,7 +12,7 @@ VERSIONS = {
 }
 
 
-def test_versions():
+def test_retrieved_versions_match():
     versions = Versions()
 
     base = None
@@ -23,7 +23,6 @@ def test_versions():
     base = None
     for id, version in VERSIONS.items():
         retrieved_version, base_version = versions.retrieve(id)
-
         assert retrieved_version == version.encode("utf-8")
         assert base_version == base
 
@@ -44,5 +43,32 @@ def test_versions_with_tokenizer():
 
         assert retrieved_version == version.encode("utf-8")
         assert base_version == base
+
+        base = id
+
+
+def test_expected_version_info():
+    versions = Versions()
+
+    base = None
+    for id, version in VERSIONS.items():
+        versions.save(id, version.encode("utf-8"), base)
+
+        # When a version is first inserted is should be stored verbatim.
+        # We'll check the length later after all versions have been
+        # added and then length should decrease.
+        version_info = versions.version_info(id)
+        assert version_info is not None
+        assert len(version) == version_info.token_count
+
+        base = id
+
+    base = None
+    for id, version in list(VERSIONS.items())[:-1]:
+        version_info = versions.version_info(id)
+        assert version_info is not None
+        assert version_info.base_version == base
+        assert version_info.token_count < len(version)
+        assert version_info.change_count > 0
 
         base = id

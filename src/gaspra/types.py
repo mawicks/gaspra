@@ -16,3 +16,4 @@ Change = namedtuple("Change", ["a", "b"])
 ChangeIterable = Iterable[TokenSequence | Change]
 ReducedChangeIterable = Iterable[tuple[slice, slice] | Change]
 StrippedChangeIterable = Iterable[slice | TokenSequence]
+StrippedChangeSequence = Sequence[slice | TokenSequence]

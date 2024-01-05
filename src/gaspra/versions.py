@@ -256,10 +256,13 @@ class Versions:
 
         return raw
 
-    def get(self, tag: Hashable) -> tuple[bytes, Hashable]:
+    def get(self, tag: Hashable) -> tuple[bytes, Hashable] | None:
         """
         Retrieve a specific version using its tag.
         """
+        if tag not in self.nodes:
+            return None
+
         raw = self._retrieve_raw(tag)
         base_version = self.nodes[tag].base_version
 

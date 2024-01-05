@@ -12,6 +12,17 @@ VERSIONS = {
 }
 
 
+def test_contains_changes_after_insertion():
+    versions = Versions()
+
+    base = None
+    for id, version in VERSIONS.items():
+        assert id not in versions
+        versions.add(id, version.encode("utf-8"), base)
+        assert id in versions
+        base = id
+
+
 def test_retrieved_versions_match():
     versions = Versions()
 

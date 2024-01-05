@@ -2,12 +2,15 @@ import pytest
 
 
 from gaspra.changesets import (
+    apply_forward,
+    apply_reverse,
     old_apply_forward,
     old_apply_reverse,
     diff,
     find_changeset,
-    apply_forward,
-    apply_reverse,
+    strip_forward,
+    strip_reverse,
+    apply,
 )
 from gaspra.test_helpers.helpers import random_string, tokenize
 from gaspra.types import Change
@@ -56,9 +59,37 @@ def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
         *FIND_CHANGESETS_TOKEN_CASES,
     ],
 )
+def test_find_changesets_strip_forward_and_apply_reproduces_string(s1: str, s2: str):
+    changeset = find_changeset(s1, s2)
+    reduced_changeset = list(changeset.change_stream())
+    assert s2 == apply(strip_forward(reduced_changeset), s1)
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2"],
+    [
+        *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
+        *FIND_CHANGESETS_TOKEN_CASES,
+    ],
+)
+def test_find_changesets_strip_reverse_and_apply_reproduces_string(s1: str, s2: str):
+    changeset = find_changeset(s1, s2)
+    reduced_changeset = list(changeset.change_stream())
+    assert s1 == apply(strip_reverse(reduced_changeset), s2)
+
+
+@pytest.mark.parametrize(
+    ["s1", "s2"],
+    [
+        *FIND_CHANGESETS_STRING_CASES,
+        *FIND_CHANGESETS_BYTES_CASES,
+        *FIND_CHANGESETS_TOKEN_CASES,
+    ],
+)
 def test_find_changesets_and_alt_apply_forward_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    alt_changeset = changeset.reduce()
+    alt_changeset = changeset.change_stream()
     assert s2 == apply_forward(alt_changeset, s1)
 
 
@@ -85,7 +116,7 @@ def test_find_changesets_and_apply_reverse_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_and_alt_apply_reverse_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    reduced_changeset = list(changeset.reduce())
+    reduced_changeset = list(changeset.change_stream())
     assert s1 == apply_reverse(reduced_changeset, s2)
 
 

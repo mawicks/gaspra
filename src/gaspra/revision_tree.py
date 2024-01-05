@@ -48,7 +48,6 @@ class Tree:
     ) -> tuple[
         Iterable[tuple[Hashable, Hashable]],
         Iterable[tuple[Hashable, Hashable]],
-        dict[Hashable, Iterable[Hashable]],
     ]:
         """
         Insert node_tag into the revision tree, notifying caller of
@@ -73,7 +72,6 @@ class Tree:
         """
         inserted_edges = []
         removed_edges = []
-        removed_paths = {}
 
         old_root = self.root
         new_root = Node(node_tag, node_id=len(self.index))
@@ -85,10 +83,6 @@ class Tree:
             best_split, direction = find_and_detach_best_split(old_root)
             if best_split != old_root:
                 if best_split and best_split.parent:
-                    # Save the original path before destroying it!
-                    removed_paths[best_split.node_tag] = self.path_to(
-                        best_split.node_tag
-                    )
                     # Detach best_split from tree
                     removed_edges.append(
                         (best_split.parent.node_tag, best_split.node_tag)
@@ -104,7 +98,7 @@ class Tree:
         new_root.set_left(old_root)
         self.root = new_root
         self.index[node_tag] = new_root
-        return inserted_edges, removed_edges, removed_paths
+        return inserted_edges, removed_edges
 
     def edges(self):
         if self.root:
@@ -128,7 +122,8 @@ class Tree:
                     current = current.parent
 
     def _invalidate(self):
-        """This exists only for testing reevaluate().  Don't call outside of a test."""
+        """This exists only for testing reevaluate().  Don't call
+        outside of a test."""
         for node in self.index.values():
             node._clear_state()
 
@@ -140,7 +135,7 @@ class Tree:
         """
         node = self.index.get(node_id)
         if node:
-            return node.count, node.length
+            return node.size, node.height
 
 
 @dataclass
@@ -151,8 +146,8 @@ class Node:
     right: Node | None = None
     parent: Node | None = None
 
-    length: int = 1
-    count: int = 1
+    height: int = 1
+    size: int = 1
 
     def update_states(self):
         # Can't update just a single node.
@@ -160,26 +155,26 @@ class Node:
         # propagate the state up the tree.
         current = self
         while current:
-            count = 1
-            length = 1
+            size = 1
+            height = 1
 
             if current.left:
-                count += current.left.count
-                length += current.left.length
+                size += current.left.size
+                height += current.left.height
 
             if current.right:
-                count += current.right.count
-                length += current.right.length
+                size += current.right.size
+                height += current.right.height
 
-            current.count = count
-            current.length = length
+            current.size = size
+            current.height = height
             current = current.parent
 
     def _clear_state(self):
         """This exists only for testing.  Don't call outside of a test."""
 
-        self.count = 0
-        self.length = 0
+        self.size = 0
+        self.height = 0
 
     def set_left(self, node):
         self.left = node
@@ -206,9 +201,9 @@ def find_and_detach_best_split(root: Node):
     depth = 1
     direction = Direction.NONE
     current = root
-    while current is not None and depth < current.length:
+    while current is not None and depth < current.height:
         if current.right is not None and current.left is not None:
-            if current.right.length > current.left.length:
+            if current.right.height > current.left.height:
                 current = current.right
                 direction = Direction.RIGHT
             else:

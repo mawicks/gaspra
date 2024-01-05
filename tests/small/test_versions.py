@@ -1,5 +1,7 @@
 from gaspra.versions import Versions
 
+from gaspra.tokenizers import space_tokenizer, space_token_decoder
+
 VERSIONS = {
     0: "a b c d e f g",
     1: "a c e f g",
@@ -10,14 +12,63 @@ VERSIONS = {
 }
 
 
-def test_revisions():
+def test_retrieved_versions_match():
     versions = Versions()
 
+    base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version)
+        versions.save(id, version.encode("utf-8"), base)
+        base = id
 
+    base = None
     for id, version in VERSIONS.items():
-        retrieved_version = versions.retrieve(id)
+        retrieved_version, base_version = versions.retrieve(id)
+        assert retrieved_version == version.encode("utf-8")
+        assert base_version == base
 
-        assert retrieved_version == version
-    "DONE"
+        base = id
+
+
+def test_versions_with_tokenizer():
+    versions = Versions(tokenizer=space_tokenizer, decoder=space_token_decoder)
+
+    base = None
+    for id, version in VERSIONS.items():
+        versions.save(id, version.encode("utf-8"), base)
+        base = id
+
+    base = None
+    for id, version in VERSIONS.items():
+        retrieved_version, base_version = versions.retrieve(id)
+
+        assert retrieved_version == version.encode("utf-8")
+        assert base_version == base
+
+        base = id
+
+
+def test_expected_version_info():
+    versions = Versions()
+
+    base = None
+    for id, version in VERSIONS.items():
+        versions.save(id, version.encode("utf-8"), base)
+
+        # When a version is first inserted is should be stored verbatim.
+        # We'll check the length later after all versions have been
+        # added and then length should decrease.
+        version_info = versions.version_info(id)
+        assert version_info is not None
+        assert len(version) == version_info.token_count
+
+        base = id
+
+    base = None
+    for id, version in list(VERSIONS.items())[:-1]:
+        version_info = versions.version_info(id)
+        assert version_info is not None
+        assert version_info.base_version == base
+        assert version_info.token_count < len(version)
+        assert version_info.change_count > 0
+
+        base = id

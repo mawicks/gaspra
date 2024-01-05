@@ -24,8 +24,8 @@ def merge(
     changeset0 = find_changeset(parent, branch0)
     changeset1 = find_changeset(parent, branch1)
 
-    fragments0 = list(reversed(list(changeset0._fragments(parent))))
-    fragments1 = list(reversed(list(changeset1._fragments(parent))))
+    fragments0 = list(reversed(list(changeset0._stream(parent))))
+    fragments1 = list(reversed(list(changeset1._stream(parent))))
 
     merged = _merge(fragments0, fragments1)
 
@@ -67,7 +67,7 @@ def consolidate_conflicts(input_stack, empty: str | TokenSequence = ""):
         version1 = join(fragment.version1 for fragment in conflict_group)
         version2 = join(fragment.version2 for fragment in conflict_group)
 
-        for fragment in find_changeset(version2, version1)._fragments(version2):
+        for fragment in find_changeset(version2, version1)._stream(version2):
             if isinstance(fragment, CopyFragment):
                 yield fragment
             elif isinstance(fragment, ChangeFragment):

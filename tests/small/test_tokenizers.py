@@ -1,6 +1,6 @@
 import pytest
 
-from gaspra.tokenizers import line_tokenize
+from gaspra.encoders import line_encode_strings
 
 
 @pytest.mark.parametrize(
@@ -20,15 +20,15 @@ from gaspra.tokenizers import line_tokenize
         ("\na\nb\nc\n", "\na\nb\nc\n"),
     ],
 )
-def test_line_tokenize(s, reconstruction):
-    """This tests that the token_mapper returned correctly remaps tokens
-    but it also tests how files with newlines get tokenized"""
-    token_mapper, token_stream = line_tokenize(s)
+def test_line_encode(s, reconstruction):
+    """This tests that the decoder returned correctly remaps tokens
+    but it also tests how files with newlines get encoded"""
+    token_mapper, token_stream = line_encode_strings(s)
 
     # Each token in token_stream represents a line.  When its expanded
     # back into the file, a newline at the end of each line is implied.
     # There is no difference between a string with just "a" (no ending
-    # newline and a string with just "a\n" after tokenization.  Files
+    # newline and a string with just "a\n" after encoding.  Files
     # with no newlines at the end will gain a newline after token
     # expansion.  The expanded file always has a newline at the end.
     # Here we use "join" to insert the newlines *between* the lines,

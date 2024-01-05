@@ -1,6 +1,6 @@
 import pytest
 from gaspra.merge import merge
-from gaspra.test_helpers.helpers import byteize, tokenize
+from gaspra.test_helpers.helpers import byteize, encode
 from gaspra.types import Change
 
 
@@ -84,7 +84,7 @@ CONFLICT_FREE_MERGES_BYTES_CASES = [
 ]
 
 CONFLICT_FREE_MERGES_TOKEN_CASES = [
-    (tokenize(parent), tokenize(branch1), tokenize(branch2), tokenize(merged))
+    (encode(parent), encode(branch1), encode(branch2), encode(merged))
     for parent, branch1, branch2, merged in CONFLICT_FREE_MERGES_STRING_CASES
 ]
 
@@ -188,7 +188,7 @@ MERGES_HAVING_CONFLICT_BYTES_CASES = [
 
 
 MERGES_HAVING_CONFLICT_TOKEN_CASES = [
-    (tokenize(parent), tokenize(branch1), tokenize(branch2), tokenize(merged))
+    (encode(parent), encode(branch1), encode(branch2), encode(merged))
     for parent, branch1, branch2, merged in MERGES_HAVING_CONFLICT_STRING_CASES
 ]
 

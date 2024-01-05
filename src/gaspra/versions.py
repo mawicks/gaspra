@@ -256,7 +256,7 @@ class Versions:
 
         return raw
 
-    def get(self, tag: Hashable) -> tuple[bytes, Hashable] | None:
+    def get(self, tag: Hashable) -> bytes | None:
         """
         Retrieve a specific version using its tag.
         """
@@ -264,12 +264,11 @@ class Versions:
             return None
 
         raw = self._retrieve_raw(tag)
-        base_version = self.nodes[tag].base_version
 
         if self.decoder is None:
-            return cast(bytes, raw), base_version
+            return cast(bytes, raw)
         else:
-            return self.decoder(cast(Sequence[int], raw), self.token_map), base_version
+            return self.decoder(cast(Sequence[int], raw), self.token_map)
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """

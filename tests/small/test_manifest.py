@@ -68,7 +68,10 @@ def test_add_manifest_adds_manifests(loaded_versions):
 
 
 def test_add_manifest_adds_all_items(loaded_versions):
-    predecessor_id = None
-    for m_id, manifest in MANIFESTS.items():
-        add_manifest(m_id, manifest, loaded_versions, ITEM_CONTENTS, predecessor_id)
-        predecessor_id = m_id
+    for tag, contents in ITEM_CONTENTS.items():
+        assert tag in loaded_versions
+
+
+def test_all_items_are_retrievable_from_loaded_versions(loaded_versions):
+    for tag, contents in ITEM_CONTENTS.items():
+        assert contents == loaded_versions.get(tag)

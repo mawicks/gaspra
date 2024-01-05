@@ -33,13 +33,9 @@ def test_retrieved_versions_match():
         versions.add(id, version.encode("utf-8"), base)
         base = id
 
-    base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.get(id)
+        retrieved_version = versions.get(id)
         assert retrieved_version == version.encode("utf-8")
-        assert base_version == base
-
-        base = id
 
 
 def test_versions_with_tokenizer():
@@ -50,13 +46,9 @@ def test_versions_with_tokenizer():
         versions.add(id, version.encode("utf-8"), base)
         base = id
 
-    base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.get(id)
-
+        retrieved_version = versions.get(id)
         assert retrieved_version == version.encode("utf-8")
-        assert base_version == base
-
         base = id
 
 
@@ -73,6 +65,7 @@ def test_expected_version_info():
         version_info = versions.version_info(id)
         assert version_info is not None
         assert len(version) == version_info.token_count
+        assert base == version_info.base_version
 
         base = id
 

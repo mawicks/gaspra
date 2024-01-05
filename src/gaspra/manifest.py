@@ -15,17 +15,16 @@ def add_manifest(
 ):
     base_manifest = None
     if base_tag is not None:
-        base_manifest, _ = versions.get(base_tag)
+        base_manifest = versions.get(base_tag)
         base_manifest = json.loads(base_manifest.decode("utf-8"))
 
-    """
     for name, tag in manifest.items():
-        versions.add(
-            tag,
-            contents[tag],
-            base_manifest[name] if base_manifest is not None else None,
-        )
-    """
+        if tag not in versions:
+            versions.add(
+                tag,
+                contents[tag],
+                base_manifest[name] if base_manifest is not None else None,
+            )
 
     manifest_doc = manifest_to_doc(manifest)
     versions.add(
@@ -36,7 +35,7 @@ def add_manifest(
 
 
 def get_manifest(versions, tag: Hashable):
-    manifest_doc, _ = versions.get(tag)
+    manifest_doc = versions.get(tag)
     return doc_to_manifest(manifest_doc)
 
 

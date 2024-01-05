@@ -1,5 +1,5 @@
-C Add\stest\sfor\scontains;\smake\sget()\sreturn\sNone\sif\smissing
-D 2024-01-05T16:07:40.130
+C Add\stest\scase\swhere\s\sget()\sreturns\sNone.
+D 2024-01-05T16:10:09.707
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -36,10 +36,10 @@ F tests/small/test_multiple_strings.py 02081df3b60d373ec793375e74f1a9ce1823ccfd3
 F tests/small/test_revision_tree.py b6686c40d4925555b4052b1621de7ca911851104abe9f27bb2d19eba800ba10a
 F tests/small/test_suffix_automaton.py 8e6407f743f691f24371ada1f49c628d55e3038a2be32067456c9cffbdd5762b
 F tests/small/test_tokenizers.py d82863c97cf846beb414a8e5087d06bc4bcf37e1e2181933644c6d69683474ff
-F tests/small/test_versions.py c954e96a413d0e83c37b61fd1897edc9b9786f7b51f55041482c8f7a66398b2f
+F tests/small/test_versions.py ba59679a5e81474b61bb3f8f95957b4a31def9d018816e795fdf49a682374365
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 74ff51515605156c58b4835b591572b0000eea58cb5b25530e7d38b9c1d8c2a1
-R 9a231210dfaf96aa38a2aec449b9943b
+P 9fcdfda3395bbc08222f9bf9726413999a5d113388d086d5d45691c32961c78f
+R 0d9008e7cff920970c689b74c03346f4
 U mwicks
-Z 95668675df6aa824df9976b186daa238
+Z 395119b8c8fad66a73b83016b64b02e6
 # Remove this line to create a well-formed Fossil manifest.

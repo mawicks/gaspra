@@ -12,14 +12,16 @@ VERSIONS = {
 }
 
 
-def test_contains_changes_after_insertion():
+def test_containment_changes_after_insertion():
     versions = Versions()
 
     base = None
     for id, version in VERSIONS.items():
         assert id not in versions
+        assert versions.get(id) is None
         versions.add(id, version.encode("utf-8"), base)
         assert id in versions
+        assert versions.get(id) is not None
         base = id
 
 

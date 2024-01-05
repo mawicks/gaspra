@@ -16,7 +16,8 @@ def add_manifest(
     base_manifest = None
     if base_tag is not None:
         base_manifest = versions.get(base_tag)
-        base_manifest = json.loads(base_manifest.decode("utf-8"))
+        if base_manifest is not None:
+            base_manifest = doc_to_manifest(base_manifest)
 
     for name, tag in manifest.items():
         if tag not in versions:

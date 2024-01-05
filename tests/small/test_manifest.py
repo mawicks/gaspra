@@ -51,8 +51,10 @@ MANIFESTS = {
 @pytest.fixture
 def loaded_versions():
     versions = Versions()
+    base_id = None
     for m_id, manifest in MANIFESTS.items():
-        add_manifest(m_id, manifest, versions, ITEM_CONTENTS, None)
+        add_manifest(m_id, manifest, versions, ITEM_CONTENTS, base_id)
+        base_id = m_id
     return versions
 
 
@@ -68,10 +70,31 @@ def test_add_manifest_adds_manifests(loaded_versions):
 
 
 def test_add_manifest_adds_all_items(loaded_versions):
-    for tag, contents in ITEM_CONTENTS.items():
+    for tag, _ in ITEM_CONTENTS.items():
         assert tag in loaded_versions
 
 
 def test_all_items_are_retrievable_from_loaded_versions(loaded_versions):
     for tag, contents in ITEM_CONTENTS.items():
         assert contents == loaded_versions.get(tag)
+
+
+def test_all_items_have_correct_base_version(loaded_versions):
+    for tag, _ in ITEM_CONTENTS.items():
+        version_info = loaded_versions.version_info(tag)
+        tag_version = int(tag[-1])
+        if tag_version == 0:
+            assert version_info.base_version is None
+        else:
+            base_tag_version = int(version_info.base_version[-1])
+            assert base_tag_version == tag_version - 1
+
+
+def test_all_non_head_items_are_stored_as_diffs(loaded_versions):
+    last_manifest = list(MANIFESTS.keys())[-1]
+    head_versions = set(MANIFESTS[last_manifest].values())
+    for tag, contents in ITEM_CONTENTS.items():
+        if tag not in head_versions:
+            version_info = loaded_versions.version_info(tag)
+            assert version_info.change_count > 0
+            assert version_info.token_count < len(contents)

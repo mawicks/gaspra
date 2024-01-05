@@ -64,12 +64,13 @@ def test_expected_version_info():
         # added and then length should decrease.
         version_info = versions.version_info(id)
         assert version_info is not None
-        assert len(version) == version_info.token_count
+        assert version_info.token_count == len(version)
         assert base == version_info.base_version
 
         base = id
 
     base = None
+    # All non-head versions should be diffs.
     for id, version in list(VERSIONS.items())[:-1]:
         version_info = versions.version_info(id)
         assert version_info is not None

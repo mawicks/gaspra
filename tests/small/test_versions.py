@@ -17,12 +17,12 @@ def test_retrieved_versions_match():
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
         base = id
 
     base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.retrieve(id)
+        retrieved_version, base_version = versions.get(id)
         assert retrieved_version == version.encode("utf-8")
         assert base_version == base
 
@@ -34,12 +34,12 @@ def test_versions_with_tokenizer():
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
         base = id
 
     base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.retrieve(id)
+        retrieved_version, base_version = versions.get(id)
 
         assert retrieved_version == version.encode("utf-8")
         assert base_version == base
@@ -52,7 +52,7 @@ def test_expected_version_info():
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
 
         # When a version is first inserted is should be stored verbatim.
         # We'll check the length later after all versions have been

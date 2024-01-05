@@ -64,9 +64,7 @@ class Versions:
                 "Either both tokenizer and decoder must be set or neither."
             )
 
-    def save(
-        self, tag: Hashable, version: bytes, existing_head: Hashable | None = None
-    ):
+    def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         # Tokenize `version` if requested
 
         if self.tokenizer is None:
@@ -258,7 +256,7 @@ class Versions:
 
         return raw
 
-    def retrieve(self, tag: Hashable) -> tuple[bytes, Hashable]:
+    def get(self, tag: Hashable) -> tuple[bytes, Hashable]:
         """
         Retrieve a specific version using its tag.
         """
@@ -290,3 +288,6 @@ class Versions:
             token_count=token_count,
             change_count=change_count,
         )
+
+    def __contains__(self, tag: Hashable):
+        return tag in self.nodes

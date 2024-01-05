@@ -12,21 +12,30 @@ VERSIONS = {
 }
 
 
+def test_containment_changes_after_insertion():
+    versions = Versions()
+
+    base = None
+    for id, version in VERSIONS.items():
+        assert id not in versions
+        assert versions.get(id) is None
+        versions.add(id, version.encode("utf-8"), base)
+        assert id in versions
+        assert versions.get(id) is not None
+        base = id
+
+
 def test_retrieved_versions_match():
     versions = Versions()
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
         base = id
 
-    base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.retrieve(id)
+        retrieved_version = versions.get(id)
         assert retrieved_version == version.encode("utf-8")
-        assert base_version == base
-
-        base = id
 
 
 def test_versions_with_tokenizer():
@@ -34,16 +43,12 @@ def test_versions_with_tokenizer():
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
         base = id
 
-    base = None
     for id, version in VERSIONS.items():
-        retrieved_version, base_version = versions.retrieve(id)
-
+        retrieved_version = versions.get(id)
         assert retrieved_version == version.encode("utf-8")
-        assert base_version == base
-
         base = id
 
 
@@ -52,18 +57,20 @@ def test_expected_version_info():
 
     base = None
     for id, version in VERSIONS.items():
-        versions.save(id, version.encode("utf-8"), base)
+        versions.add(id, version.encode("utf-8"), base)
 
         # When a version is first inserted is should be stored verbatim.
         # We'll check the length later after all versions have been
         # added and then length should decrease.
         version_info = versions.version_info(id)
         assert version_info is not None
-        assert len(version) == version_info.token_count
+        assert version_info.token_count == len(version)
+        assert base == version_info.base_version
 
         base = id
 
     base = None
+    # All non-head versions should be diffs.
     for id, version in list(VERSIONS.items())[:-1]:
         version_info = versions.version_info(id)
         assert version_info is not None

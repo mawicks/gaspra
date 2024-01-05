@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Sequence
+from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Callable, cast
 
@@ -53,10 +53,15 @@ class Versions:
     )
     nodes: dict[Hashable, Node] = field(default_factory=dict)
 
-    encoder: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
+    # Encoder converts bytes to tokens (ints)
+    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] | None = None
+    # Decoder converts tokens (ints) to bytes
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
+
+    # Encoding is a mapping from bytes to tokens
     encoding: dict[bytes, int] = field(default_factory=dict)
-    decoding: tuple[bytes, ...] = field(default_factory=tuple)
+    # Decoding is a mapping from tokens to bytes
+    decoding: Sequence[bytes] = field(default_factory=tuple)
 
     def __post_init__(self):
         if (self.encoder is not None and self.decoder is None) or (
@@ -279,6 +284,8 @@ class Versions:
 
         last_edge = tuple(self._path_to(tag)[-2:])
         if len(last_edge) >= 2:
+            # Next line is for the type checker
+            last_edge = cast(tuple[Hashable, Hashable], last_edge)
             changeset = self.edges[last_edge]
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)

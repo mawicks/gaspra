@@ -1,5 +1,5 @@
-C Use\smore\sconsistent\sname;\se.g.,\stokenize()->encode()
-D 2024-01-05T18:37:44.488
+C Clean\sup\stype\shints\sfor\sencoding/decoding;\suse\sleast\srestrictive\stypes.
+D 2024-01-05T18:55:26.492
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -11,7 +11,7 @@ F src/gaspra/changesets.py 6946b6c0b1abbc3990b9f4884e16d58ff63c0a61268b7282da589
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
-F src/gaspra/encoders.py 7daee73b4f27cd6adffb44b8eaeb1e1d0770e419c4b00d2bf86463dedc6f30cc w src/gaspra/tokenizers.py
+F src/gaspra/encoders.py 7daee73b4f27cd6adffb44b8eaeb1e1d0770e419c4b00d2bf86463dedc6f30cc
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971dc0ea9d9e7
 F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd108a22d
@@ -23,7 +23,7 @@ F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d726
 F src/gaspra/test_helpers/helpers.py 531e96aaefeaf2b9760d748f5ddf20dde004676e10771743f28775eab4a0b069
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py cb1b667fc4d01f022ded05b2c057c0674186c306e063c835471e0c1cebf0a7c1
-F src/gaspra/versions.py 683925ae178221c5e2e1ec4a501df00ce22b55e0e2355838bda7567293d39abc
+F src/gaspra/versions.py ceee36b2c92da72b935e6e0106f8b4701fd8fa1a742cc55fa961b0854af8c0b5
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 41ff472c4b7fd6ea5957761816af667df7faf6e0f447d5fc5109366b65a56666
@@ -38,8 +38,8 @@ F tests/small/test_suffix_automaton.py 869748dd5ea21c70606f98dce80c7a03b31ff4cce
 F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341695faaac1eec39b0d
 F tests/small/test_versions.py 5a46ec22b24dbbc9a5775dd816b1bb2ce1f76a86d237bdad4ae14c2494ee3b51
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 3c4789586b80198ecd3337e3c3a3132fe342c6423099dc4c48f92b25f10f79bb
-R 13fbdb9d54fc9634e4fc41eb4fb799a2
+P 20bb22031ffa634897c2ef5cca49eea0c8a429c8b9761e1e9ba7d1fddd942275
+R e2e07810dc3abd6608167149b1256b54
 U mwicks
-Z 8d2aa620a12d700bfbb097aa4de6bbc1
+Z 87d6a2991bf4179d90a071bc8a716bb3
 # Remove this line to create a well-formed Fossil manifest.

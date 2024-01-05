@@ -12,12 +12,12 @@ def random_tokens(alphabet: Sequence[int], length, seed=42):
     return tuple(rng.choices(alphabet, k=length))
 
 
-def tokenize(string_or_fragment_list):
+def encode(string_or_fragment_list):
     if isinstance(string_or_fragment_list, str):
         return tuple(ord(character) for character in string_or_fragment_list)
 
     elif isinstance(string_or_fragment_list, tuple | list):
-        return tuple(tokenize(fragment) for fragment in string_or_fragment_list)
+        return tuple(encode(fragment) for fragment in string_or_fragment_list)
     else:  # pragma: no cover
         raise TypeError(f"Unsupported fragment type: {type(string_or_fragment_list)}")
 

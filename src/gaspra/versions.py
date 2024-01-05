@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Sequence
+from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import Callable, cast
 
@@ -47,31 +47,36 @@ class Node:
 
 @dataclass
 class Versions:
-    versions: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
-    diffs: dict[Hashable, StrippedChangeSequence] = field(default_factory=dict)
+    leaves: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
+    edges: dict[tuple[Hashable, Hashable], StrippedChangeSequence] = field(
+        default_factory=dict
+    )
     nodes: dict[Hashable, Node] = field(default_factory=dict)
 
-    tokenizer: Callable[[bytes, dict[bytes, int]], Sequence[int]] | None = None
+    # Encoder converts bytes to tokens (ints)
+    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] | None = None
+    # Decoder converts tokens (ints) to bytes
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
-    tokens: dict[bytes, int] = field(default_factory=dict)
-    token_map: tuple[bytes, ...] = field(default_factory=tuple)
+
+    # Encoding is a mapping from bytes to tokens
+    encoding: dict[bytes, int] = field(default_factory=dict)
+    # Decoding is a mapping from tokens to bytes
+    decoding: Sequence[bytes] = field(default_factory=tuple)
 
     def __post_init__(self):
-        if (self.tokenizer is not None and self.decoder is None) or (
-            self.tokenizer is None and self.decoder is not None
+        if (self.encoder is not None and self.decoder is None) or (
+            self.encoder is None and self.decoder is not None
         ):  # pragma: no cover
-            raise ValueError(
-                "Either both tokenizer and decoder must be set or neither."
-            )
+            raise ValueError("Either both encoder and decoder must be set or neither.")
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
-        # Tokenize `version` if requested
+        # Encode/tokenize `version` if requested
 
-        if self.tokenizer is None:
-            tokenized = version
+        if self.encoder is None:
+            encoded = version
         else:
-            tokenized = self.tokenizer(version, self.tokens)
-            self.token_map = tuple(self.tokens.keys())
+            encoded = self.encoder(version, self.encoding)
+            self.decoding = tuple(self.encoding.keys())
 
         # Find the best split best split among the descendants of existing_head.
         if existing_head is not None:
@@ -81,7 +86,7 @@ class Versions:
 
         # Add the new version to the tree without
         # any connections.
-        self.versions[tag] = tokenized
+        self.leaves[tag] = encoded
         self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
         # `tag` always get existing_head as a child. It also
@@ -98,7 +103,7 @@ class Versions:
                 split,
                 tuple(
                     strip_forward(
-                        find_changeset(tokenized, split_version).change_stream()
+                        find_changeset(encoded, split_version).change_stream()
                     )
                 ),
             )
@@ -106,13 +111,13 @@ class Versions:
 
         # If there was a pre-existing head, make it a child of `tag`
         if existing_head is not None:
-            existing_head_version = self.versions[existing_head]
+            existing_head_version = self.leaves[existing_head]
             self._add_edge(
                 tag,
                 existing_head,
                 tuple(
                     strip_forward(
-                        find_changeset(tokenized, existing_head_version).change_stream()
+                        find_changeset(encoded, existing_head_version).change_stream()
                     )
                 ),
             )
@@ -148,7 +153,7 @@ class Versions:
         return tag, path_to_split
 
     def _add_edge(self, parent_tag, child_tag, changeset):
-        self.diffs[parent_tag, child_tag] = changeset
+        self.edges[parent_tag, child_tag] = changeset
 
         # It's a spanning tree so a node can have only one
         # parent.  When adding an edge, the new parent
@@ -157,8 +162,8 @@ class Versions:
 
         # Older tag is no longer at the head of a branch
         # so remove it from versions.
-        if child_tag in self.versions:
-            del self.versions[child_tag]
+        if child_tag in self.leaves:
+            del self.leaves[child_tag]
 
     def _change_parent(self, tag, new_parent):
         original_node = self.nodes[tag]
@@ -190,7 +195,7 @@ class Versions:
         # Don't remove the edge if current_tag is still the parent of
         # older_tag.
         if self.nodes[parent_tag].parent != child_tag:
-            del self.diffs[parent_tag, child_tag]
+            del self.edges[parent_tag, child_tag]
         else:  # pragma: no cover
             raise RuntimeError("Trying to remove an essential edge")
 
@@ -235,21 +240,21 @@ class Versions:
         """
         # Initialize with root_version,
         # then apply all of the patches in the path.
-        patched = self.versions[path[0]]
+        patched = self.leaves[path[0]]
 
         for n1, n2 in zip(path, path[1:]):
-            stripped_changeset = self.diffs[n1, n2]
+            stripped_changeset = self.edges[n1, n2]
             patched = apply(stripped_changeset, patched)
 
         return patched
 
     def _retrieve_raw(self, tag: Hashable) -> Sequence[Hashable]:
         """
-        Retrieve a specific raw (meaning it's left tokenized) version
+        Retrieve a specific raw (meaning it's encoded/tokenized) version
         using its tag.
         """
-        if tag in self.versions:
-            raw = self.versions[tag]
+        if tag in self.leaves:
+            raw = self.leaves[tag]
         else:
             path = self._path_to(tag)
             raw = self._retrieve_using_path(path)
@@ -268,7 +273,7 @@ class Versions:
         if self.decoder is None:
             return cast(bytes, raw)
         else:
-            return self.decoder(cast(Sequence[int], raw), self.token_map)
+            return self.decoder(cast(Sequence[int], raw), self.decoding)
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """
@@ -279,11 +284,13 @@ class Versions:
 
         last_edge = tuple(self._path_to(tag)[-2:])
         if len(last_edge) >= 2:
-            changeset = self.diffs[last_edge]
+            # Next line is for the type checker
+            last_edge = cast(tuple[Hashable, Hashable], last_edge)
+            changeset = self.edges[last_edge]
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
         else:
-            token_count = len(self.versions[tag])
+            token_count = len(self.leaves[tag])
             change_count = 0
         return VersionInfo(
             base_version=self.nodes[tag].base_version,

@@ -1,6 +1,6 @@
 from gaspra.versions import Versions
 
-from gaspra.tokenizers import space_tokenizer, space_token_decoder
+from gaspra.encoders import space_encoder, space_decoder
 
 VERSIONS = {
     0: "a b c d e f g",
@@ -38,8 +38,8 @@ def test_retrieved_versions_match():
         assert retrieved_version == version.encode("utf-8")
 
 
-def test_versions_with_tokenizer():
-    versions = Versions(tokenizer=space_tokenizer, decoder=space_token_decoder)
+def test_versions_with_encoder():
+    versions = Versions(encoder=space_encoder, decoder=space_decoder)
 
     base = None
     for id, version in VERSIONS.items():

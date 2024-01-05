@@ -21,5 +21,5 @@ from gaspra.test_helpers import helpers
         (["c", ["a", "b"]], ((99,), ((97,), (98,)))),
     ],
 )
-def test_tokenize(test_input, expected):
-    assert helpers.tokenize(test_input) == expected
+def test_encode(test_input, expected):
+    assert helpers.encode(test_input) == expected

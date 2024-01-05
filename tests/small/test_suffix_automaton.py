@@ -8,7 +8,7 @@ from gaspra.suffix_automaton import (
     find_lcs,
 )
 
-from gaspra.test_helpers.helpers import random_string, random_tokens, tokenize
+from gaspra.test_helpers.helpers import random_string, random_tokens, encode
 
 
 def test_build_empty_string():
@@ -40,7 +40,7 @@ BUILD_AND_EXTRACT_TEST_BYTES = [
     sequence.encode("utf-8") for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
 ]
 BUILD_AND_EXTRACT_TEST_TOKENS = [
-    tokenize(sequence) for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
+    encode(sequence) for sequence in BUILD_AND_EXTRACT_TEST_STRINGS
 ]
 
 
@@ -112,7 +112,7 @@ FIND_SUBSTRING_BYTES_CASES = [
 ]
 
 FIND_SUBSTRING_TOKEN_CASES = [
-    (tokenize(automaton_string), tokenize(query_string), position)
+    (encode(automaton_string), encode(query_string), position)
     for (automaton_string, query_string, position) in FIND_SUBSTRING_STRING_CASES
 ]
 
@@ -218,7 +218,7 @@ FIND_SUBSTRING_BYTES_CASES = [
 
 
 FIND_SUBSTRING_ALL_TOKEN_CASES = [
-    (tokenize(automaton_string), tokenize(query_string), positions)
+    (encode(automaton_string), encode(query_string), positions)
     for (automaton_string, query_string, positions) in FIND_SUBSTRING_ALL_CASES
 ]
 
@@ -260,7 +260,7 @@ LCS_TEST_BYTES = [
 ]
 
 LCS_TEST_TOKENS = [
-    (tokenize(s1), tokenize(s2), length) for (s1, s2, length) in LCS_TEST_STRINGS
+    (encode(s1), encode(s2), length) for (s1, s2, length) in LCS_TEST_STRINGS
 ]
 
 
@@ -345,7 +345,7 @@ NULL_TEST_CASES_BYTES = [
 ]
 
 NULL_TEST_CASES_TOKENS = [
-    (tokenize(build), tokenize(query)) for build, query in NULL_TEST_CASES_STRINGS
+    (encode(build), encode(query)) for build, query in NULL_TEST_CASES_STRINGS
 ]
 
 

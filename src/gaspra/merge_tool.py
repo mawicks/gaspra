@@ -15,7 +15,7 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.tokenizers import line_tokenize
+from gaspra.encoders import line_encode_strings
 from gaspra.types import ChangeIterable
 import gaspra.torture_test as torture_test
 
@@ -168,7 +168,7 @@ def _merge(parent_name, current_name, other_name, arguments):
 
     token_map = None
     if not arguments.character_oriented:
-        token_map, parent, current, other = line_tokenize(parent, current, other)
+        token_map, parent, current, other = line_encode_strings(parent, current, other)
 
     with get_writer(arguments) as writer:
         if arguments.diff:
@@ -212,7 +212,7 @@ def diff_cli():
 
     token_map = None
     if not arguments.character_oriented:
-        token_map, original, modified = line_tokenize(original, modified)
+        token_map, original, modified = line_encode_strings(original, modified)
 
     changes = diff(original, modified)
 

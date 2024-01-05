@@ -12,7 +12,7 @@ from gaspra.changesets import (
     strip_reverse,
     apply,
 )
-from gaspra.test_helpers.helpers import random_string, tokenize
+from gaspra.test_helpers.helpers import random_string, encode
 from gaspra.types import Change
 
 
@@ -34,7 +34,7 @@ FIND_CHANGESETS_BYTES_CASES = [
 ]
 
 FIND_CHANGESETS_TOKEN_CASES = [
-    (tokenize(s1), tokenize(s2)) for s1, s2 in FIND_CHANGESETS_STRING_CASES
+    (encode(s1), encode(s2)) for s1, s2 in FIND_CHANGESETS_STRING_CASES
 ]
 
 

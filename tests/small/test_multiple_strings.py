@@ -5,7 +5,7 @@ import pytest
 
 
 from gaspra.multiple_strings import find_lcs, concatenate_strings
-from gaspra.test_helpers.helpers import tokenize
+from gaspra.test_helpers.helpers import encode
 from gaspra.types import Separator
 
 
@@ -43,7 +43,7 @@ MULTIPLE_STRING_TEST_CASES = [
     (("abcd", "bcdax", "yzbcd"), (1, 0, 2), 3),
 ]
 MULTIPLE_TOKEN_TEST_CASES = [
-    (tokenize(string_set), start_positions, length)
+    (encode(string_set), start_positions, length)
     for string_set, start_positions, length in MULTIPLE_STRING_TEST_CASES
 ]
 

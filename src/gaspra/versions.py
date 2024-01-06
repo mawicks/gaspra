@@ -1,31 +1,17 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
-from typing import Callable, cast
+from collections.abc import Hashable, Sequence
+from dataclasses import dataclass, field
+from typing import Callable, cast, MutableMapping
 
 from gaspra.changesets import (
     find_changeset,
     apply,
     strip_forward,
 )
-from gaspra.types import Change, Tag, Token, TokenSequence, StrippedChangeSequence
-
-
-def check_connectivity(edges_to_create, edges_to_remove):
-    """
-    This is a sanity check that we don't destroy connectivity
-    by removing an edge to a node without replacing it with
-    another path.
-    """
-    new_destinations = set(pair[1] for pair in edges_to_create)
-
-    if not all(
-        pair[1] in new_destinations for pair in edges_to_remove
-    ):  # pragma: no cover
-        raise RuntimeError(
-            "Removing an edge to a node without replacing it with another path"
-        )
+from gaspra.tree import Tree
+from gaspra.memory_tree import MemoryTree
+from gaspra.types import StrippedChangeSequence
 
 
 @dataclass
@@ -36,64 +22,31 @@ class VersionInfo:
 
 
 @dataclass
-class Node:
-    order_id: int
-    base_version: Hashable | None = None
-    parent: Hashable | None = None
-    children: list[Hashable] = field(default_factory=list)
-    height: int = 1
-    size: int = 1
-
-
-@dataclass
 class Versions:
-    leaves: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
-    edges: dict[tuple[Hashable, Hashable], StrippedChangeSequence] = field(
+    head_version: MutableMapping[Hashable, bytes] = field(default_factory=dict)
+    diffs: MutableMapping[Hashable, StrippedChangeSequence] = field(
         default_factory=dict
     )
-    nodes: dict[Hashable, Node] = field(default_factory=dict)
+    tree: Tree = field(default_factory=MemoryTree)
 
     # Encoder converts bytes to tokens (ints)
-    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] | None = None
+    encoder: Callable[
+        [bytes, MutableMapping[bytes, int]], Sequence[int]
+    ] = lambda x, _: x
     # Decoder converts tokens (ints) to bytes
-    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
-
-    # Encoding is a mapping from bytes to tokens
-    encoding: dict[bytes, int] = field(default_factory=dict)
-    # Decoding is a mapping from tokens to bytes
-    decoding: Sequence[bytes] = field(default_factory=tuple)
-
-    def __post_init__(self):
-        if (self.encoder is not None and self.decoder is None) or (
-            self.encoder is None and self.decoder is not None
-        ):  # pragma: no cover
-            raise ValueError("Either both encoder and decoder must be set or neither.")
+    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] = lambda x, _: cast(
+        bytes, x
+    )
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
-        # Encode/tokenize `version` if requested
-
-        if self.encoder is None:
-            encoded = version
-        else:
-            encoded = self.encoder(version, self.encoding)
-            self.decoding = tuple(self.encoding.keys())
+        self.head_version[tag] = version
+        self.tree.add(tag, existing_head)
 
         # Find the best split best split among the descendants of existing_head.
         if existing_head is not None:
-            split, path_to_split = self._get_split(existing_head)
+            split, path_to_split = self.tree.get_split(existing_head)
         else:
             split = existing_head = path_to_split = None
-
-        # Add the new version to the tree without
-        # any connections.
-        self.leaves[tag] = encoded
-        self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
-
-        # `tag` always get existing_head as a child. It also
-        # gets `split` as a child if it exists.  The order
-        # of adding children is important to establish the
-        # convention that older nodes appear in the child list
-        # first.
 
         # If there is an appropriate split, move it up to be a child of `tag`
         if split is not None and path_to_split is not None and split != existing_head:
@@ -101,138 +54,54 @@ class Versions:
             self._add_edge(
                 tag,
                 split,
-                tuple(
-                    strip_forward(
-                        find_changeset(encoded, split_version).change_stream()
-                    )
-                ),
+                self._make_changeset(version, split_version),
             )
-            self._change_parent(split, tag)
+            self.tree.change_parent(split, tag)
 
         # If there was a pre-existing head, make it a child of `tag`
         if existing_head is not None:
-            existing_head_version = self.leaves[existing_head]
+            existing_head_version = self.head_version[existing_head]
             self._add_edge(
                 tag,
                 existing_head,
-                tuple(
-                    strip_forward(
-                        find_changeset(encoded, existing_head_version).change_stream()
-                    )
-                ),
+                self._make_changeset(version, existing_head_version),
             )
 
         return
 
-    def _get_split(self, tag: Hashable):
-        """
-        Find the longest path beginning from `tag` to a leaf and
-        identify a node near the middle.  The path will be split at that
-        node.  This node and the old root will become children of a new
-        root.  In the case of a tie for the longest path, follow the
-        path with that was added to the network more recently (which
-        should be the one with the largest index in children)
+    def _make_changeset(self, original: bytes, modified: bytes):
+        encoding = {}
+        decoding = ()
+        encoded_original = self.encoder(original, encoding)
+        encoded_modified = self.encoder(modified, encoding)
+        decoding = tuple(encoding.keys())
 
-        """
-        node = self.nodes[tag]
-        path_to_split = [tag]
-        depth = 1
-        # All leaves have a height of one, so within this
-        # loop there will always be children.  Because depth
-        # starts at one, you cannot enter this loop for a leaf.
-        while depth < node.height:
-            next_child_index = max(
-                (self.nodes[child].height, self.nodes[child].order_id, index)
-                for index, child in enumerate(node.children)
-            )[2]
-            depth += 1
-            tag = node.children[next_child_index]
-            node = self.nodes[tag]
-            path_to_split.append(tag)
+        encoded_changeset = tuple(
+            strip_forward(
+                find_changeset(encoded_original, encoded_modified).change_stream()
+            )
+        )
 
-        return tag, path_to_split
+        changeset = tuple(
+            c if type(c) is slice else self.decoder(c, decoding)
+            for c in encoded_changeset
+        )
+        return changeset
 
     def _add_edge(self, parent_tag, child_tag, changeset):
-        self.edges[parent_tag, child_tag] = changeset
+        self.diffs[child_tag] = changeset
 
         # It's a spanning tree so a node can have only one
         # parent.  When adding an edge, the new parent
         # steals the child from any pre-existing parent.
-        self._change_parent(child_tag, parent_tag)
+        self.tree.change_parent(child_tag, parent_tag)
 
         # Older tag is no longer at the head of a branch
         # so remove it from versions.
-        if child_tag in self.leaves:
-            del self.leaves[child_tag]
+        if child_tag in self.head_version:
+            del self.head_version[child_tag]
 
-    def _change_parent(self, tag, new_parent):
-        original_node = self.nodes[tag]
-
-        # Remove "tag" from its parents set of children.
-        if (
-            original_node.parent is not None
-            and tag in self.nodes[original_node.parent].children
-        ):
-            self.nodes[original_node.parent].children.remove(tag)
-
-        # Replace tag's parent.
-        node = replace(original_node, parent=new_parent)
-        self.nodes[tag] = node
-
-        # Add "tag" to its new parent's set of children.
-        if node.parent is not None:
-            self.nodes[node.parent].children.append(tag)
-            self._update_metrics(node.parent)
-
-        # Recompute spanning tree metrics.
-        if original_node.parent is not None:
-            self._update_metrics(original_node.parent)
-
-    def _remove_edge(self, parent_tag, child_tag):
-        """
-        This is deprecated in favor of _change_parent().
-        """
-        # Don't remove the edge if current_tag is still the parent of
-        # older_tag.
-        if self.nodes[parent_tag].parent != child_tag:
-            del self.edges[parent_tag, child_tag]
-        else:  # pragma: no cover
-            raise RuntimeError("Trying to remove an essential edge")
-
-    def _update_metrics(self, tag):
-        """
-        Update metrics *above* a node that was moded.  When a node is
-        moved from one parent to another, update_metrics() should be
-        called for both of the parents (not the node moved)
-        """
-        while tag is not None:
-            node = self.nodes[tag]
-            if node.children:
-                child_height = max(
-                    [self.nodes[child].height for child in node.children]
-                )
-                size = sum([self.nodes[child].size for child in node.children])
-            else:
-                child_height = 0
-                size = 0
-            self.nodes[tag] = replace(node, height=child_height + 1, size=size + 1)
-            tag = node.parent
-
-    def _path_to(self, tag: Hashable) -> Sequence[Hashable]:
-        """
-        Function to retrieve the path to a version.
-        """
-        if tag not in self.nodes:  # pragma: no cover
-            raise ValueError(f"{tag} is not a valid version.")
-
-        path = []
-        while tag is not None:
-            path.append(tag)
-            tag = self.nodes[tag].parent
-
-        return tuple(reversed(path))
-
-    def _retrieve_using_path(self, path: Sequence[Hashable]):
+    def _retrieve_using_path(self, path: Sequence[Hashable]) -> bytes:
         """
         Function to retrieve a version give its path.
 
@@ -240,63 +109,49 @@ class Versions:
         """
         # Initialize with root_version,
         # then apply all of the patches in the path.
-        patched = self.leaves[path[0]]
+        patched = self.head_version[path[0]]
+        encoding = {}
+        encoded_patched = self.encoder(patched, encoding)
 
-        for n1, n2 in zip(path, path[1:]):
-            stripped_changeset = self.edges[n1, n2]
-            patched = apply(stripped_changeset, patched)
+        for tag in path[1:]:
+            stripped_changeset = self.diffs[tag]
+            encoded_stripped_changeset = tuple(
+                c if type(c) is slice else self.encoder(c, encoding)
+                for c in stripped_changeset
+            )
+            encoded_patched = apply(encoded_stripped_changeset, encoded_patched)
 
-        return patched
-
-    def _retrieve_raw(self, tag: Hashable) -> Sequence[Hashable]:
-        """
-        Retrieve a specific raw (meaning it's encoded/tokenized) version
-        using its tag.
-        """
-        if tag in self.leaves:
-            raw = self.leaves[tag]
-        else:
-            path = self._path_to(tag)
-            raw = self._retrieve_using_path(path)
-
-        return raw
+        decoding = tuple(encoding.keys())
+        return self.decoder(encoded_patched, decoding)
 
     def get(self, tag: Hashable) -> bytes | None:
         """
         Retrieve a specific version using its tag.
         """
-        if tag not in self.nodes:
-            return None
-
-        raw = self._retrieve_raw(tag)
-
-        if self.decoder is None:
-            return cast(bytes, raw)
+        path = self.tree.path_to(tag)
+        if path:
+            return self._retrieve_using_path(path)
         else:
-            return self.decoder(cast(Sequence[int], raw), self.decoding)
+            return None
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """
         Return information about a version.
         """
-        if tag not in self.nodes:
-            return None
-
-        last_edge = tuple(self._path_to(tag)[-2:])
-        if len(last_edge) >= 2:
-            # Next line is for the type checker
-            last_edge = cast(tuple[Hashable, Hashable], last_edge)
-            changeset = self.edges[last_edge]
+        if (changeset := self.diffs.get(tag)) is not None:
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
-        else:
-            token_count = len(self.leaves[tag])
+        elif (head_version := self.head_version.get(tag)) is not None:
+            token_count = len(head_version)
             change_count = 0
+        else:
+            return None
+
         return VersionInfo(
-            base_version=self.nodes[tag].base_version,
+            base_version=self.tree.base_version(tag),
             token_count=token_count,
             change_count=change_count,
         )
 
     def __contains__(self, tag: Hashable):
-        return tag in self.nodes
+        return tag in self.tree

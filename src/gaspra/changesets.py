@@ -158,18 +158,18 @@ class Changeset:
 def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
     """Return just the forward changes from a changeset."""
     for change in stream:
-        if isinstance(change, Change):
+        if isinstance(change, Change) and change.a:
             yield change.a
-        else:
+        elif change[0]:
             yield change[0]
 
 
 def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
     """Return just the reverse changes from a changeset."""
     for change in stream:
-        if isinstance(change, Change):
+        if isinstance(change, Change) and change.b:
             yield change.b
-        else:
+        elif change[1]:
             yield change[1]
 
 

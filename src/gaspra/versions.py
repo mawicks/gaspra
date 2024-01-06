@@ -12,22 +12,6 @@ from gaspra.changesets import (
 from gaspra.types import Change, Tag, Token, TokenSequence, StrippedChangeSequence
 
 
-def check_connectivity(edges_to_create, edges_to_remove):
-    """
-    This is a sanity check that we don't destroy connectivity
-    by removing an edge to a node without replacing it with
-    another path.
-    """
-    new_destinations = set(pair[1] for pair in edges_to_create)
-
-    if not all(
-        pair[1] in new_destinations for pair in edges_to_remove
-    ):  # pragma: no cover
-        raise RuntimeError(
-            "Removing an edge to a node without replacing it with another path"
-        )
-
-
 @dataclass
 class VersionInfo:
     base_version: Hashable | None = None
@@ -38,11 +22,11 @@ class VersionInfo:
 @dataclass
 class Node:
     order_id: int
-    base_version: Hashable | None = None
     parent: Hashable | None = None
     children: list[Hashable] = field(default_factory=list)
     height: int = 1
     size: int = 1
+    base_version: Hashable | None = None
 
 
 @dataclass
@@ -59,12 +43,6 @@ class Versions:
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] = lambda x, _: cast(
         bytes, x
     )
-
-    def __post_init__(self):
-        if (self.encoder is not None and self.decoder is None) or (
-            self.encoder is None and self.decoder is not None
-        ):  # pragma: no cover
-            raise ValueError("Either both encoder and decoder must be set or neither.")
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         # Encode/tokenize `version` if requested
@@ -86,25 +64,6 @@ class Versions:
         # convention that older nodes appear in the child list
         # first.
 
-        def get_changeset(original: bytes, modified: bytes):
-            encoding = {}
-            decoding = ()
-            encoded_original = self.encoder(original, encoding)
-            encoded_modified = self.encoder(modified, encoding)
-            decoding = tuple(encoding.keys())
-
-            encoded_changeset = tuple(
-                strip_forward(
-                    find_changeset(encoded_original, encoded_modified).change_stream()
-                )
-            )
-
-            changeset = tuple(
-                c if type(c) is slice else self.decoder(c, decoding)
-                for c in encoded_changeset
-            )
-            return changeset
-
         # If there is an appropriate split, move it up to be a child of `tag`
         if split is not None and path_to_split is not None and split != existing_head:
             split_version = self._retrieve_using_path(path_to_split)
@@ -112,7 +71,7 @@ class Versions:
             self._add_edge(
                 tag,
                 split,
-                get_changeset(version, split_version),
+                self._make_changeset(version, split_version),
             )
             self._change_parent(split, tag)
 
@@ -122,10 +81,29 @@ class Versions:
             self._add_edge(
                 tag,
                 existing_head,
-                get_changeset(version, existing_head_version),
+                self._make_changeset(version, existing_head_version),
             )
 
         return
+
+    def _make_changeset(self, original: bytes, modified: bytes):
+        encoding = {}
+        decoding = ()
+        encoded_original = self.encoder(original, encoding)
+        encoded_modified = self.encoder(modified, encoding)
+        decoding = tuple(encoding.keys())
+
+        encoded_changeset = tuple(
+            strip_forward(
+                find_changeset(encoded_original, encoded_modified).change_stream()
+            )
+        )
+
+        changeset = tuple(
+            c if type(c) is slice else self.decoder(c, decoding)
+            for c in encoded_changeset
+        )
+        return changeset
 
     def _get_split(self, tag: Hashable):
         """

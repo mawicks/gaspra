@@ -7,30 +7,30 @@ from gaspra.tree import Tree
 # to make sure there's no unintend dependency on the order.
 TAGS = ("a", "b", "c", "z", "x", "y", "q", "r", "s", "t")
 
-# These are the expected paths to each existing tag
-# after added each tag in TAG.
+# These are the expected paths to all existing tags after each tag from
+# TAGS is added in order.
 EXPECTED_PATHS = (
     (("a",),),
-    (("b",), ("b", "a")),
-    (("c",), ("c", "b"), ("c", "a")),
-    (("z",), ("z", "c"), ("z", "b"), ("z", "c", "a")),
-    (("x",), ("x", "z"), ("x", "c"), ("x", "z", "b"), ("x", "c", "a")),
+    (("b", "a"), ("b",)),
+    (("c", "a"), ("c", "b"), ("c",)),
+    (("z", "c", "a"), ("z", "b"), ("z", "c"), ("z",)),
+    (("x", "c", "a"), ("x", "z", "b"), ("x", "c"), ("x", "z"), ("x",)),
     (
-        ("y",),
-        ("y", "x"),
-        ("y", "z"),
-        ("y", "x", "c"),
-        ("y", "z", "b"),
         ("y", "x", "c", "a"),
+        ("y", "z", "b"),
+        ("y", "x", "c"),
+        ("y", "z"),
+        ("y", "x"),
+        ("y",),
     ),
     (
-        ("q",),
-        ("q", "y"),
-        ("q", "y", "x"),
-        ("q", "y", "z"),
-        ("q", "c"),
-        ("q", "y", "z", "b"),
         ("q", "c", "a"),
+        ("q", "y", "z", "b"),
+        ("q", "c"),
+        ("q", "y", "z"),
+        ("q", "y", "x"),
+        ("q", "y"),
+        ("q",),
     ),
 )
 

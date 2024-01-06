@@ -28,17 +28,19 @@ class MemoryTree:
         """Add the tag to the tree without any connections"""
         self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
-    def path_to(self, tag: Hashable) -> Sequence[Hashable]:
+    def path_to(self, tag: Hashable) -> Sequence[Hashable] | None:
         """
         Function to retrieve the path to a version.
         """
-        if tag not in self.nodes:  # pragma: no cover
-            raise ValueError(f"{tag} is not a valid version.")
 
         path = []
         while tag is not None:
-            path.append(tag)
-            tag = self.nodes[tag].parent
+            tag_node = self.nodes.get(tag)
+            if tag_node:
+                path.append(tag)
+                tag = tag_node.parent
+            else:
+                return None
 
         return tuple(reversed(path))
 

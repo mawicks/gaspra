@@ -128,16 +128,11 @@ class Versions:
         """
         Retrieve a specific version using its tag.
         """
-        if tag not in self.tree:
-            return None
-
-        if tag in self.head_version:
-            raw = self.head_version[tag]
+        path = self.tree.path_to(tag)
+        if path:
+            return self._retrieve_using_path(path)
         else:
-            path = self.tree.path_to(tag)
-            raw = self._retrieve_using_path(path)
-
-        return raw
+            return None
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """

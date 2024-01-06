@@ -12,7 +12,7 @@ class Tree(Protocol):
     def add(self, tag: Hashable, existing_head: Hashable | None = None):
         raise NotImplementedError
 
-    def path_to(self, tag: Hashable) -> Sequence[Hashable]:
+    def path_to(self, tag: Hashable) -> Sequence[Hashable] | None:
         raise NotImplementedError
 
     def change_parent(self, tag, new_parent):

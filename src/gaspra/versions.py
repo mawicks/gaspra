@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections.abc import Hashable, Mapping, Sequence
+from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
 from typing import Callable, cast, MutableMapping
 
@@ -138,16 +138,15 @@ class Versions:
         """
         Return information about a version.
         """
-        if tag not in self.tree:
-            return None
-
-        if tag in self.diffs:
-            changeset = self.diffs[tag]
+        if (changeset := self.diffs.get(tag)) is not None:
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
-        else:
-            token_count = len(self.head_version[tag])
+        elif (head_version := self.head_version.get(tag)) is not None:
+            token_count = len(head_version)
             change_count = 0
+        else:
+            return None
+
         return VersionInfo(
             base_version=self.tree.base_version(tag),
             token_count=token_count,

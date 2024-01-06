@@ -1,5 +1,5 @@
-C Avoid\s"in\sself.tree"\swhere\spossible.
-D 2024-01-06T20:04:59.401
+C Merge\sWIP.
+D 2024-01-06T20:05:36.046
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -41,8 +41,8 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py b921e76f9e01697b6852713bcea41e290ed329b39cce5e16c216f9e7b654811e
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 97bf7ee0453d5b933b935635aad9e0ab8ed209fc7fec4a3d98e4414e3378a585
+P dca7fce989c9c659277ce55fd8d6538faba59e3da62c60bf77a7cdabd75c8c30
 R b8565ad28ba31bac339252d9abbbb730
 U mwicks
-Z b0b7e2e47f453d11c2d4f24d10c3840f
+Z b68bea230fb22d0b87c9ac4ae9c238b5
 # Remove this line to create a well-formed Fossil manifest.

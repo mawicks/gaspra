@@ -1,5 +1,5 @@
-C Remove\s_retrieve_raw()
-D 2024-01-06T16:40:28.163
+C Separate\sstorage\slogic\sfrom\stree\slogic.
+D 2024-01-06T17:37:18.090
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -24,7 +24,7 @@ F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d726
 F src/gaspra/test_helpers/helpers.py 531e96aaefeaf2b9760d748f5ddf20dde004676e10771743f28775eab4a0b069
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/types.py cb1b667fc4d01f022ded05b2c057c0674186c306e063c835471e0c1cebf0a7c1
-F src/gaspra/versions.py 875ec762c60b8cac8c616061795bb09cad600ff53b56c27558cdc481993824a2
+F src/gaspra/versions.py 05feea6f86ef7c9cfc3daee5225c8db4d7fca3008599fb764c9bdfa4d8d4034e
 F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 41ff472c4b7fd6ea5957761816af667df7faf6e0f447d5fc5109366b65a56666
@@ -38,8 +38,8 @@ F tests/small/test_suffix_automaton.py 869748dd5ea21c70606f98dce80c7a03b31ff4cce
 F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341695faaac1eec39b0d
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P f51c17a9df9f7c4567622d0e0f8ec69d770577189febdb05f0306446ce88b7d5
-R e569083bc83dcb168c5dc42343d7d44a
+P 04931fc37578b8503e27e8b509002d673cdfb2d9824dae72a25500ed601d41d2
+R 723b350ab9349f46fdfbaad17393862c
 U mwicks
-Z dd81f757e90ae4f5e60e6e946fd67cf8
+Z 21fe25a61c941f7c38a4d121ea887fc7
 # Remove this line to create a well-formed Fossil manifest.

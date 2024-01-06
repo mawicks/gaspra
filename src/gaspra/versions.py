@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Hashable, Mapping, Sequence
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import Callable, cast
 
 from gaspra.changesets import (
@@ -9,6 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
+from gaspra.tree import Tree
 from gaspra.types import StrippedChangeSequence
 
 
@@ -20,20 +21,10 @@ class VersionInfo:
 
 
 @dataclass
-class Node:
-    order_id: int
-    parent: Hashable | None = None
-    children: list[Hashable] = field(default_factory=list)
-    height: int = 1
-    size: int = 1
-    base_version: Hashable | None = None
-
-
-@dataclass
 class Versions:
     head_version: dict[Hashable, bytes] = field(default_factory=dict)
     diffs: dict[Hashable, StrippedChangeSequence] = field(default_factory=dict)
-    nodes: dict[Hashable, Node] = field(default_factory=dict)
+    tree: Tree = field(default_factory=Tree)
 
     # Encoder converts bytes to tokens (ints)
     encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] = lambda x, _: x
@@ -44,17 +35,9 @@ class Versions:
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         # Encode/tokenize `version` if requested
+        split, path_to_split = self.tree.add(tag, existing_head)
 
-        # Find the best split best split among the descendants of existing_head.
-        if existing_head is not None:
-            split, path_to_split = self._get_split(existing_head)
-        else:
-            split = existing_head = path_to_split = None
-
-        # Add the new version to the tree without
-        # any connections.
         self.head_version[tag] = version
-        self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
         # `tag` always get existing_head as a child. It also
         # gets `split` as a child if it exists.  The order
@@ -71,7 +54,7 @@ class Versions:
                 split,
                 self._make_changeset(version, split_version),
             )
-            self._change_parent(split, tag)
+            self.tree.change_parent(split, tag)
 
         # If there was a pre-existing head, make it a child of `tag`
         if existing_head is not None:
@@ -103,102 +86,18 @@ class Versions:
         )
         return changeset
 
-    def _get_split(self, tag: Hashable):
-        """
-        Find the longest path beginning from `tag` to a leaf and
-        identify a node near the middle.  The path will be split at that
-        node.  This node and the old root will become children of a new
-        root.  In the case of a tie for the longest path, follow the
-        path with that was added to the network more recently (which
-        should be the one with the largest index in children)
-
-        """
-        node = self.nodes[tag]
-        path_to_split = [tag]
-        depth = 1
-        # All leaves have a height of one, so within this
-        # loop there will always be children.  Because depth
-        # starts at one, you cannot enter this loop for a leaf.
-        while depth < node.height:
-            next_child_index = max(
-                (self.nodes[child].height, self.nodes[child].order_id, index)
-                for index, child in enumerate(node.children)
-            )[2]
-            depth += 1
-            tag = node.children[next_child_index]
-            node = self.nodes[tag]
-            path_to_split.append(tag)
-
-        return tag, path_to_split
-
     def _add_edge(self, parent_tag, child_tag, changeset):
         self.diffs[child_tag] = changeset
 
         # It's a spanning tree so a node can have only one
         # parent.  When adding an edge, the new parent
         # steals the child from any pre-existing parent.
-        self._change_parent(child_tag, parent_tag)
+        self.tree.change_parent(child_tag, parent_tag)
 
         # Older tag is no longer at the head of a branch
         # so remove it from versions.
         if child_tag in self.head_version:
             del self.head_version[child_tag]
-
-    def _change_parent(self, tag, new_parent):
-        original_node = self.nodes[tag]
-
-        # Remove "tag" from its parents set of children.
-        if (
-            original_node.parent is not None
-            and tag in self.nodes[original_node.parent].children
-        ):
-            self.nodes[original_node.parent].children.remove(tag)
-
-        # Replace tag's parent.
-        node = replace(original_node, parent=new_parent)
-        self.nodes[tag] = node
-
-        # Add "tag" to its new parent's set of children.
-        if node.parent is not None:
-            self.nodes[node.parent].children.append(tag)
-            self._update_metrics(node.parent)
-
-        # Recompute spanning tree metrics.
-        if original_node.parent is not None:
-            self._update_metrics(original_node.parent)
-
-    def _update_metrics(self, tag):
-        """
-        Update metrics *above* a node that was moded.  When a node is
-        moved from one parent to another, update_metrics() should be
-        called for both of the parents (not the node moved)
-        """
-        while tag is not None:
-            node = self.nodes[tag]
-            if node.children:
-                child_height = max(
-                    [self.nodes[child].height for child in node.children]
-                )
-                size = sum([self.nodes[child].size for child in node.children])
-            else:
-                child_height = 0
-                size = 0
-            self.nodes[tag] = replace(node, height=child_height + 1, size=size + 1)
-            tag = node.parent
-
-    def _path_to(self, tag: Hashable) -> Sequence[Hashable]:
-        """
-        Function to retrieve the path to a version.
-        """
-        if tag not in self.nodes:  # pragma: no cover
-            raise ValueError(f"{tag} is not a valid version.")
-
-        path = []
-        while tag is not None:
-            path.append(tag)
-            tag = self.nodes[tag].parent
-
-        return tuple(reversed(path))
 
     def _retrieve_using_path(self, path: Sequence[Hashable]) -> bytes:
         """
@@ -212,7 +111,7 @@ class Versions:
         encoding = {}
         encoded_patched = self.encoder(patched, encoding)
 
-        for n1, n2 in zip(path, path[1:]):
+        for n2 in path[1:]:
             stripped_changeset = self.diffs[n2]
             encoded_stripped_changeset = tuple(
                 c if type(c) is slice else self.encoder(c, encoding)
@@ -227,13 +126,13 @@ class Versions:
         """
         Retrieve a specific version using its tag.
         """
-        if tag not in self.nodes:
+        if tag not in self.tree:
             return None
 
         if tag in self.head_version:
             raw = self.head_version[tag]
         else:
-            path = self._path_to(tag)
+            path = self.tree.path_to(tag)
             raw = self._retrieve_using_path(path)
 
         return raw
@@ -242,24 +141,21 @@ class Versions:
         """
         Return information about a version.
         """
-        if tag not in self.nodes:
+        if tag not in self.tree:
             return None
 
-        last_edge = tuple(self._path_to(tag)[-2:])
-        if len(last_edge) >= 2:
-            # Next line is for the type checker
-            last_edge = cast(tuple[Hashable, Hashable], last_edge)
-            changeset = self.diffs[last_edge[1]]
+        if tag in self.diffs:
+            changeset = self.diffs[tag]
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
         else:
             token_count = len(self.head_version[tag])
             change_count = 0
         return VersionInfo(
-            base_version=self.nodes[tag].base_version,
+            base_version=self.tree.base_version(tag),
             token_count=token_count,
             change_count=change_count,
         )
 
     def __contains__(self, tag: Hashable):
-        return tag in self.nodes
+        return tag in self.tree

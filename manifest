@@ -1,5 +1,5 @@
-C Add\schangeset\sserialization.
-D 2024-01-06T22:15:51.380
+C Merge\strunk.
+D 2024-01-06T22:16:39.991
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -43,8 +43,8 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py b921e76f9e01697b6852713bcea41e290ed329b39cce5e16c216f9e7b654811e
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 70998ef5ed2325437509438f8e6940ffcb5cb929def9bf0ac35d3f88a8e57dcb
+P 0b009c40d290b4027e4e9c9facbb91fc58d0de55815be1224b0bb56bdb2b01c9 c99f15b551b45051595935309bf074d5d6e1bdf35ae9b7c8bd7049c9ba62f727
 R f873486bff46b95b862a0f1244d815a0
 U mwicks
-Z 4ebb23d240f8dbb21ce6f7c8d7a8fc6d
+Z 0baf9cc6da31910a18cdce995abfbf0d
 # Remove this line to create a well-formed Fossil manifest.

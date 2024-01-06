@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Hashable, Mapping, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, cast
+from typing import Callable, cast, MutableMapping
 
 from gaspra.changesets import (
     find_changeset,
@@ -10,6 +10,7 @@ from gaspra.changesets import (
     strip_forward,
 )
 from gaspra.tree import Tree
+from gaspra.memory_tree import MemoryTree
 from gaspra.types import StrippedChangeSequence
 
 
@@ -22,33 +23,34 @@ class VersionInfo:
 
 @dataclass
 class Versions:
-    head_version: dict[Hashable, bytes] = field(default_factory=dict)
-    diffs: dict[Hashable, StrippedChangeSequence] = field(default_factory=dict)
-    tree: Tree = field(default_factory=Tree)
+    head_version: MutableMapping[Hashable, bytes] = field(default_factory=dict)
+    diffs: MutableMapping[Hashable, StrippedChangeSequence] = field(
+        default_factory=dict
+    )
+    tree: Tree = field(default_factory=MemoryTree)
 
     # Encoder converts bytes to tokens (ints)
-    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] = lambda x, _: x
+    encoder: Callable[
+        [bytes, MutableMapping[bytes, int]], Sequence[int]
+    ] = lambda x, _: x
     # Decoder converts tokens (ints) to bytes
     decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] = lambda x, _: cast(
         bytes, x
     )
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
-        # Encode/tokenize `version` if requested
-        split, path_to_split = self.tree.add(tag, existing_head)
-
         self.head_version[tag] = version
+        self.tree.add(tag, existing_head)
 
-        # `tag` always get existing_head as a child. It also
-        # gets `split` as a child if it exists.  The order
-        # of adding children is important to establish the
-        # convention that older nodes appear in the child list
-        # first.
+        # Find the best split best split among the descendants of existing_head.
+        if existing_head is not None:
+            split, path_to_split = self.tree.get_split(existing_head)
+        else:
+            split = existing_head = path_to_split = None
 
         # If there is an appropriate split, move it up to be a child of `tag`
         if split is not None and path_to_split is not None and split != existing_head:
             split_version = self._retrieve_using_path(path_to_split)
-
             self._add_edge(
                 tag,
                 split,
@@ -111,8 +113,8 @@ class Versions:
         encoding = {}
         encoded_patched = self.encoder(patched, encoding)
 
-        for n2 in path[1:]:
-            stripped_changeset = self.diffs[n2]
+        for tag in path[1:]:
+            stripped_changeset = self.diffs[tag]
             encoded_stripped_changeset = tuple(
                 c if type(c) is slice else self.encoder(c, encoding)
                 for c in stripped_changeset

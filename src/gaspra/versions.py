@@ -9,7 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
-from gaspra.types import Change, Tag, Token, TokenSequence, StrippedChangeSequence
+from gaspra.types import StrippedChangeSequence
 
 
 @dataclass
@@ -31,10 +31,8 @@ class Node:
 
 @dataclass
 class Versions:
-    leaves: dict[Hashable, bytes] = field(default_factory=dict)
-    edges: dict[tuple[Hashable, Hashable], StrippedChangeSequence] = field(
-        default_factory=dict
-    )
+    head_version: dict[Hashable, bytes] = field(default_factory=dict)
+    diffs: dict[Hashable, StrippedChangeSequence] = field(default_factory=dict)
     nodes: dict[Hashable, Node] = field(default_factory=dict)
 
     # Encoder converts bytes to tokens (ints)
@@ -55,7 +53,7 @@ class Versions:
 
         # Add the new version to the tree without
         # any connections.
-        self.leaves[tag] = version
+        self.head_version[tag] = version
         self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
         # `tag` always get existing_head as a child. It also
@@ -77,7 +75,7 @@ class Versions:
 
         # If there was a pre-existing head, make it a child of `tag`
         if existing_head is not None:
-            existing_head_version = self.leaves[existing_head]
+            existing_head_version = self.head_version[existing_head]
             self._add_edge(
                 tag,
                 existing_head,
@@ -134,7 +132,7 @@ class Versions:
         return tag, path_to_split
 
     def _add_edge(self, parent_tag, child_tag, changeset):
-        self.edges[parent_tag, child_tag] = changeset
+        self.diffs[child_tag] = changeset
 
         # It's a spanning tree so a node can have only one
         # parent.  When adding an edge, the new parent
@@ -143,8 +141,8 @@ class Versions:
 
         # Older tag is no longer at the head of a branch
         # so remove it from versions.
-        if child_tag in self.leaves:
-            del self.leaves[child_tag]
+        if child_tag in self.head_version:
+            del self.head_version[child_tag]
 
     def _change_parent(self, tag, new_parent):
         original_node = self.nodes[tag]
@@ -168,17 +166,6 @@ class Versions:
         # Recompute spanning tree metrics.
         if original_node.parent is not None:
             self._update_metrics(original_node.parent)
-
-    def _remove_edge(self, parent_tag, child_tag):
-        """
-        This is deprecated in favor of _change_parent().
-        """
-        # Don't remove the edge if current_tag is still the parent of
-        # older_tag.
-        if self.nodes[parent_tag].parent != child_tag:
-            del self.edges[parent_tag, child_tag]
-        else:  # pragma: no cover
-            raise RuntimeError("Trying to remove an essential edge")
 
     def _update_metrics(self, tag):
         """
@@ -221,12 +208,12 @@ class Versions:
         """
         # Initialize with root_version,
         # then apply all of the patches in the path.
-        patched = self.leaves[path[0]]
+        patched = self.head_version[path[0]]
         encoding = {}
         encoded_patched = self.encoder(patched, encoding)
 
         for n1, n2 in zip(path, path[1:]):
-            stripped_changeset = self.edges[n1, n2]
+            stripped_changeset = self.diffs[n2]
             encoded_stripped_changeset = tuple(
                 c if type(c) is slice else self.encoder(c, encoding)
                 for c in stripped_changeset
@@ -236,19 +223,6 @@ class Versions:
         decoding = tuple(encoding.keys())
         return self.decoder(encoded_patched, decoding)
 
-    def _retrieve_raw(self, tag: Hashable) -> bytes:
-        """
-        Retrieve a specific raw (meaning it's encoded/tokenized) version
-        using its tag.
-        """
-        if tag in self.leaves:
-            raw = self.leaves[tag]
-        else:
-            path = self._path_to(tag)
-            raw = self._retrieve_using_path(path)
-
-        return raw
-
     def get(self, tag: Hashable) -> bytes | None:
         """
         Retrieve a specific version using its tag.
@@ -256,7 +230,13 @@ class Versions:
         if tag not in self.nodes:
             return None
 
-        return self._retrieve_raw(tag)
+        if tag in self.head_version:
+            raw = self.head_version[tag]
+        else:
+            path = self._path_to(tag)
+            raw = self._retrieve_using_path(path)
+
+        return raw
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """
@@ -269,11 +249,11 @@ class Versions:
         if len(last_edge) >= 2:
             # Next line is for the type checker
             last_edge = cast(tuple[Hashable, Hashable], last_edge)
-            changeset = self.edges[last_edge]
+            changeset = self.diffs[last_edge[1]]
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
         else:
-            token_count = len(self.leaves[tag])
+            token_count = len(self.head_version[tag])
             change_count = 0
         return VersionInfo(
             base_version=self.nodes[tag].base_version,

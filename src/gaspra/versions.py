@@ -47,21 +47,18 @@ class Node:
 
 @dataclass
 class Versions:
-    leaves: dict[Hashable, Sequence[Hashable]] = field(default_factory=dict)
+    leaves: dict[Hashable, bytes] = field(default_factory=dict)
     edges: dict[tuple[Hashable, Hashable], StrippedChangeSequence] = field(
         default_factory=dict
     )
     nodes: dict[Hashable, Node] = field(default_factory=dict)
 
     # Encoder converts bytes to tokens (ints)
-    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] | None = None
+    encoder: Callable[[bytes, Mapping[bytes, int]], Sequence[int]] = lambda x, _: x
     # Decoder converts tokens (ints) to bytes
-    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] | None = None
-
-    # Encoding is a mapping from bytes to tokens
-    encoding: dict[bytes, int] = field(default_factory=dict)
-    # Decoding is a mapping from tokens to bytes
-    decoding: Sequence[bytes] = field(default_factory=tuple)
+    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] = lambda x, _: cast(
+        bytes, x
+    )
 
     def __post_init__(self):
         if (self.encoder is not None and self.decoder is None) or (
@@ -72,12 +69,6 @@ class Versions:
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         # Encode/tokenize `version` if requested
 
-        if self.encoder is None:
-            encoded = version
-        else:
-            encoded = self.encoder(version, self.encoding)
-            self.decoding = tuple(self.encoding.keys())
-
         # Find the best split best split among the descendants of existing_head.
         if existing_head is not None:
             split, path_to_split = self._get_split(existing_head)
@@ -86,7 +77,7 @@ class Versions:
 
         # Add the new version to the tree without
         # any connections.
-        self.leaves[tag] = encoded
+        self.leaves[tag] = version
         self.nodes[tag] = Node(order_id=len(self.nodes), base_version=existing_head)
 
         # `tag` always get existing_head as a child. It also
@@ -95,17 +86,33 @@ class Versions:
         # convention that older nodes appear in the child list
         # first.
 
+        def get_changeset(original: bytes, modified: bytes):
+            encoding = {}
+            decoding = ()
+            encoded_original = self.encoder(original, encoding)
+            encoded_modified = self.encoder(modified, encoding)
+            decoding = tuple(encoding.keys())
+
+            encoded_changeset = tuple(
+                strip_forward(
+                    find_changeset(encoded_original, encoded_modified).change_stream()
+                )
+            )
+
+            changeset = tuple(
+                c if type(c) is slice else self.decoder(c, decoding)
+                for c in encoded_changeset
+            )
+            return changeset
+
         # If there is an appropriate split, move it up to be a child of `tag`
         if split is not None and path_to_split is not None and split != existing_head:
             split_version = self._retrieve_using_path(path_to_split)
+
             self._add_edge(
                 tag,
                 split,
-                tuple(
-                    strip_forward(
-                        find_changeset(encoded, split_version).change_stream()
-                    )
-                ),
+                get_changeset(version, split_version),
             )
             self._change_parent(split, tag)
 
@@ -115,11 +122,7 @@ class Versions:
             self._add_edge(
                 tag,
                 existing_head,
-                tuple(
-                    strip_forward(
-                        find_changeset(encoded, existing_head_version).change_stream()
-                    )
-                ),
+                get_changeset(version, existing_head_version),
             )
 
         return
@@ -232,7 +235,7 @@ class Versions:
 
         return tuple(reversed(path))
 
-    def _retrieve_using_path(self, path: Sequence[Hashable]):
+    def _retrieve_using_path(self, path: Sequence[Hashable]) -> bytes:
         """
         Function to retrieve a version give its path.
 
@@ -241,14 +244,21 @@ class Versions:
         # Initialize with root_version,
         # then apply all of the patches in the path.
         patched = self.leaves[path[0]]
+        encoding = {}
+        encoded_patched = self.encoder(patched, encoding)
 
         for n1, n2 in zip(path, path[1:]):
             stripped_changeset = self.edges[n1, n2]
-            patched = apply(stripped_changeset, patched)
+            encoded_stripped_changeset = tuple(
+                c if type(c) is slice else self.encoder(c, encoding)
+                for c in stripped_changeset
+            )
+            encoded_patched = apply(encoded_stripped_changeset, encoded_patched)
 
-        return patched
+        decoding = tuple(encoding.keys())
+        return self.decoder(encoded_patched, decoding)
 
-    def _retrieve_raw(self, tag: Hashable) -> Sequence[Hashable]:
+    def _retrieve_raw(self, tag: Hashable) -> bytes:
         """
         Retrieve a specific raw (meaning it's encoded/tokenized) version
         using its tag.
@@ -268,12 +278,7 @@ class Versions:
         if tag not in self.nodes:
             return None
 
-        raw = self._retrieve_raw(tag)
-
-        if self.decoder is None:
-            return cast(bytes, raw)
-        else:
-            return self.decoder(cast(Sequence[int], raw), self.decoding)
+        return self._retrieve_raw(tag)
 
     def version_info(self, tag: Hashable) -> VersionInfo | None:
         """

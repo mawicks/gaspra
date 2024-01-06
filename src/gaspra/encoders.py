@@ -33,7 +33,7 @@ def line_decoder(contents: Iterable[int], decoding: Sequence[bytes]):
     return b"\n".join(decoding[t] for t in contents)
 
 
-def space_encoder(string: bytes, encoding):
+def space_encoder(string: bytes, encoding: dict[bytes, int]):
     unencoded_tokens = string.split(b" ")
 
     for token in unencoded_tokens:

@@ -9,6 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
+from gaspra.serialize import deserialize_changeset, serialize_changeset
 from gaspra.tree import Tree
 from gaspra.memory_tree import MemoryTree
 from gaspra.types import StrippedChangeSequence
@@ -24,9 +25,7 @@ class VersionInfo:
 @dataclass
 class Versions:
     head_version: MutableMapping[Hashable, bytes] = field(default_factory=dict)
-    diffs: MutableMapping[Hashable, StrippedChangeSequence] = field(
-        default_factory=dict
-    )
+    diffs: MutableMapping[Hashable, bytes] = field(default_factory=dict)
     tree: Tree = field(default_factory=MemoryTree)
 
     # Encoder converts bytes to tokens (ints)
@@ -89,7 +88,7 @@ class Versions:
         return changeset
 
     def _add_edge(self, parent_tag, child_tag, changeset):
-        self.diffs[child_tag] = changeset
+        self.diffs[child_tag] = serialize_changeset(changeset)
 
         # It's a spanning tree so a node can have only one
         # parent.  When adding an edge, the new parent
@@ -114,7 +113,7 @@ class Versions:
         encoded_patched = self.encoder(patched, encoding)
 
         for tag in path[1:]:
-            stripped_changeset = self.diffs[tag]
+            stripped_changeset = deserialize_changeset(self.diffs[tag])
             encoded_stripped_changeset = tuple(
                 c if type(c) is slice else self.encoder(c, encoding)
                 for c in stripped_changeset
@@ -139,6 +138,7 @@ class Versions:
         Return information about a version.
         """
         if (changeset := self.diffs.get(tag)) is not None:
+            changeset = tuple(deserialize_changeset(changeset))
             token_count = sum(len(c) for c in changeset if not isinstance(c, slice))
             change_count = len(changeset)
         elif (head_version := self.head_version.get(tag)) is not None:

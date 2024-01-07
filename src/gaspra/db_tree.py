@@ -112,22 +112,18 @@ class DBTree:
                 .fetchone()[0]
             )
 
-            original_parent_row = (
+            original_parent, original_parent_rid = (
                 connection.cursor()
                 .execute(SELECT.format(selection="parent, parent_rid"), (tag,))
                 .fetchone()
             )
 
-            if original_parent_row is not None:
-                original_parent, original_parent_rid = original_parent_row
-                connection.cursor().execute(
-                    REMOVE_IF_CHILDx.format(x=0), (original_parent_rid, tag_rid)
-                )
-                connection.cursor().execute(
-                    REMOVE_IF_CHILDx.format(x=1), (original_parent_rid, tag_rid)
-                )
-            else:
-                print("FOO")
+            connection.cursor().execute(
+                REMOVE_IF_CHILDx.format(x=0), (original_parent_rid, tag_rid)
+            )
+            connection.cursor().execute(
+                REMOVE_IF_CHILDx.format(x=1), (original_parent_rid, tag_rid)
+            )
 
             # The "new" parent *must* exist.
             new_parent_rid = (
@@ -140,7 +136,7 @@ class DBTree:
             connection.cursor().execute(CHANGE, (new_parent, new_parent_rid, tag_rid))
             # Add tag as child of new parent on childx
             # Heads get added on child0, splits get added on
-            child = 0 if original_parent_row is None else 1
+            child = 0 if original_parent is None else 1
             connection.cursor().execute(
                 ADD_CHILDx.format(x=child), (tag_rid, new_parent_rid)
             )

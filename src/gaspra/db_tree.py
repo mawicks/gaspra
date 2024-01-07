@@ -244,7 +244,8 @@ class DBTree:
         WITH subtree AS (
           SELECT
             g.tag,
-            g.parent,
+            g.rowid as rid,
+            g.parent_rid,
             1 + coalesce(metrics.size,0) as size,
             1 + coalesce(metrics.height,0) as height
           FROM graph g
@@ -252,16 +253,17 @@ class DBTree:
             SELECT
               sum(size) as size, 
               max(height) as height,
-              parent
+              parent_rid
             FROM graph
-            GROUP BY parent
+            GROUP BY parent_rid
           ) metrics
-          ON metrics.parent = g.tag
+          ON metrics.parent_rid = g.rowid
         ),
         recursive_subtree AS (
             SELECT 
                 tag,
-                parent,
+                rid,
+                parent_rid,
                 size,
                 height
             FROM subtree
@@ -271,11 +273,12 @@ class DBTree:
 
             SELECT 
                 subtree.tag,
-                subtree.parent,
+                subtree.rid,
+                subtree.parent_rid,
                 subtree.size,
                 subtree.height
             FROM subtree
-            JOIN recursive_subtree rst ON subtree.tag = rst.parent
+            JOIN recursive_subtree rst ON subtree.rid = rst.parent_rid
         )
         UPDATE graph
         SET 

@@ -239,7 +239,7 @@ class DBTree:
             raise RuntimeError("Different!")
         return x
 
-    def _update_metrics(self, tag: str, tag_rid: int):
+    def _old_update_metrics(self, tag: str, tag_rid: int):
         UPDATE = """
         WITH subtree AS (
           SELECT
@@ -298,3 +298,59 @@ class DBTree:
 """
         with self.connection_factory() as connection:
             connection.execute(UPDATE, (tag,))
+
+    def _new_update_metrics(self, tag: str, tag_rid: int):
+        QUERY = """
+        WITH current AS (
+            SELECT rowid as current_rid,
+                *
+            FROM graph
+            WHERE rowid = ?
+        ),
+        children AS (
+            SELECT current.current_rid,
+                current.parent_rid,
+                child.height,
+                child.size
+            FROM current
+                LEFT JOIN graph child ON child.rowid = current.child0_rid
+            UNION ALL
+            SELECT current.current_rid,
+                current.parent_rid,
+                child.height,
+                child.size
+            FROM current
+                LEFT JOIN graph child ON child.rowid = current.child1_rid
+        ),
+        metrics AS (
+            SELECT current_rid,
+                parent_rid,
+                1 + coalesce(max(height), 0) as height,
+                1 + coalesce(sum(size), 0) as size
+            from children
+            group by current_rid,
+                parent_rid
+        )
+        SELECT current_rid, parent_rid, height,size
+        FROM metrics
+        """
+
+        UPDATE = """
+        UPDATE graph
+        SET
+           height = ?,
+           size = ?
+        WHERE
+           rowid = ?
+        """
+
+        with self.connection_factory() as connection:
+            while tag_rid is not None:
+                _, parent_rid, height, size = connection.execute(
+                    QUERY, (tag_rid,)
+                ).fetchone()
+                connection.execute(UPDATE, (height, size, tag_rid))
+                tag_rid = parent_rid
+
+    def _update_metrics(self, tag: str, tag_rid: int):
+        self._new_update_metrics(tag, tag_rid)

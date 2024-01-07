@@ -1,5 +1,5 @@
-C Refactor\sget_split()\sin\ssmall\ssteps.
-D 2024-01-07T19:24:27.393
+C Another\stiny\srefactoring\sstep.
+D 2024-01-07T19:30:26.905
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -13,7 +13,7 @@ F src/gaspra/changesets.py dc6e9f121ff0dd5b4cc2b3fb237e68b0e704a60e43fb71db03205
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/db_collections.py ac901f709a277eb1f9aa436a9e27d4e06fffa68833871eba316ee3764183f4ea
 F src/gaspra/db_connections.py 894aac7e1c7d66f34aeed46c5559d658ca88fadf749bfda700034e54890c5612
-F src/gaspra/db_tree.py 9ca3e26a58561a3442229dd578c324ec811f1af942595b59135c911da5ed5d70
+F src/gaspra/db_tree.py c0f882a1d10d171f826d31d1af376e856128906f6c8a1bb25baab1e38bbcc0f0
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/encoders.py 3e09e24752aefe68e9de919164bcb9be06f1e99188d672356e4d38616591d13b
@@ -47,8 +47,8 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P ea70fead3f376296d63bf11328c513de004a107eb46d4f5bb87f9829f189c914
-R 1d3821d61ea82085d7764cf1ceff2ebc
+P cdc40c16f6b851ab773586a7f57c0e479e7733181362c91a2540a5b6291e3187
+R fe74974ec747ff4bcdc3bb6d5b1bfc46
 U mwicks
-Z c1c37e41fa30518fed2e587d079f2a9f
+Z 21ec397f0cfaa5f3ed75189f76dc3098
 # Remove this line to create a well-formed Fossil manifest.

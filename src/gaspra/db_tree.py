@@ -17,8 +17,11 @@ CREATE TABLE graph (
    base_version TEXT
 )
 """
-INDEX_GRAPH = """
+GRAPH_INDEX1 = """
 CREATE INDEX graph_parent ON graph(parent)
+"""
+GRAPH_INDEX2 = """
+CREATE INDEX graph_parent_rid ON graph(parent_rid)
 """
 
 INSERT = """
@@ -58,7 +61,8 @@ class DBTree:
             for statement in [
                 "DROP TABLE IF EXISTS graph",
                 CREATE_GRAPH,
-                INDEX_GRAPH,
+                GRAPH_INDEX1,
+                GRAPH_INDEX2,
             ]:
                 cursor.execute(statement)
 
@@ -190,10 +194,10 @@ class DBTree:
             g.rowid as graph_rowid,
             g.height,
             row_number() over 
-              (partition by g.parent
+              (partition by g.parent_rid
                order by height desc, g.rowid desc)   AS priority
           FROM graph g
-          WHERE g.parent = ?
+          WHERE g.parent_rid = ?
         )
         SELECT tag, graph_rowid, height from best_path
         WHERE best_path.priority = 1
@@ -204,7 +208,7 @@ class DBTree:
             path = [tag]
             height, rowid = cursor.execute(SELECT, (tag,)).fetchone()
             while depth < height:
-                tag, rowid, height = cursor.execute(QUERY, (tag,)).fetchone()
+                tag, rowid, height = cursor.execute(QUERY, (rowid,)).fetchone()
                 path.append(tag)
                 depth += 1
         return tag, path

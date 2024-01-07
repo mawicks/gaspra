@@ -33,16 +33,16 @@ WHERE tag = ?
 
 PATH_TO = """
 WITH RECURSIVE path AS (
-   SELECT g.tag, g.parent
+   SELECT g.tag, g.parent_rid
    FROM graph g
    WHERE g.tag = ?
 
    UNION ALL
 
-   SELECT h.tag, h.parent
+   SELECT h.tag, h.parent_rid
    FROM graph h
    JOIN path
-     ON path.parent = h.tag
+     ON path.parent_rid = h.rowid
 )
 SELECT tag FROM path
 """
@@ -146,7 +146,7 @@ class DBTree:
 
     def get_split(self, tag: Hashable):
         SELECT = """
-        SELECT height 
+        SELECT height, rowid 
         FROM graph
         WHERE tag = ?
         """
@@ -169,7 +169,7 @@ class DBTree:
             cursor = connection.cursor()
             depth = 1
             path = [tag]
-            height = cursor.execute(SELECT, (tag,)).fetchone()[0]
+            height, rowid = cursor.execute(SELECT, (tag,)).fetchone()
             while depth < height:
                 x = cursor.execute(QUERY, (tag,)).fetchone()
                 if len(x) > 0:

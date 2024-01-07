@@ -144,7 +144,7 @@ class DBTree:
         self._update_metrics(original_parent, original_parent_rid)
         self._update_metrics(new_parent, new_parent_rid)
 
-    def get_split(self, tag: Hashable):
+    def old_get_split(self, tag: Hashable):
         SELECT = """
         SELECT height, rowid 
         FROM graph
@@ -171,13 +171,50 @@ class DBTree:
             path = [tag]
             height, rowid = cursor.execute(SELECT, (tag,)).fetchone()
             while depth < height:
-                x = cursor.execute(QUERY, (tag,)).fetchone()
-                if len(x) > 0:
-                    tag = x[0]
-                    path.append(tag)
-                    height = x[1]
+                tag, height = cursor.execute(QUERY, (tag,)).fetchone()
+                path.append(tag)
                 depth += 1
         return tag, path
+
+    def new_get_split(self, tag: Hashable):
+        SELECT = """
+        SELECT height, rowid 
+        FROM graph
+        WHERE tag = ?
+        """
+
+        QUERY = """
+        WITH best_path AS (
+          SELECT
+            g.tag,
+            g.rowid as graph_rowid,
+            g.height,
+            row_number() over 
+              (partition by g.parent
+               order by height desc, g.rowid desc)   AS priority
+          FROM graph g
+          WHERE g.parent = ?
+        )
+        SELECT tag, graph_rowid, height from best_path
+        WHERE best_path.priority = 1
+        """
+        with self.connection_factory() as connection:
+            cursor = connection.cursor()
+            depth = 1
+            path = [tag]
+            height, rowid = cursor.execute(SELECT, (tag,)).fetchone()
+            while depth < height:
+                tag, rowid, height = cursor.execute(QUERY, (tag,)).fetchone()
+                path.append(tag)
+                depth += 1
+        return tag, path
+
+    def get_split(self, tag: Hashable):
+        x = self.old_get_split(tag)
+        y = self.new_get_split(tag)
+        if x != y:
+            raise RuntimeError("Different!")
+        return x
 
     def _update_metrics(self, tag: str, tag_rid: int):
         UPDATE = """

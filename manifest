@@ -1,5 +1,5 @@
-C Add\sdb_collections.py
-D 2024-01-07T00:35:05.146
+C Add\swork\son\sdb_tree.py
+D 2024-01-07T03:10:50.218
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -43,11 +43,11 @@ F tests/small/test_multiple_strings.py 6dafba6ed83077c1d748f904293c0ccd5cefd0142
 F tests/small/test_serialize.py d1eb71f73a98e88695acdb215ff494fa03e4a67530ea5bcd53b528eb95420f21
 F tests/small/test_suffix_automaton.py 869748dd5ea21c70606f98dce80c7a03b31ff4ccee1c3b998b3b16d8453ea18f
 F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341695faaac1eec39b0d
-F tests/small/test_tree.py b921e76f9e01697b6852713bcea41e290ed329b39cce5e16c216f9e7b654811e
+F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 7844c6f883befd46fa7a0f3009c38f26c020999953a969094126629ab6346845
-R 557fbd2badb622be9d528970e027ff48
+P bdd7d0b008064c8e0799ddbc37d07d465d0a464922edf7ff6aeb4c756ec47101
+R 1a786fb71e187ec457654d6b61a73580
 U mwicks
-Z 37a28b8f473c078c254d0a5cdf86fd5a
+Z 20a3bd3631dd3653a17e363eedc27866
 # Remove this line to create a well-formed Fossil manifest.

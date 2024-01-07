@@ -157,16 +157,17 @@ class DBTree:
 
         QUERY = """
         WITH best_path AS (
-          SELECT
+        SELECT
             g.tag,
+            g.rowid as graph_rowid,
             g.height,
             row_number() over 
-              (partition by g.parent
-               order by height desc, g.rowid desc)   AS priority
-          FROM graph g
-          WHERE g.parent = ?
+            (partition by g.parent_rid
+            order by height desc, g.rowid desc)   AS priority
+        FROM graph g
+        WHERE g.parent_rid = ?
         )
-        SELECT tag, height from best_path
+        SELECT tag, graph_rowid, height from best_path
         WHERE best_path.priority = 1
         """
         with self.connection_factory() as connection:
@@ -175,7 +176,7 @@ class DBTree:
             path = [tag]
             height, rowid = cursor.execute(SELECT, (tag,)).fetchone()
             while depth < height:
-                tag, height = cursor.execute(QUERY, (tag,)).fetchone()
+                tag, rowid, height = cursor.execute(QUERY, (rowid,)).fetchone()
                 path.append(tag)
                 depth += 1
         return tag, path
@@ -188,18 +189,36 @@ class DBTree:
         """
 
         QUERY = """
-        WITH best_path AS (
-          SELECT
-            g.tag,
-            g.rowid as graph_rowid,
-            g.height,
-            row_number() over 
-              (partition by g.parent_rid
-               order by height desc, g.rowid desc)   AS priority
-          FROM graph g
-          WHERE g.parent_rid = ?
+        WITH current AS (
+            SELECT *
+            FROM graph
+            WHERE rowid = ?
+        ),
+        children AS (
+            SELECT child.*,
+                child.rowid as child_rowid
+            FROM current
+                JOIN graph child ON child.rowid = current.child0_rid
+            UNION ALL
+            SELECT child.*,
+                child.rowid as child_rowid
+            FROM current
+                JOIN graph child ON child.rowid = current.child1_rid
+        ),
+        best_path AS (
+            SELECT c.tag,
+                c.child_rowid,
+                c.height,
+                row_number() over (
+                    order by height desc,
+                        child_rowid desc
+                ) AS priority
+            FROM children c
         )
-        SELECT tag, graph_rowid, height from best_path
+        SELECT tag,
+            child_rowid,
+            height
+        from best_path
         WHERE best_path.priority = 1
         """
         with self.connection_factory() as connection:

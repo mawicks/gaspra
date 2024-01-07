@@ -7,7 +7,7 @@ from gaspra.db_connections import connection_factory as default_connection_facto
 
 CREATE_GRAPH = """
 CREATE TABLE graph (
-   tag TEXT,
+   tag TEXT PRIMARY KEY,
    parent TEXT,
    parent_rid INTEGER,
    child0_rid INTEGER,
@@ -126,6 +126,8 @@ class DBTree:
                 connection.cursor().execute(
                     REMOVE_IF_CHILDx.format(x=1), (original_parent_rid, tag_rid)
                 )
+            else:
+                print("FOO")
 
             # The "new" parent *must* exist.
             new_parent_rid = (
@@ -133,6 +135,7 @@ class DBTree:
                 .execute(SELECT.format(selection="rowid"), (new_parent,))
                 .fetchone()[0]
             )
+
             # Point tag to new parent
             connection.cursor().execute(CHANGE, (new_parent, new_parent_rid, tag_rid))
             # Add tag as child of new parent on childx
@@ -185,8 +188,9 @@ class DBTree:
         WITH subtree AS (
           SELECT
             g.tag,
-            coalesce(metrics.size,0) as size,
-            coalesce(metrics.height,0) as height
+            g.parent,
+            1 + coalesce(metrics.size,0) as size,
+            1 + coalesce(metrics.height,0) as height
           FROM graph g
           LEFT JOIN (
             SELECT
@@ -197,18 +201,41 @@ class DBTree:
             GROUP BY parent
           ) metrics
           ON metrics.parent = g.tag
+        ),
+        recursive_subtree AS (
+            SELECT 
+                tag,
+                parent,
+                size,
+                height
+            FROM subtree
+            WHERE tag = ?
+
+            UNION ALL
+
+            SELECT 
+                subtree.tag,
+                subtree.parent,
+                subtree.size,
+                subtree.height
+            FROM subtree
+            JOIN recursive_subtree rst ON subtree.tag = rst.parent
         )
         UPDATE graph
         SET 
-          size = 1 + s.size, 
-          height = 1 + s.height
-        FROM subtree s
-        WHERE graph.tag = s.tag
-        AND graph.tag = ?;
-        """
-        if (reverse_path := self.reverse_path_to(tag)) is None:
-            return
+            size = (
+                SELECT size 
+                FROM recursive_subtree 
+                WHERE recursive_subtree.tag = graph.tag
+            ),
+            height = (
+                SELECT height 
+                FROM recursive_subtree 
+                WHERE recursive_subtree.tag = graph.tag
+            )
+        WHERE 
+            tag IN (SELECT tag FROM recursive_subtree);
+
+"""
         with self.connection_factory() as connection:
-            for tag in reverse_path:
-                connection.execute(UPDATE, (tag,))
-                continue
+            connection.execute(UPDATE, (tag,))

@@ -1,6 +1,7 @@
 import sqlite3
 
 DATABASE = ":memory:"
+DATABASE = "/tmp/foo.db"
 
 connection = None
 

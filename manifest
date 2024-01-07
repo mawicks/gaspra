@@ -1,5 +1,5 @@
 C Add\swork\son\sdb_tree.py
-D 2024-01-07T03:10:50.218
+D 2024-01-07T06:00:36.677
 F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -13,6 +13,7 @@ F src/gaspra/changesets.py dc6e9f121ff0dd5b4cc2b3fb237e68b0e704a60e43fb71db03205
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/db_collections.py ac901f709a277eb1f9aa436a9e27d4e06fffa68833871eba316ee3764183f4ea
 F src/gaspra/db_connections.py 1f8da889f4fac4d04a6921ec52fe18e64fa4b8bba28d1dda3f00de637a3749c6
+F src/gaspra/db_tree.py 2e5277af5cdba391ddc9e7bd5bf8707837f002cf0e4c8c932ffe7edf02eaf6cd
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/encoders.py 3e09e24752aefe68e9de919164bcb9be06f1e99188d672356e4d38616591d13b
@@ -46,8 +47,8 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P bdd7d0b008064c8e0799ddbc37d07d465d0a464922edf7ff6aeb4c756ec47101
-R 1a786fb71e187ec457654d6b61a73580
+P 73463c5cbc2fe7d7ade7a0d2ac7a5a76a70d42113f5e5ce22a5b717c949df61b
+R e92193e0ea0679f23678dadd39b37bcf
 U mwicks
-Z 20a3bd3631dd3653a17e363eedc27866
+Z ad07e425c2bad5e76c958232712a9fc4
 # Remove this line to create a well-formed Fossil manifest.

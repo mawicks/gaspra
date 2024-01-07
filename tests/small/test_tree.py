@@ -1,6 +1,7 @@
 import pytest
 
 from gaspra.memory_tree import MemoryTree
+from gaspra.db_tree import DBTree
 from gaspra.tree import Tree
 
 # Intentionally use tags that are not in lexicographical order
@@ -35,7 +36,7 @@ EXPECTED_PATHS = (
 )
 
 
-@pytest.fixture(params=[MemoryTree])
+@pytest.fixture(params=[MemoryTree, DBTree])
 def tree(request) -> Tree:
     tree_factory = request.param
     return tree_factory()
@@ -47,6 +48,15 @@ def test_containment_changes_after_add(tree):
         assert id not in tree
         tree.add(id, base)
         assert id in tree
+        base = id
+
+
+def test_path_to_returns_single_node_after_add(tree):
+    base = None
+    for id in TAGS:
+        assert id not in tree
+        tree.add(id, base)
+        assert tuple(tree.path_to(id)) == (id,)
         base = id
 
 

@@ -8,23 +8,13 @@ from gaspra.db_connections import connection_factory as default_connection_facto
 CREATE_GRAPH = """
 CREATE TABLE graph
    (tag TEXT,
-    base_version TEXT,
     parent TEXT,
     height INTEGER,
-    size INTEGER)
+    size INTEGER,
+    base_version TEXT)
 """
 INDEX_GRAPH = """
 CREATE INDEX graph_parent ON graph(parent)
-"""
-
-CREATE_CHILDREN = """
-CREATE TABLE children
-   (parent TEXT,
-    child TEXT PRIMARY KEY)
-"""
-
-INDEX_CHILDREN = """
-CREATE INDEX children_parent ON children(parent)
 """
 
 INSERT = """
@@ -63,10 +53,8 @@ class DBTree:
             cursor = connection.cursor()
             for statement in [
                 "DROP TABLE IF EXISTS graph",
-                "DROP TABLE IF EXISTS children",
                 CREATE_GRAPH,
-                CREATE_CHILDREN,
-                INDEX_CHILDREN,
+                INDEX_GRAPH,
             ]:
                 cursor.execute(statement)
 
@@ -104,14 +92,6 @@ class DBTree:
         UPDATE graph SET parent = ?
         WHERE tag = ?
         """
-        DELETE = """
-        DELETE FROM children 
-           WHERE child = ?
-        """
-        INSERT = """
-        INSERT INTO children (parent, child) 
-           VALUES (?, ?)
-        """
         with self.connection_factory() as connection:
             original_parent = (
                 connection.cursor()
@@ -120,9 +100,7 @@ class DBTree:
             )
             if original_parent is not None:
                 original_parent = original_parent[0]
-            connection.cursor().execute(DELETE, (tag,))
             connection.cursor().execute(CHANGE, (new_parent, tag))
-            connection.cursor().execute(INSERT, (new_parent, tag))
             self._update_metrics(original_parent)
             self._update_metrics(new_parent)
 
@@ -132,12 +110,10 @@ class DBTree:
            SELECT g.tag,
                   g.height,
                   row_number() over 
-                    (partition by c.parent
+                    (partition by g.parent
                      order by height desc, g.rowid desc) priority
            FROM graph g
-           JOIN children c
-             ON c.child = g.tag
-          WHERE c.parent = ?
+          WHERE g.parent = ?
          )
         SELECT tag, height from best_path
         WHERE best_path.priority = 1
@@ -164,22 +140,28 @@ class DBTree:
     def _update_metrics(self, tag):
         UPDATE = """
         WITH subtree AS (
-               SELECT sum(size) as size, 
-                      max(height) as height,
-                      c.parent as parent
-               FROM children c
-               JOIN graph g ON g.tag = c.child
-               GROUP BY c.parent
-        )
+               SELECT g.tag,
+                      coalesce(x.size,0) as size,
+                      coalesce(x.height,0) as height
+                 FROM graph g
+                 LEFT JOIN (
+                    SELECT sum(size) as size, 
+                           max(height) as height,
+                           parent
+                    FROM graph
+                    GROUP BY parent) x
+                   ON x.parent = g.tag
+                )
         UPDATE graph
         SET size = 1 + s.size, 
         height = 1 + s.height
         FROM subtree s
-        WHERE graph.tag = s.parent
-        AND s.parent = ?;
+        WHERE graph.tag = s.tag
+        AND graph.tag = ?;
         """
         if (reverse_path := self.reverse_path_to(tag)) is None:
             return
         with self.connection_factory() as connection:
             for tag in reverse_path:
                 connection.execute(UPDATE, (tag,))
+                continue

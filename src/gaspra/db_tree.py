@@ -9,6 +9,9 @@ CREATE_GRAPH = """
 CREATE TABLE graph (
    tag TEXT,
    parent TEXT,
+   parent_rid INTEGER,
+   child0_rid INTEGER,
+   child1_rid INTEGER,
    height INTEGER,
    size INTEGER,
    base_version TEXT
@@ -90,20 +93,57 @@ class DBTree:
 
     def change_parent(self, tag, new_parent):
         CHANGE = """
-        UPDATE graph SET parent = ?
-        WHERE tag = ?
+        UPDATE graph SET parent = ?, parent_rid = ?
+        WHERE rowid = ?
         """
+        ADD_CHILDx = """
+        UPDATE graph SET child{x}_rid = ? WHERE rowid = ?
+        """
+        REMOVE_IF_CHILDx = """
+        UPDATE graph SET child{x}_rid = NULL WHERE rowid = ? AND
+        child{x}_rid = ?
+        """
+
         with self.connection_factory() as connection:
-            original_parent = (
+            # Get tag's rowid for use as key in child relationships.
+            tag_rid = (
                 connection.cursor()
-                .execute(SELECT.format(selection="parent"), (tag,))
+                .execute(SELECT.format(selection="rowid"), (tag,))
+                .fetchone()[0]
+            )
+
+            original_parent_row = (
+                connection.cursor()
+                .execute(SELECT.format(selection="parent, parent_rid"), (tag,))
                 .fetchone()
             )
-            if original_parent is not None:
-                original_parent = original_parent[0]
-            connection.cursor().execute(CHANGE, (new_parent, tag))
-            self._update_metrics(original_parent)
-            self._update_metrics(new_parent)
+
+            if original_parent_row is not None:
+                original_parent, original_parent_rid = original_parent_row
+                connection.cursor().execute(
+                    REMOVE_IF_CHILDx.format(x=0), (original_parent_rid, tag_rid)
+                )
+                connection.cursor().execute(
+                    REMOVE_IF_CHILDx.format(x=1), (original_parent_rid, tag_rid)
+                )
+
+            # The "new" parent *must* exist.
+            new_parent_rid = (
+                connection.cursor()
+                .execute(SELECT.format(selection="rowid"), (new_parent,))
+                .fetchone()[0]
+            )
+            # Point tag to new parent
+            connection.cursor().execute(CHANGE, (new_parent, new_parent_rid, tag_rid))
+            # Add tag as child of new parent on childx
+            # Heads get added on child0, splits get added on
+            child = 0 if original_parent_row is None else 1
+            connection.cursor().execute(
+                ADD_CHILDx.format(x=child), (tag_rid, new_parent_rid)
+            )
+
+        self._update_metrics(original_parent, original_parent_rid)
+        self._update_metrics(new_parent, new_parent_rid)
 
     def get_split(self, tag: Hashable):
         SELECT = """
@@ -140,7 +180,7 @@ class DBTree:
                 depth += 1
         return tag, path
 
-    def _update_metrics(self, tag):
+    def _update_metrics(self, tag: str, tag_rid: int):
         UPDATE = """
         WITH subtree AS (
           SELECT

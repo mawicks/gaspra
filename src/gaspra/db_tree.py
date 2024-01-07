@@ -6,12 +6,13 @@ from sqlite3 import Connection
 from gaspra.db_connections import connection_factory as default_connection_factory
 
 CREATE_GRAPH = """
-CREATE TABLE graph
-   (tag TEXT,
-    parent TEXT,
-    height INTEGER,
-    size INTEGER,
-    base_version TEXT)
+CREATE TABLE graph (
+   tag TEXT,
+   parent TEXT,
+   height INTEGER,
+   size INTEGER,
+   base_version TEXT
+)
 """
 INDEX_GRAPH = """
 CREATE INDEX graph_parent ON graph(parent)
@@ -19,7 +20,7 @@ CREATE INDEX graph_parent ON graph(parent)
 
 INSERT = """
 INSERT INTO graph (tag, base_version, height, size)
-         VALUES (?, ?, 1, 1)
+  VALUES (?, ?, 1, 1)
 """
 
 SELECT = """
@@ -105,23 +106,25 @@ class DBTree:
             self._update_metrics(new_parent)
 
     def get_split(self, tag: Hashable):
+        SELECT = """
+        SELECT height 
+        FROM graph
+        WHERE tag = ?
+        """
+
         QUERY = """
         WITH best_path AS (
-           SELECT g.tag,
-                  g.height,
-                  row_number() over 
-                    (partition by g.parent
-                     order by height desc, g.rowid desc) priority
-           FROM graph g
+          SELECT
+            g.tag,
+            g.height,
+            row_number() over 
+              (partition by g.parent
+               order by height desc, g.rowid desc)   AS priority
+          FROM graph g
           WHERE g.parent = ?
-         )
+        )
         SELECT tag, height from best_path
         WHERE best_path.priority = 1
-        """
-        SELECT = """
-            SELECT height 
-            FROM graph
-            WHERE tag = ?
         """
         with self.connection_factory() as connection:
             cursor = connection.cursor()
@@ -140,21 +143,25 @@ class DBTree:
     def _update_metrics(self, tag):
         UPDATE = """
         WITH subtree AS (
-               SELECT g.tag,
-                      coalesce(x.size,0) as size,
-                      coalesce(x.height,0) as height
-                 FROM graph g
-                 LEFT JOIN (
-                    SELECT sum(size) as size, 
-                           max(height) as height,
-                           parent
-                    FROM graph
-                    GROUP BY parent) x
-                   ON x.parent = g.tag
-                )
+          SELECT
+            g.tag,
+            coalesce(metrics.size,0) as size,
+            coalesce(metrics.height,0) as height
+          FROM graph g
+          LEFT JOIN (
+            SELECT
+              sum(size) as size, 
+              max(height) as height,
+              parent
+            FROM graph
+            GROUP BY parent
+          ) metrics
+          ON metrics.parent = g.tag
+        )
         UPDATE graph
-        SET size = 1 + s.size, 
-        height = 1 + s.height
+        SET 
+          size = 1 + s.size, 
+          height = 1 + s.height
         FROM subtree s
         WHERE graph.tag = s.tag
         AND graph.tag = ?;

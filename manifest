@@ -1,5 +1,5 @@
-C Fix\sbad\smerge\sfrom\sfossil\sbug.
-D 2024-01-08T12:29:10.439
+C Repairing\sdamage\scaused\sby\sfossil\sbug.
+D 2024-01-08T12:39:47.367
 F .github/workflows/python-app.yml 33d7e7b1284c28fab4e48d3499177f8cfbc0991eb234e61111f783b099d828ce
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -47,10 +47,11 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P eb52027284d784ce08fc361036d41a7800e77677ce0b5026473b3c01d236a34f
+P 3d870396866a39ab720277c60f82dd1db8f5c59d2e5b770bb9f403333ecf1521
 R 77b69085bf28439be4a8361bcd841632
-T *branch * wip
-T *sym-wip *
+T *branch * trunk
+T *sym-trunk *
+T -sym-wip *
 U mwicks
-Z f7bcc670a968460e72ff460a3336522c
+Z 625d2033b743c918bb0388c51064c368
 # Remove this line to create a well-formed Fossil manifest.

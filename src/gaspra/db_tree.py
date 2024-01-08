@@ -233,11 +233,7 @@ class DBTree:
         return tag, path
 
     def get_split(self, tag: Hashable):
-        x = self.old_get_split(tag)
-        y = self.new_get_split(tag)
-        if x != y:
-            raise RuntimeError("Different!")
-        return x
+        return self.new_get_split(tag)
 
     def _old_update_metrics(self, tag: str, tag_rid: int):
         UPDATE = """

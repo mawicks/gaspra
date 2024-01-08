@@ -1,6 +1,6 @@
-C Add\snew\s_update_metrics()\smethod\sthat\sdoesn't\sneed\sindex\s(but\sisn't\srecursive).
-D 2024-01-07T23:36:45.347
-F .github/workflows/python-app.yml ed1f65c12421b9f0e7feff09cf1468786b4041b03b1223ae0f0536977086b859
+C Update\sgithub\sworkflow\sto\stest\sonly\stess/\sdiretory.
+D 2024-01-08T12:04:40.150
+F .github/workflows/python-app.yml 33d7e7b1284c28fab4e48d3499177f8cfbc0991eb234e61111f783b099d828ce
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
 F images/text-merge.png eb11a6e79dc30b2587f677063174a91e07479f9296bcd7bbc3dd02c86516974e
@@ -13,7 +13,7 @@ F src/gaspra/changesets.py dc6e9f121ff0dd5b4cc2b3fb237e68b0e704a60e43fb71db03205
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/db_collections.py ac901f709a277eb1f9aa436a9e27d4e06fffa68833871eba316ee3764183f4ea
 F src/gaspra/db_connections.py 894aac7e1c7d66f34aeed46c5559d658ca88fadf749bfda700034e54890c5612
-F src/gaspra/db_tree.py 0a50e90d6ef872c6f68d3164b3c618519a1e4708e73f1ccf4fc0a1b7575d0201
+F src/gaspra/db_tree.py 665516454ee6ffad9347fb71601f24518f0b0220dee7511a0878b15c4b7f6f3e
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/encoders.py 3e09e24752aefe68e9de919164bcb9be06f1e99188d672356e4d38616591d13b
@@ -47,8 +47,8 @@ F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 9b2ff7bb6b9ae9adc07767f88753e0477e0575a6a96eddcd7c1b50402ff497cc
-R 67893bd07256ebbbed3df864ad099229
+P fe05c8b3c6477dd66cca0be0166a1e1c614b88053d4c5483a59a855c87ffacad
+R 77b69085bf28439be4a8361bcd841632
 U mwicks
-Z 27a0ec5fe90b2817396155aeceb9ff40
+Z c3bccea3509f5789af0fbfec905bd29d
 # Remove this line to create a well-formed Fossil manifest.

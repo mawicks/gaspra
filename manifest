@@ -1,5 +1,5 @@
-C Repairing\sdamage\scaused\sby\sfossil\sbug.
-D 2024-01-08T12:39:47.367
+C Add\sgeneric\ssymbol\stokenizer\sand\stests.
+D 2024-01-09T02:49:46.684
 F .github/workflows/python-app.yml 33d7e7b1284c28fab4e48d3499177f8cfbc0991eb234e61111f783b099d828ce
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -16,7 +16,7 @@ F src/gaspra/db_connections.py 894aac7e1c7d66f34aeed46c5559d658ca88fadf749bfda70
 F src/gaspra/db_tree.py 665516454ee6ffad9347fb71601f24518f0b0220dee7511a0878b15c4b7f6f3e
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
-F src/gaspra/encoders.py 3e09e24752aefe68e9de919164bcb9be06f1e99188d672356e4d38616591d13b
+F src/gaspra/encoders.py a8b1050657397ce282bbb31da77b4990200f34934aaf8cca4cd8fb8ef839f14c
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971dc0ea9d9e7
 F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd108a22d
@@ -43,15 +43,12 @@ F tests/small/test_merge.py dbb075221388e11785598111463e5e1e8d2311c76c73ec8581ec
 F tests/small/test_multiple_strings.py 6dafba6ed83077c1d748f904293c0ccd5cefd014249a3d17a096937b2fe12e40
 F tests/small/test_serialize.py d1eb71f73a98e88695acdb215ff494fa03e4a67530ea5bcd53b528eb95420f21
 F tests/small/test_suffix_automaton.py 869748dd5ea21c70606f98dce80c7a03b31ff4ccee1c3b998b3b16d8453ea18f
-F tests/small/test_tokenizers.py 8b3dab5a6e162611ea95539f022fe11e56bc941f33bb341695faaac1eec39b0d
+F tests/small/test_tokenizers.py 37ac826d836629ed5109af1181ccd61339516f38ffe6540900af532c33921d03
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 3d870396866a39ab720277c60f82dd1db8f5c59d2e5b770bb9f403333ecf1521
-R 77b69085bf28439be4a8361bcd841632
-T *branch * trunk
-T *sym-trunk *
-T -sym-wip *
+P 8f21c16551e8613501963d14444d36a68d247620cafffe0f03785772433efcf7
+R 00ba7d7f477ed51f10f3df0d124a1daf
 U mwicks
-Z 625d2033b743c918bb0388c51064c368
+Z 4223cdc3fb49acac1051585fd1e156bb
 # Remove this line to create a well-formed Fossil manifest.

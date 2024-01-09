@@ -1,4 +1,7 @@
 from collections.abc import Iterable, Sequence
+import re
+
+TOKENS = re.compile(rb"[A-Za-z0-9$-]+|.|\n")
 
 
 def line_encode_strings(
@@ -45,3 +48,16 @@ def space_encoder(string: bytes, encoding: dict[bytes, int]):
 
 def space_decoder(contents: Iterable[int], decoding: Sequence[bytes]):
     return b" ".join(decoding[t] for t in contents)
+
+
+def token_encoder(string: bytes, encoding: dict[bytes, int]):
+    unencoded_tokens = [token[0] for token in TOKENS.finditer(string)]
+
+    for token in unencoded_tokens:
+        if token not in encoding:
+            encoding[token] = len(encoding)
+    return tuple(encoding[token] for token in unencoded_tokens)
+
+
+def token_decoder(contents: Iterable[int], decoding: Sequence[bytes]):
+    return b"".join(decoding[t] for t in contents)

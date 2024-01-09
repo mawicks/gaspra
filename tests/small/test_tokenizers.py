@@ -1,6 +1,49 @@
 import pytest
 
-from gaspra.encoders import line_encode_strings
+from gaspra.encoders import (
+    line_encode_strings,
+    line_decoder,
+    line_encoder,
+    space_decoder,
+    space_encoder,
+    token_decoder,
+    token_encoder,
+)
+
+
+@pytest.fixture(
+    params=(
+        (line_encoder, line_decoder),
+        (space_encoder, space_decoder),
+        (token_encoder, token_decoder),
+    )
+)
+def encoder_decoder_pair(request: pytest.FixtureRequest):
+    return request.param
+
+
+ENCODER_TEST_CASES = [
+    "a b c\nx y z\n",
+    "abc def xyz\n1234 456 789\n",
+    "a += b*c;\n   switch() {};",
+    "the quick brown fox",
+    "$abc a-b-c d_e\nxyz",
+    "$ABC!@#$%^&*()",
+    bytes(range(256)),
+]
+
+
+@pytest.mark.parametrize("string", ENCODER_TEST_CASES)
+def test_generic_encoder(string, encoder_decoder_pair):
+    encoder, decoder = encoder_decoder_pair
+    if type(string) is str:
+        string = string.encode("utf-8")
+
+    encoding = {}
+    encoded = encoder(string, encoding)
+    decoding = {v: k for k, v in encoding.items()}
+
+    assert decoder(encoded, decoding) == string
 
 
 @pytest.mark.parametrize(

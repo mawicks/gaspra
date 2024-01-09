@@ -23,7 +23,7 @@ def encoder_decoder_pair(request: pytest.FixtureRequest):
 
 
 ENCODER_TEST_CASES = [
-    "a b c\nx y z\n",
+    "a b c\nxx y z\n",
     "abc def xyz\n1234 456 789\n",
     "a += b*c;\n   switch() {};",
     "the quick brown fox",
@@ -41,6 +41,9 @@ def test_generic_encoder(string, encoder_decoder_pair):
 
     encoding = {}
     encoded = encoder(string, encoding)
+
+    assert len(encoded) < len(string)
+
     decoding = {v: k for k, v in encoding.items()}
 
     assert decoder(encoded, decoding) == string

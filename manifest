@@ -1,5 +1,5 @@
-C Move\sSQL\scode\sout\sof\sdb_tree.py
-D 2024-01-11T01:56:37.773
+C Begin\srefactoring\sencoders.py
+D 2024-01-11T02:23:47.182
 F .github/workflows/python-app.yml 33d7e7b1284c28fab4e48d3499177f8cfbc0991eb234e61111f783b099d828ce
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -17,7 +17,7 @@ F src/gaspra/db_tree.py ba74801a5ed6ade73c4a29e88228252ad93c55a29882514de03b674c
 F src/gaspra/db_tree_sql.py 4b79ab411a487d69587535495647990d043165b8b3df5b6bf8fa0cbfaf1185eb
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
-F src/gaspra/encoders.py a8b1050657397ce282bbb31da77b4990200f34934aaf8cca4cd8fb8ef839f14c
+F src/gaspra/encoders.py 2a6c30ca8c3ab9925850c06821923345eef18ce1f2044127f85f705df7924761
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971dc0ea9d9e7
 F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd108a22d
@@ -32,7 +32,7 @@ F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6
 F src/gaspra/tree.py 8ee91567241c6e9aa1d6c77966ec1054aff42701a39802b4c52739c44965068f
 F src/gaspra/types.py cb1b667fc4d01f022ded05b2c057c0674186c306e063c835471e0c1cebf0a7c1
 F src/gaspra/versions.py c1cff7667d49c9d9906b361c4121ec9e68cd06ecf4e3e9048d4dee890528715a
-F src/gaspra/wrappers.py 3e6e0bb9d1f38fe653860f170f07beec0d5d0dd26e585dfa42ec66dd97306b05
+F src/gaspra/wrappers.py 30737b542eba4ee7ee7a86afd7c041d34922bbc88a09b9b6dadfce7ca6985a18
 F tests/medium/test_suffix_automaton_long.py 20d8611fe0267e41468185c69e51de9c93a1a1bce27eb75616ae4a22241e82c4
 F tests/small/test_changesets.py 41ff472c4b7fd6ea5957761816af667df7faf6e0f447d5fc5109366b65a56666
 F tests/small/test_common.py 5b0ce088ad95d532e3548113b139d407444bd16743416e7b5355133673e3d23e
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py 0e259ec9879a7b74cfe1a2214230b7543e5022cb82b7d22
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 595ab4896dd0b5ad07ee956e57adf8a4f02499f958e7cb794e5b0d35aeaf2d2b
-R ba772a7285839a7a308f5c729e023bca
+P a687c9d3030b5a8120d1475967933f68b84f9fdd34c164e983b5a4d3f4f5db08
+R 1c290beba7d2aa9742cae7b4c56edabb
 U mwicks
-Z 04cc5418f3ee4efe4f2f19342813e1da
+Z 5e4a4c8210d8afaecf19a5bcadd45dba
 # Remove this line to create a well-formed Fossil manifest.

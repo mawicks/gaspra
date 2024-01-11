@@ -16,7 +16,7 @@ from gaspra.encoders import (
     )
 )
 def tokenizer(request: pytest.FixtureRequest):
-    return request.param
+    return request.param()
 
 
 ENCODER_TEST_CASES = [
@@ -35,14 +35,11 @@ def test_generic_encoder(string, tokenizer):
     if type(string) is str:
         string = string.encode("utf-8")
 
-    encoding = {}
-    encoded = tokenizer.encode(string, encoding)
+    encoded = tokenizer.encode(string)
 
     assert len(encoded) < len(string)
 
-    decoding = {v: k for k, v in encoding.items()}
-
-    assert tokenizer.decode(encoded, decoding) == string
+    assert tokenizer.decode(encoded) == string
 
 
 @pytest.mark.parametrize(

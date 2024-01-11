@@ -39,7 +39,7 @@ def test_retrieved_versions_match():
 
 
 def test_versions_with_encoder():
-    versions = Versions(tokenizer=SpaceEncoder)
+    versions = Versions(tokenizer_factory=SpaceEncoder)
 
     base = None
     for id, version in VERSIONS.items():

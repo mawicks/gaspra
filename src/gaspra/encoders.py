@@ -33,70 +33,82 @@ def encode(unencoded_tokens: Iterable[bytes], encoding: dict[bytes, int]):
     for token in unencoded_tokens:
         if token not in encoding:
             encoding[token] = len(encoding)
-    return tuple(encoding[token] for token in unencoded_tokens)
+
+    decoding = tuple(k for k, _ in encoding.items())
+
+    return tuple(encoding[token] for token in unencoded_tokens), decoding
 
 
 class Tokenizer(Protocol):
     separator: bytes
 
-    @staticmethod
-    def encode(contents: bytes, encoding: dict[bytes, int]):
+    def encode(self, contents: bytes):
         raise NotImplemented
 
-    @staticmethod
-    def decode(contents: Iterable[int], decoding: Sequence[bytes]) -> bytes:
+    def decode(self, contents: Iterable[int]):
         raise NotImplemented
 
 
 class NullTokenizer:
     separator = b""
 
-    @staticmethod
-    def encode(contents: bytes, _) -> Sequence[int]:
+    def encode(self, contents: bytes) -> Sequence[int]:
         return contents
 
-    @staticmethod
-    def decode(contents: bytes, _) -> bytes:
+    def decode(self, contents: bytes) -> bytes:
         return contents
 
 
 class LineEncoder:
     separator = "\n"
+    encoding: dict[bytes, int]
+    decoding: Sequence[bytes]
 
-    @staticmethod
-    def encode(contents: bytes, encoding: dict[bytes, int]) -> Sequence[int]:
+    def __init__(self):
+        self.encoding = {}
+
+    def encode(self, contents: bytes) -> Sequence[int]:
         lines = contents.split(b"\n")
 
-        return encode(lines, encoding)
+        encoded, self.decoding = encode(lines, self.encoding)
+        return encoded
 
-    @staticmethod
-    def decode(contents: Iterable[int], decoding: Sequence[bytes]) -> bytes:
-        return generic_decode(contents, decoding, b"\n")
+    def decode(self, contents: Iterable[int]) -> bytes:
+        return generic_decode(contents, self.decoding, b"\n")
 
 
 class SpaceEncoder:
     separator = b" "
+    encoding: dict[bytes, int]
+    decoding: Sequence[bytes]
 
-    @staticmethod
-    def encode(string: bytes, encoding: dict[bytes, int]) -> Sequence[int]:
+    def __init__(self):
+        self.encoding = {}
+
+    def encode(self, string: bytes) -> Sequence[int]:
         unencoded_tokens = string.split(b" ")
 
-        return encode(unencoded_tokens, encoding)
+        encoded, self.decoding = encode(unencoded_tokens, self.encoding)
+        return encoded
 
-    @staticmethod
-    def decode(contents: Iterable[int], decoding: Sequence[bytes]) -> bytes:
-        return generic_decode(contents, decoding, b" ")
+    def decode(self, contents: Iterable[int]) -> bytes:
+        return generic_decode(contents, self.decoding, b" ")
 
 
 class TokenEncoder:
     separator = b""
 
-    @staticmethod
-    def encode(string: bytes, encoding: dict[bytes, int]) -> Sequence[int]:
+    encoding: dict[bytes, int]
+    decoding: Sequence[bytes]
+
+    def __init__(self):
+        self.encoding = {}
+
+    def encode(self, string: bytes) -> Sequence[int]:
         unencoded_tokens = [token[0] for token in TOKENS.finditer(string)]
 
-        return encode(unencoded_tokens, encoding)
+        encoded, self.decoding = encode(unencoded_tokens, self.encoding)
+        return encoded
 
-    @staticmethod
-    def decode(contents: Iterable[int], decoding: Sequence[bytes]) -> bytes:
-        return generic_decode(contents, decoding, b"")
+    def decode(self, contents: Iterable[int]) -> bytes:
+        return generic_decode(contents, self.decoding, b"")

@@ -1,5 +1,5 @@
-C Add\stest\sthat\sencoded\slength\sis\sless\sthan\soriginal\slength
-D 2024-01-09T02:54:55.143
+C Move\sSQL\scode\sout\sof\sdb_tree.py
+D 2024-01-11T01:56:37.773
 F .github/workflows/python-app.yml 33d7e7b1284c28fab4e48d3499177f8cfbc0991eb234e61111f783b099d828ce
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -13,7 +13,8 @@ F src/gaspra/changesets.py dc6e9f121ff0dd5b4cc2b3fb237e68b0e704a60e43fb71db03205
 F src/gaspra/common.py 1e911619f472063a4a0fb3f8645e579da2f6fdaf300fa560096f2558a07bb9b0
 F src/gaspra/db_collections.py ac901f709a277eb1f9aa436a9e27d4e06fffa68833871eba316ee3764183f4ea
 F src/gaspra/db_connections.py 894aac7e1c7d66f34aeed46c5559d658ca88fadf749bfda700034e54890c5612
-F src/gaspra/db_tree.py 665516454ee6ffad9347fb71601f24518f0b0220dee7511a0878b15c4b7f6f3e
+F src/gaspra/db_tree.py ba74801a5ed6ade73c4a29e88228252ad93c55a29882514de03b674cdefcef54
+F src/gaspra/db_tree_sql.py 4b79ab411a487d69587535495647990d043165b8b3df5b6bf8fa0cbfaf1185eb
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/encoders.py a8b1050657397ce282bbb31da77b4990200f34934aaf8cca4cd8fb8ef839f14c
@@ -47,8 +48,8 @@ F tests/small/test_tokenizers.py 0e259ec9879a7b74cfe1a2214230b7543e5022cb82b7d22
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 856277b370eb81da0efd83099126c3fec9bd36d97b07b9bb3332c728474f83a0
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 8e0fe4d4aeb41cd4c5711053b49cdcdd087abf5c0c0ddae1ab158f6fb3157642
-R 32ec79aa696ad27088ef382cd8a7c10f
+P 595ab4896dd0b5ad07ee956e57adf8a4f02499f958e7cb794e5b0d35aeaf2d2b
+R ba772a7285839a7a308f5c729e023bca
 U mwicks
-Z bac2f0c67500052e804d13040cf7a73b
+Z 04cc5418f3ee4efe4f2f19342813e1da
 # Remove this line to create a well-formed Fossil manifest.

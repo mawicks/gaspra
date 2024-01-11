@@ -5,7 +5,7 @@ from typing import TypeVar
 Token = TypeVar("Token", bound=Hashable)
 Tag = TypeVar("Tag", bound=Hashable)
 TokenSequence = Sequence[Token]
-# TokenSequence = Sequence[Hashable]
+TokenSequenceVar = TypeVar("TokenSequenceVar", str, bytes, Sequence[int])
 
 StringIterable = Iterable[str]
 BytesIterable = Iterable[bytes]

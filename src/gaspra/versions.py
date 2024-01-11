@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, cast, MutableMapping
+from typing import Callable, MutableMapping
 
 from gaspra.changesets import (
     find_changeset,
     apply,
     strip_forward,
 )
-from gaspra.encoders import SpaceEncoder, NullTokenizer, Tokenizer
+from gaspra.encoders import NullTokenizer, Tokenizer
 from gaspra.serialize import deserialize_changeset, serialize_changeset
 from gaspra.tree import Tree
 from gaspra.memory_tree import MemoryTree
-from gaspra.types import StrippedChangeSequence
 
 
 @dataclass

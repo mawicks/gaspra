@@ -12,6 +12,7 @@ from gaspra.types import (
     ReducedChangeIterable,
     StrippedChangeIterable,
     TokenSequence,
+    TokenSequenceVar,
 )
 
 
@@ -250,15 +251,19 @@ def find_changeset(
     return changeset
 
 
-def join_changes(version, changed):
-    if type(version) is bytes or type(version) is str:
+def join_changes(
+    version: TokenSequenceVar, changed: Iterable[TokenSequenceVar]
+) -> TokenSequenceVar:
+    if isinstance(version, (bytes, str)):
         patched_version = version[0:0].join(changed)
     else:
-        patched_version = tuple(chain(*changed))
-    return patched_version
+        patched_version = tuple(chain.from_iterable(changed))
+    return patched_version  # type: ignore
 
 
-def apply(stripped_changeset: StrippedChangeIterable, version: Sequence[Hashable]):
+def apply(
+    stripped_changeset: StrippedChangeIterable, version: TokenSequenceVar
+) -> TokenSequenceVar:
     """
     Apply a changeset to a version sequence.
 
@@ -266,7 +271,7 @@ def apply(stripped_changeset: StrippedChangeIterable, version: Sequence[Hashable
     has no sense of direction.  It just applies the changes to the string.
     """
 
-    def _apply():
+    def _apply() -> Iterable[TokenSequenceVar]:
         for item in stripped_changeset:
             if type(item) is slice:
                 yield version[item]

@@ -1,5 +1,5 @@
 from collections.abc import Iterable, Sequence
-from typing import Protocol
+from typing import cast, Protocol
 import re
 
 TOKENS = re.compile(rb"[A-Za-z0-9$-]+|.|\n")
@@ -55,8 +55,8 @@ class NullTokenizer:
     def encode(self, contents: bytes) -> Sequence[int]:
         return contents
 
-    def decode(self, contents: bytes) -> bytes:
-        return contents
+    def decode(self, contents: Iterable[int]) -> bytes:
+        return cast(bytes, contents)
 
 
 class LineEncoder:

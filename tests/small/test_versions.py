@@ -1,6 +1,6 @@
 from gaspra.versions import Versions
 
-from gaspra.encoders import space_encoder, space_decoder
+from gaspra.encoders import SpaceEncoder
 
 VERSIONS = {
     0: "a b c d e f g",
@@ -39,7 +39,7 @@ def test_retrieved_versions_match():
 
 
 def test_versions_with_encoder():
-    versions = Versions(encoder=space_encoder, decoder=space_decoder)
+    versions = Versions(tokenizer=SpaceEncoder)
 
     base = None
     for id, version in VERSIONS.items():

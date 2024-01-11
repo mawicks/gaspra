@@ -2,23 +2,20 @@ import pytest
 
 from gaspra.encoders import (
     line_encode_strings,
-    line_decoder,
-    line_encoder,
-    space_decoder,
-    space_encoder,
-    token_decoder,
-    token_encoder,
+    LineEncoder,
+    SpaceEncoder,
+    TokenEncoder,
 )
 
 
 @pytest.fixture(
     params=(
-        (line_encoder, line_decoder),
-        (space_encoder, space_decoder),
-        (token_encoder, token_decoder),
+        LineEncoder,
+        SpaceEncoder,
+        TokenEncoder,
     )
 )
-def encoder_decoder_pair(request: pytest.FixtureRequest):
+def tokenizer(request: pytest.FixtureRequest):
     return request.param
 
 
@@ -34,19 +31,18 @@ ENCODER_TEST_CASES = [
 
 
 @pytest.mark.parametrize("string", ENCODER_TEST_CASES)
-def test_generic_encoder(string, encoder_decoder_pair):
-    encoder, decoder = encoder_decoder_pair
+def test_generic_encoder(string, tokenizer):
     if type(string) is str:
         string = string.encode("utf-8")
 
     encoding = {}
-    encoded = encoder(string, encoding)
+    encoded = tokenizer.encode(string, encoding)
 
     assert len(encoded) < len(string)
 
     decoding = {v: k for k, v in encoding.items()}
 
-    assert decoder(encoded, decoding) == string
+    assert tokenizer.decode(encoded, decoding) == string
 
 
 @pytest.mark.parametrize(

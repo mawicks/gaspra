@@ -2,17 +2,17 @@ from __future__ import annotations
 
 from collections.abc import Hashable, Sequence
 from dataclasses import dataclass, field
-from typing import Callable, cast, MutableMapping
+from typing import Callable, MutableMapping
 
 from gaspra.changesets import (
     find_changeset,
     apply,
     strip_forward,
 )
+from gaspra.encoders import NullTokenizer, Tokenizer
 from gaspra.serialize import deserialize_changeset, serialize_changeset
 from gaspra.tree import Tree
 from gaspra.memory_tree import MemoryTree
-from gaspra.types import StrippedChangeSequence
 
 
 @dataclass
@@ -29,13 +29,7 @@ class Versions:
     tree: Tree = field(default_factory=MemoryTree)
 
     # Encoder converts bytes to tokens (ints)
-    encoder: Callable[
-        [bytes, MutableMapping[bytes, int]], Sequence[int]
-    ] = lambda x, _: x
-    # Decoder converts tokens (ints) to bytes
-    decoder: Callable[[Sequence[int], Sequence[bytes]], bytes] = lambda x, _: cast(
-        bytes, x
-    )
+    tokenizer_factory: Callable[[], Tokenizer | NullTokenizer] = NullTokenizer
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         self.head_version[tag] = version
@@ -69,11 +63,9 @@ class Versions:
         return
 
     def _make_changeset(self, original: bytes, modified: bytes):
-        encoding = {}
-        decoding = ()
-        encoded_original = self.encoder(original, encoding)
-        encoded_modified = self.encoder(modified, encoding)
-        decoding = tuple(encoding.keys())
+        tokenizer = self.tokenizer_factory()
+        encoded_original = tokenizer.encode(original)
+        encoded_modified = tokenizer.encode(modified)
 
         encoded_changeset = tuple(
             strip_forward(
@@ -82,8 +74,7 @@ class Versions:
         )
 
         changeset = tuple(
-            c if type(c) is slice else self.decoder(c, decoding)
-            for c in encoded_changeset
+            c if type(c) is slice else tokenizer.decode(c) for c in encoded_changeset
         )
         return changeset
 
@@ -109,19 +100,18 @@ class Versions:
         # Initialize with root_version,
         # then apply all of the patches in the path.
         patched = self.head_version[path[0]]
-        encoding = {}
-        encoded_patched = self.encoder(patched, encoding)
+        tokenizer = self.tokenizer_factory()
+        encoded_patched = tokenizer.encode(patched)
 
         for tag in path[1:]:
             stripped_changeset = deserialize_changeset(self.diffs[tag])
             encoded_stripped_changeset = tuple(
-                c if type(c) is slice else self.encoder(c, encoding)
+                c if type(c) is slice else tokenizer.encode(c)
                 for c in stripped_changeset
             )
             encoded_patched = apply(encoded_stripped_changeset, encoded_patched)
 
-        decoding = tuple(encoding.keys())
-        return self.decoder(encoded_patched, decoding)
+        return tokenizer.decode(encoded_patched)
 
     def get(self, tag: Hashable) -> bytes | None:
         """

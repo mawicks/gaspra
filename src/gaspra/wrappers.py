@@ -26,18 +26,18 @@ def find_lcs(a: str, b: str):
     each string.
 
     Arguments:
-       a: str
-          - The first string
-       a: str
-          - The second string
+        a: str
+            - The first string
+        a: str
+            - The second string
 
     Returns:
         int:
-           The position of the LCS in s1
+            The position of the LCS in s1
         int:
-           The position of the LCS in s2
+            The position of the LCS in s2
         int:
-           The length of the LCS.
+            The length of the LCS.
 
     Note that the empty string is always a common substring, occurring at the
     beginning of both lists.

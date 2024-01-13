@@ -1,6 +1,45 @@
 import pytest
 
-from gaspra.encoders import line_encode_strings
+from gaspra.encoders import (
+    line_encode_strings,
+    LineEncoder,
+    SpaceEncoder,
+    TokenEncoder,
+)
+
+
+@pytest.fixture(
+    params=(
+        LineEncoder,
+        SpaceEncoder,
+        TokenEncoder,
+    )
+)
+def tokenizer(request: pytest.FixtureRequest):
+    return request.param()
+
+
+ENCODER_TEST_CASES = [
+    "a b c\nxx y z\n",
+    "abc def xyz\n1234 456 789\n",
+    "a += b*c;\n   switch() {};",
+    "the quick brown fox",
+    "$abc a-b-c d_e\nxyz",
+    "$ABC!@#$%^&*()",
+    bytes(range(256)),
+]
+
+
+@pytest.mark.parametrize("string", ENCODER_TEST_CASES)
+def test_generic_encoder(string, tokenizer):
+    if type(string) is str:
+        string = string.encode("utf-8")
+
+    encoded = tokenizer.encode(string)
+
+    assert len(encoded) < len(string)
+
+    assert tokenizer.decode(encoded) == string
 
 
 @pytest.mark.parametrize(

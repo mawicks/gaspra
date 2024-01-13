@@ -2,47 +2,26 @@ from typing import Callable
 from collections.abc import Hashable, Sequence
 
 from sqlite3 import Connection
+from gaspra.db_tree_sql import (
+    CHANGE_PARENT,
+    CREATE_GRAPH,
+    GET_BEST_PATH,
+    GET_NODE_METRICS,
+    GET_START_PATH,
+    GRAPH_INDEX1,
+    GRAPH_INDEX2,
+    INSERT,
+    OLD_GET_BEST_PATH,
+    OLD_START_PATH,
+    OLD_UPDATE_METRICS,
+    PATH_TO,
+    SELECT_ANYTHING,
+    UPDATE_METRICS,
+    ADD_CHILDx,
+    REMOVE_IF_CHILDx,
+)
 
 from gaspra.db_connections import connection_factory as default_connection_factory
-
-CREATE_GRAPH = """
-CREATE TABLE graph (
-   tag TEXT PRIMARY KEY,
-   parent TEXT,
-   height INTEGER,
-   size INTEGER,
-   base_version TEXT
-)
-"""
-INDEX_GRAPH = """
-CREATE INDEX graph_parent ON graph(parent)
-"""
-
-INSERT = """
-INSERT INTO graph (tag, base_version, height, size)
-  VALUES (?, ?, 1, 1)
-"""
-
-SELECT = """
-SELECT {selection} FROM graph
-WHERE tag = ?
-"""
-
-PATH_TO = """
-WITH RECURSIVE path AS (
-   SELECT g.tag, g.parent
-   FROM graph g
-   WHERE g.tag = ?
-
-   UNION ALL
-
-   SELECT h.tag, h.parent
-   FROM graph h
-   JOIN path
-     ON path.parent = h.tag
-)
-SELECT tag FROM path
-"""
 
 
 class DBTree:
@@ -55,17 +34,18 @@ class DBTree:
             for statement in [
                 "DROP TABLE IF EXISTS graph",
                 CREATE_GRAPH,
-                INDEX_GRAPH,
+                GRAPH_INDEX1,
+                GRAPH_INDEX2,
             ]:
                 cursor.execute(statement)
 
     def __contains__(self, tag: Hashable):
-        statement = SELECT.format(selection="tag")
+        statement = SELECT_ANYTHING.format(selection="tag")
         with self.connection_factory() as connection:
             return connection.cursor().execute(statement, (tag,)).fetchone() is not None
 
     def base_version(self, tag) -> Hashable:
-        statement = SELECT.format(selection="base_version")
+        statement = SELECT_ANYTHING.format(selection="base_version")
         with self.connection_factory() as connection:
             return connection.cursor().execute(statement, (tag,)).fetchone()[0]
 
@@ -89,110 +69,89 @@ class DBTree:
             return None
 
     def change_parent(self, tag, new_parent):
-        CHANGE = """
-        UPDATE graph SET parent = ?
-        WHERE tag = ?
-        """
         with self.connection_factory() as connection:
-            original_parent = (
+            # Get tag's rowid for use as key in child relationships.
+            tag_rid = (
                 connection.cursor()
-                .execute(SELECT.format(selection="parent"), (tag,))
+                .execute(SELECT_ANYTHING.format(selection="rowid"), (tag,))
+                .fetchone()[0]
+            )
+
+            original_parent, original_parent_rid = (
+                connection.cursor()
+                .execute(SELECT_ANYTHING.format(selection="parent, parent_rid"), (tag,))
                 .fetchone()
             )
-            if original_parent is not None:
-                original_parent = original_parent[0]
-            connection.cursor().execute(CHANGE, (new_parent, tag))
-            self._update_metrics(original_parent)
-            self._update_metrics(new_parent)
+
+            connection.cursor().execute(
+                REMOVE_IF_CHILDx.format(x=0), (original_parent_rid, tag_rid)
+            )
+            connection.cursor().execute(
+                REMOVE_IF_CHILDx.format(x=1), (original_parent_rid, tag_rid)
+            )
+
+            # The "new" parent *must* exist.
+            new_parent_rid = (
+                connection.cursor()
+                .execute(SELECT_ANYTHING.format(selection="rowid"), (new_parent,))
+                .fetchone()[0]
+            )
+
+            # Point tag to new parent
+            connection.cursor().execute(
+                CHANGE_PARENT, (new_parent, new_parent_rid, tag_rid)
+            )
+            # Add tag as child of new parent on childx
+            # Heads get added on child0, splits get added on
+            child = 0 if original_parent is None else 1
+            connection.cursor().execute(
+                ADD_CHILDx.format(x=child), (tag_rid, new_parent_rid)
+            )
+
+        self._update_metrics(original_parent, original_parent_rid)
+        self._update_metrics(new_parent, new_parent_rid)
 
     def get_split(self, tag: Hashable):
-        SELECT = """
-        SELECT height 
-        FROM graph
-        WHERE tag = ?
-        """
+        return self.new_get_split(tag)
 
-        QUERY = """
-        WITH best_path AS (
-          SELECT
-            g.tag,
-            g.height,
-            row_number() over 
-              (partition by g.parent
-               order by height desc, g.rowid desc)   AS priority
-          FROM graph g
-          WHERE g.parent = ?
-        )
-        SELECT tag, height from best_path
-        WHERE best_path.priority = 1
-        """
+    def new_get_split(self, tag: Hashable):
         with self.connection_factory() as connection:
             cursor = connection.cursor()
             depth = 1
             path = [tag]
-            height = cursor.execute(SELECT, (tag,)).fetchone()[0]
+            height, rowid = cursor.execute(GET_START_PATH, (tag,)).fetchone()
             while depth < height:
-                x = cursor.execute(QUERY, (tag,)).fetchone()
-                if len(x) > 0:
-                    tag = x[0]
-                    path.append(tag)
-                    height = x[1]
+                tag, rowid, height = cursor.execute(GET_BEST_PATH, (rowid,)).fetchone()
+                path.append(tag)
                 depth += 1
         return tag, path
 
-    def _update_metrics(self, tag):
-        UPDATE = """
-        WITH subtree AS (
-          SELECT
-            g.tag,
-            g.parent,
-            1 + coalesce(metrics.size,0) as size,
-            1 + coalesce(metrics.height,0) as height
-          FROM graph g
-          LEFT JOIN (
-            SELECT
-              sum(size) as size, 
-              max(height) as height,
-              parent
-            FROM graph
-            GROUP BY parent
-          ) metrics
-          ON metrics.parent = g.tag
-        ),
-        recursive_subtree AS (
-            SELECT 
-                tag,
-                parent,
-                size,
-                height
-            FROM subtree
-            WHERE tag = ?
+    def _update_metrics(self, tag: str, tag_rid: int):
+        self._new_update_metrics(tag, tag_rid)
 
-            UNION ALL
-
-            SELECT 
-                subtree.tag,
-                subtree.parent,
-                subtree.size,
-                subtree.height
-            FROM subtree
-            JOIN recursive_subtree rst ON subtree.tag = rst.parent
-        )
-        UPDATE graph
-        SET 
-            size = (
-                SELECT size 
-                FROM recursive_subtree 
-                WHERE recursive_subtree.tag = graph.tag
-            ),
-            height = (
-                SELECT height 
-                FROM recursive_subtree 
-                WHERE recursive_subtree.tag = graph.tag
-            )
-        WHERE 
-            tag IN (SELECT tag FROM recursive_subtree);
-
-"""
+    def _new_update_metrics(self, tag: str, tag_rid: int):
         with self.connection_factory() as connection:
-            connection.execute(UPDATE, (tag,))
+            while tag_rid is not None:
+                _, parent_rid, height, size = connection.execute(
+                    GET_NODE_METRICS, (tag_rid,)
+                ).fetchone()
+                connection.execute(UPDATE_METRICS, (height, size, tag_rid))
+                tag_rid = parent_rid
+
+    def old_get_split(self, tag: Hashable):
+        with self.connection_factory() as connection:
+            cursor = connection.cursor()
+            depth = 1
+            path = [tag]
+            height, rowid = cursor.execute(OLD_START_PATH, (tag,)).fetchone()
+            while depth < height:
+                tag, rowid, height = cursor.execute(
+                    OLD_GET_BEST_PATH, (rowid,)
+                ).fetchone()
+                path.append(tag)
+                depth += 1
+        return tag, path
+
+    def _old_update_metrics(self, tag: str, tag_rid: int):
+        with self.connection_factory() as connection:
+            connection.execute(OLD_UPDATE_METRICS, (tag,))

@@ -2,7 +2,7 @@ from collections.abc import Iterable, Sequence
 from typing import cast, Protocol
 import re
 
-TOKENS = re.compile(rb"[A-Za-z0-9$-]+|.|\n")
+SYMBOLS = re.compile(rb"[A-Za-z0-9$-]+|.|\n")
 
 
 def line_encode_strings(
@@ -49,7 +49,7 @@ class Tokenizer(Protocol):
         raise NotImplemented
 
 
-class NullTokenizer:
+class ByteTokenizer:
     separator = b""
 
     def encode(self, contents: bytes) -> Sequence[int]:
@@ -59,7 +59,7 @@ class NullTokenizer:
         return cast(bytes, contents)
 
 
-class LineEncoder:
+class LineTokenizer:
     separator = "\n"
     encoding: dict[bytes, int]
     decoding: Sequence[bytes]
@@ -77,7 +77,7 @@ class LineEncoder:
         return generic_decode(contents, self.decoding, b"\n")
 
 
-class SpaceEncoder:
+class SpaceTokenizer:
     separator = b" "
     encoding: dict[bytes, int]
     decoding: Sequence[bytes]
@@ -95,7 +95,7 @@ class SpaceEncoder:
         return generic_decode(contents, self.decoding, b" ")
 
 
-class TokenEncoder:
+class SymbolTokenizer:
     separator = b""
 
     encoding: dict[bytes, int]
@@ -105,7 +105,7 @@ class TokenEncoder:
         self.encoding = {}
 
     def encode(self, string: bytes) -> Sequence[int]:
-        unencoded_tokens = [token[0] for token in TOKENS.finditer(string)]
+        unencoded_tokens = [token[0] for token in SYMBOLS.finditer(string)]
 
         encoded, self.decoding = encode(unencoded_tokens, self.encoding)
         return encoded

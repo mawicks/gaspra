@@ -1,18 +1,18 @@
 import pytest
 
-from gaspra.encoders import (
+from gaspra.tokenizers import (
     line_encode_strings,
-    LineEncoder,
-    SpaceEncoder,
-    TokenEncoder,
+    LineTokenizer,
+    SpaceTokenizer,
+    SymbolTokenizer,
 )
 
 
 @pytest.fixture(
     params=(
-        LineEncoder,
-        SpaceEncoder,
-        TokenEncoder,
+        LineTokenizer,
+        SpaceTokenizer,
+        SymbolTokenizer,
     )
 )
 def tokenizer(request: pytest.FixtureRequest):

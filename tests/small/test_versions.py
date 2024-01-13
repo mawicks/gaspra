@@ -1,6 +1,6 @@
 from gaspra.versions import Versions
 
-from gaspra.encoders import SpaceTokenizer
+from gaspra.tokenizers import SpaceTokenizer
 
 VERSIONS = {
     0: "a b c d e f g",

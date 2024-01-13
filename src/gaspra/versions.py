@@ -9,7 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
-from gaspra.encoders import ByteTokenizer, Tokenizer
+from gaspra.tokenizers import ByteTokenizer, Tokenizer
 from gaspra.serialize import deserialize_changeset, serialize_changeset
 from gaspra.tree import Tree
 from gaspra.memory_tree import MemoryTree

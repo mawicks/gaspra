@@ -15,7 +15,7 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.encoders import line_encode_strings
+from gaspra.tokenizers import line_encode_strings
 from gaspra.types import ChangeIterable
 import gaspra.torture_test as torture_test
 

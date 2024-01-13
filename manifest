@@ -1,5 +1,5 @@
-C Merge\strunk\sand\ssave\ssome\sfiles\sthat\swere\smodifed\sbut\snot\ssaved\sfor\sprevious\scommit.
-D 2024-01-13T20:13:59.660
+C Add\sanother\spreviously\sunsaved\sfile.
+D 2024-01-13T20:15:38.224
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -22,7 +22,7 @@ F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971d
 F src/gaspra/markup.py 5934b14c06b19132d4f41d345e1847d313c59c9eaa943cabb25fb34cd108a22d
 F src/gaspra/memory_tree.py c638fdd0e1d489b6ebb22be0e761e97c382d4b4aa6d41b4839b20c8c550754d9
 F src/gaspra/merge.py c1ea0c1299610ddb32d66c6368db31a758443aff305fdd2392eba4b838ee922b
-F src/gaspra/merge_tool.py 58342f49dd2413a7a48889cc2163d766ef849db357ad296f90e288e7d8509a3c
+F src/gaspra/merge_tool.py 6661d8fd84ca286ed47517eada451b5eb52488770756f6f39b978552e36a172f
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
 F src/gaspra/serialize.py cd54c7e72b49dabfb00fa63afa46b698ebed28d0ee82f24a719d22c98701e1bc
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py 5eb7fc4ce57fc974ea45f2c95463f81278d95e2919751a3
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py ee03bbbcf07190570fb0a9d559c367a81f309e82bfde7bd980c5d4b3aa071ef9
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 62af19a408adbf2219122df01bb3b8d62a7cc097ef9efcce2f82e0d76e62b1b5 c4136db9479dede887860e754e61ad6bfdab8d707959a47361628808a424fb73
-R 015e01d847b5b87be368003b3eb0d6a4
+P b1d8c6ede69b3631eba5c417b12ffcbc81a66cace6cdd2cb9907aef4fa42c585
+R 9890bdd5fd15d0b56a687ad5b2757ac7
 U mwicks
-Z e7c3dc99fce9431a69f2b40af4dd416e
+Z 59b130e4bb563c5d59fd4f8107ca2da6
 # Remove this line to create a well-formed Fossil manifest.

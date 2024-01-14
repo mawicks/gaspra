@@ -191,21 +191,3 @@ class SymbolTokenizer(Generic[BytesOrStr]):
             joiner = ""
 
         return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
-
-
-class SpaceTokenizer:
-    encoding: dict[bytes, int]
-    decoding: Sequence[bytes]
-
-    def __init__(self):
-        self.encoding = {}
-
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
-        unencoded_tokens = contents.split(b" ")
-
-        encoded, self.decoding = generic_encode(unencoded_tokens, self.encoding)
-        return encoded
-
-    def to_bytes(self, contents: Iterable[Hashable]) -> bytes:
-        contents = cast(Iterable[int], contents)
-        return generic_decode(contents, self.decoding, b" ")

@@ -94,15 +94,6 @@ class NullTokenizer(Generic[BytesOrStr]):
         return cast(BytesOrStr, contents)
 
 
-def f(x: Tokenizer):
-    y = x.from_bytes(b"abc")
-    x.to_bytes(y)
-    return
-
-
-f(NullTokenizer())
-
-
 class CharTokenizer(Generic[BytesOrStr]):
     source_type: type | None = None
 

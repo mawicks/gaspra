@@ -1,20 +1,22 @@
 import pytest
 
 from gaspra.tokenizers import (
-    line_encode_strings,
+    CharTokenizer,
     LineTokenizer,
+    NullTokenizer,
     SpaceTokenizer,
     SymbolTokenizer,
-    CharTokenizer,
+    line_encode_strings,
 )
 
 
 @pytest.fixture(
     params=(
-        LineTokenizer,
-        SpaceTokenizer,
-        SymbolTokenizer,
+        NullTokenizer,
         CharTokenizer,
+        LineTokenizer,
+        SymbolTokenizer,
+        SpaceTokenizer,
     )
 )
 def tokenizer(request: pytest.FixtureRequest):
@@ -40,8 +42,8 @@ def test_generic_encoder(string, tokenizer):
     # There's an arbitrary bytes string in the test data
     # which is a good test case for the encoders that don't
     # require a UTF-8 encoding.  However it's not a good test
-    # for UTF8Tokenizer.  Skip the UTF8Tokenizer test for such
-    # any such test cases.
+    # for CharTokenizer or SymbolTokenizer.  Skiopo those
+    # for any such test cases.
 
     try:
         string.decode("utf-8")
@@ -51,8 +53,9 @@ def test_generic_encoder(string, tokenizer):
 
     encoded = tokenizer.from_bytes(string)
 
-    # Another exception for the UTF8Tokenizer
-    if type(tokenizer) != CharTokenizer:
+    # Another exception for Chartokenizer and NullTokenizer which
+    # don't group characters.
+    if type(tokenizer) not in (NullTokenizer, CharTokenizer):
         assert len(encoded) < len(string)
 
     assert tokenizer.to_bytes(encoded) == string

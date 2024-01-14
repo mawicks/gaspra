@@ -15,7 +15,12 @@ from gaspra.markup import (
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.tokenizers import line_encode_strings
+from gaspra.tokenizers import (
+    line_encode_strings,
+    ByteTokenizer,
+    LineTokenizer,
+    SymbolTokenizer,
+)
 from gaspra.types import ChangeIterable
 import gaspra.torture_test as torture_test
 
@@ -27,29 +32,39 @@ def add_common_arguments(parser):
         help="Output file",
         default=None,
     )
-    parser.add_argument(
+    token_group = parser.add_mutually_exclusive_group()
+
+    token_group.add_argument(
+        "-b",
+        "--byte",
+        action="store_true",
+        help="Use a byte-oriented/character-oriented diff (default unless -L)",
+    )
+    token_group.add_argument(
+        "-w",
+        "--word",
+        action="store_true",
+        help="Use a word-oriented/symbol-oriented diff (default unless -L)",
+    )
+    token_group.add_argument(
         "-l",
-        "--line-oriented",
+        "--line",
         action="store_true",
-        help="Use a line-oriented diff for output, even if the processing was character-oriented",
+        help="Use a word-oriented/symbol-oriented diff (default unless -L)",
     )
+
     parser.add_argument(
-        "-c",
-        "--character-oriented",
+        "-g",
+        "--git-compatible",
         action="store_true",
-        help="Use a character-oriented diff as opposed to line-oriented.",
+        help="Use git-compatible merge conflict markers (no color)",
     )
+
     parser.add_argument(
-        "-f",
-        "--file-style",
+        "-L",
+        "--show-lines",
         action="store_true",
-        help="Use file-oriented vs screen-oriented markup (git-style, no color)",
-    )
-    parser.add_argument(
-        "-s",
-        "--strikeout",
-        action="store_true",
-        help="Use a strikeout font for deletions (only on diffs).",
+        help="Use a line-oriented diff for output, even if the processing was byte or word-oriented",
     )
 
 
@@ -71,10 +86,17 @@ def get_merge_arguments():
 
 def get_diff_arguments():
     parser = argparse.ArgumentParser()
+
     parser.add_argument("original")
     parser.add_argument("modified")
 
     add_common_arguments(parser)
+    parser.add_argument(
+        "-s",
+        "--strikeout",
+        action="store_true",
+        help="Use a strikeout font for deletions (only on diffs).",
+    )
 
     args = parser.parse_args()
     return args
@@ -93,7 +115,7 @@ def get_torture_test_arguments():
     return args
 
 
-def get_markup_function(arguments, token_map=(), allow_strikeout=True):
+def get_markup_function(arguments, tokenizer, allow_strikeout=True):
     if not arguments.character_oriented:
         wrapped_markup_function = token_oriented_markup_changes
 
@@ -116,9 +138,9 @@ def get_markup_function(arguments, token_map=(), allow_strikeout=True):
             changeset,
             os.path.basename(branch0),
             os.path.basename(branch1),
+            tokenizer,
             markup=markup,
             header=os.path.basename(header) if header else None,
-            token_map=token_map,
         )
 
     return markup_function
@@ -202,21 +224,30 @@ def _merge(parent_name, current_name, other_name, arguments):
         )
 
 
+def make_tokenizer(arguments):
+    if arguments.word:
+        return SymbolTokenizer()
+    if arguments.line:
+        return LineTokenizer()
+    return ByteTokenizer()
+
+
 def diff_cli():
     arguments = get_diff_arguments()
 
     original_name = arguments.original
     modified_name = arguments.modified
 
-    original, modified = get_text(original_name, modified_name)
+    original, modified = get_bytes(original_name, modified_name)
 
-    token_map = None
-    if not arguments.character_oriented:
-        token_map, original, modified = line_encode_strings(original, modified)
+    tokenizer = make_tokenizer(arguments)
+
+    original = tokenizer.from_bytes(original)
+    modified = tokenizer.from_bytes(modified)
 
     changes = diff(original, modified)
 
-    display_function = get_markup_function(arguments, token_map)
+    display_function = get_markup_function(arguments, tokenizer)
 
     with get_writer(arguments) as writer:
         display_function(
@@ -227,7 +258,7 @@ def diff_cli():
         )
 
 
-def get_text(*filenames: str):
+def get_text(*filenames: str) -> tuple[str, ...]:
     data = []
     for filename in filenames:
         try:
@@ -238,6 +269,14 @@ def get_text(*filenames: str):
             with open(filename, "rt", encoding="iso-8859-1") as f:
                 data.append(f.read())
 
+    return tuple(data)
+
+
+def get_bytes(*filenames: str) -> tuple[bytes, ...]:
+    data = []
+    for filename in filenames:
+        with open(filename, "rb") as f:
+            data.append(f.read())
     return tuple(data)
 
 

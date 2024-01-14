@@ -5,6 +5,7 @@ from itertools import chain
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 from gaspra.types import Change
+from gaspra.tokenizers import ByteTokenizer
 
 TEST_MARKUP = {
     "fragment": {
@@ -101,11 +102,18 @@ TEST_TOKEN_MARKUP = {
 def test_line_oriented_markup_changes(input_sequence, output):
     output_buffer = io.StringIO()
 
+    # It's important to use a tokenizer with a hard-coded
+    # encoding/decoding.  We don't encode() so we can't
+    # dynamically determine the encoding.
+
+    tokenizer = ByteTokenizer()
+
     line_oriented_markup_changes(
         output_buffer.write,
         input_sequence,
         "x",
         "y",
+        tokenizer,
         markup=TEST_MARKUP,
         header="",
     )
@@ -208,7 +216,7 @@ def test_token_oriented_markup_changes(input_sequence, output, token_map):
         "y",
         markup=TEST_TOKEN_MARKUP,
         header="",
-        token_map=token_map,
+        tokenizer=token_map,
     )
 
     assert output_buffer.getvalue() == output

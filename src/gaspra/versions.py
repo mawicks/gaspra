@@ -64,8 +64,8 @@ class Versions:
 
     def _make_changeset(self, original: bytes, modified: bytes):
         tokenizer = self.tokenizer_factory()
-        encoded_original = tokenizer.encode(original)
-        encoded_modified = tokenizer.encode(modified)
+        encoded_original = tokenizer.from_bytes(original)
+        encoded_modified = tokenizer.from_bytes(modified)
 
         encoded_changeset = tuple(
             strip_forward(
@@ -74,7 +74,7 @@ class Versions:
         )
 
         changeset = tuple(
-            c if type(c) is slice else tokenizer.decode(c) for c in encoded_changeset
+            c if type(c) is slice else tokenizer.to_bytes(c) for c in encoded_changeset
         )
         return changeset
 
@@ -101,17 +101,17 @@ class Versions:
         # then apply all of the patches in the path.
         patched = self.head_version[path[0]]
         tokenizer = self.tokenizer_factory()
-        encoded_patched = tokenizer.encode(patched)
+        encoded_patched = tokenizer.from_bytes(patched)
 
         for tag in path[1:]:
             stripped_changeset = deserialize_changeset(self.diffs[tag])
             encoded_stripped_changeset = tuple(
-                c if type(c) is slice else tokenizer.encode(c)
+                c if type(c) is slice else tokenizer.from_bytes(c)
                 for c in stripped_changeset
             )
             encoded_patched = apply(encoded_stripped_changeset, encoded_patched)
 
-        return tokenizer.decode(encoded_patched)
+        return tokenizer.to_bytes(encoded_patched)
 
     def get(self, tag: Hashable) -> bytes | None:
         """

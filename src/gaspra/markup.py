@@ -4,6 +4,7 @@ import io
 from rich.console import Console
 
 from gaspra.types import Change
+from gaspra.tokenizers import Tokenizer
 
 
 def rich_escape(s):
@@ -73,6 +74,7 @@ def markup_changes(
     fragment_sequence,
     __name0__,
     __name1__,
+    tokenizer: Tokenizer,
     markup={},
     header: str | None = None,
     **__kwargs__,
@@ -167,6 +169,7 @@ def line_oriented_markup_changes(
     fragment_sequence,
     name0,
     name1,
+    tokenizer: Tokenizer,
     markup={},
     header: str | None = None,
     **__kwargs__,
@@ -263,9 +266,9 @@ def token_oriented_markup_changes(
     fragment_sequence,
     name0,
     name1,
+    tokenizer: Tokenizer,
     markup={},
     header: str | None = None,
-    token_map=(),
 ):
     escape = markup["escape"]
 
@@ -274,10 +277,10 @@ def token_oriented_markup_changes(
 
     for item in fragment_sequence:
         if isinstance(item, Change):
-            print_conflict(print, item.a, token_map, escape, name0, markup["into"])
+            print_conflict(print, item.a, tokenizer, escape, name0, markup["into"])
             print(markup["separator"])
-            print_conflict(print, item.b, token_map, escape, name1, markup["from"])
+            print_conflict(print, item.b, tokenizer, escape, name1, markup["from"])
         else:
             for token in item:
-                print(token_map[token])
+                print(tokenizer[token])
                 print("\n")

@@ -138,19 +138,21 @@ class LineTokenizer(Generic[BytesOrStr]):
         if isinstance(contents, bytes):
             # As long as the contents of lines are treated as atomic,
             # there's no need to decode them before splitting them.
-            lines = cast(list[BytesOrStr], contents.split(b"\n"))
+            split_on = cast(BytesOrStr, b"\n")
         else:
-            lines = cast(list[BytesOrStr], contents.split("\n"))
+            split_on = cast(BytesOrStr, "\n")
 
+        split = cast(list[BytesOrStr], contents.split(split_on))
+        lines = [*(line + split_on for line in split[:-1]), split[-1]]
         encoded, self.bytes_decoding = generic_encode(lines, self.bytes_encoding)
         return encoded
 
     def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
         contents = cast(Iterable[int], contents)
         if self.source_type is bytes:
-            joiner = b"\n"
+            joiner = b""
         else:
-            joiner = "\n"
+            joiner = ""
         return generic_decode(contents, self.bytes_decoding, cast(BytesOrStr, joiner))
 
 

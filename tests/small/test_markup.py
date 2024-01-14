@@ -122,9 +122,19 @@ def test_line_oriented_markup_changes(input_sequence, output):
 
 
 @pytest.fixture
-def token_map():
+def tokenizer():
     _token_map = tuple(chain(("",), "abcdefg"))
-    return _token_map
+
+    # This is a hard-coded decoder with
+    # 0 -> "\n"
+    # 1 -> "a\n"
+    # 2 -> "b\n", etc
+
+    class Tokenizer:
+        def decode(self, content):
+            return "".join((_token_map[token] + "\n") for token in content)
+
+    return Tokenizer()
 
 
 @pytest.mark.parametrize(
@@ -206,7 +216,7 @@ def token_map():
         ),
     ],
 )
-def test_token_oriented_markup_changes(input_sequence, output, token_map):
+def test_token_oriented_markup_changes(input_sequence, output, tokenizer):
     output_buffer = io.StringIO()
 
     token_oriented_markup_changes(
@@ -214,9 +224,9 @@ def test_token_oriented_markup_changes(input_sequence, output, token_map):
         tuple(input_sequence),
         "x",
         "y",
+        tokenizer=tokenizer,
         markup=TEST_TOKEN_MARKUP,
         header="",
-        tokenizer=token_map,
     )
 
     assert output_buffer.getvalue() == output

@@ -2,7 +2,8 @@ from collections.abc import Hashable, Iterable, Sequence
 from collections import namedtuple
 from typing import TypeVar
 
-Token = TypeVar("Token", bound=Hashable)
+Token = Hashable
+TokenVar = TypeVar("TokenVar", bound=Hashable)
 Tag = TypeVar("Tag", bound=Hashable)
 TokenSequence = Sequence[Token]
 TokenSequenceVar = TypeVar("TokenSequenceVar", str, bytes, Sequence[int])

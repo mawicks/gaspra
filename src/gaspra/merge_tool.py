@@ -17,7 +17,7 @@ from gaspra.merge import merge
 from gaspra.changesets import diff
 from gaspra.tokenizers import (
     line_encode_strings,
-    ByteTokenizer,
+    CharTokenizer,
     LineTokenizer,
     SymbolTokenizer,
 )
@@ -35,22 +35,22 @@ def add_common_arguments(parser):
     token_group = parser.add_mutually_exclusive_group()
 
     token_group.add_argument(
-        "-b",
-        "--byte",
+        "-c",
+        "--characters",
         action="store_true",
-        help="Use a byte-oriented/character-oriented diff (default unless -L)",
+        help="Process input as stream of characters",
     )
     token_group.add_argument(
         "-w",
-        "--word",
+        "--words",
         action="store_true",
-        help="Use a word-oriented/symbol-oriented diff (default unless -L)",
+        help="Process input as stream of words or symbols",
     )
     token_group.add_argument(
         "-l",
-        "--line",
+        "--lines",
         action="store_true",
-        help="Use a word-oriented/symbol-oriented diff (default unless -L)",
+        help="Process input stream of lines",
     )
 
     parser.add_argument(
@@ -64,7 +64,7 @@ def add_common_arguments(parser):
         "-L",
         "--show-lines",
         action="store_true",
-        help="Use a line-oriented diff for output, even if the processing was byte or word-oriented",
+        help="Perform a line-oriented diff, regardless of tokenization of input stream.",
     )
 
 
@@ -116,10 +116,10 @@ def get_torture_test_arguments():
 
 
 def get_markup_function(arguments, tokenizer, allow_strikeout=True):
-    if not arguments.character_oriented:
+    if not arguments.characters:
         wrapped_markup_function = token_oriented_markup_changes
 
-    elif arguments.line_oriented:
+    elif arguments.lines:
         wrapped_markup_function = line_oriented_markup_changes
     else:
         wrapped_markup_function = markup_changes
@@ -147,11 +147,11 @@ def get_markup_function(arguments, tokenizer, allow_strikeout=True):
 
 
 def get_markup_style(arguments, allow_strikeout=True):
-    if not arguments.character_oriented:
-        if arguments.file_style:
+    if not arguments.characters:
+        if arguments.git_compatible:
             return TOKEN_GIT_MARKUP
         return TOKEN_SCREEN_MARKUP
-    if arguments.file_style:
+    if arguments.git_compatible:
         return GIT_MARKUP
     elif arguments.strikeout and allow_strikeout:
         return STRIKEOUT_SCREEN_MARKUP
@@ -189,7 +189,7 @@ def _merge(parent_name, current_name, other_name, arguments):
     parent, current, other = get_text(parent_name, current_name, other_name)
 
     token_map = None
-    if not arguments.character_oriented:
+    if not arguments.characters:
         token_map, parent, current, other = line_encode_strings(parent, current, other)
 
     with get_writer(arguments) as writer:
@@ -225,11 +225,11 @@ def _merge(parent_name, current_name, other_name, arguments):
 
 
 def make_tokenizer(arguments):
-    if arguments.word:
+    if arguments.words:
         return SymbolTokenizer()
-    if arguments.line:
+    if arguments.lines:
         return LineTokenizer()
-    return ByteTokenizer()
+    return CharTokenizer()
 
 
 def diff_cli():
@@ -281,4 +281,4 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
-    torture_cli()
+    diff_cli()

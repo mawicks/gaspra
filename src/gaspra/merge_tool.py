@@ -238,7 +238,7 @@ def diff_cli():
     original_name = arguments.original
     modified_name = arguments.modified
 
-    original, modified = get_bytes(original_name, modified_name)
+    original, modified = get_text(original_name, modified_name)
 
     tokenizer = make_tokenizer(arguments)
 

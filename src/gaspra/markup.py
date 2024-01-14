@@ -291,4 +291,4 @@ def token_oriented_markup_changes(
             print(markup["separator"])
             print_conflict(print, item.b, tokenizer, escape, name1, markup["from"])
         else:
-            print(tokenizer.decode(item))
+            print(escape(tokenizer.decode(item)))

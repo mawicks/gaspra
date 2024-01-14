@@ -5,7 +5,7 @@ from gaspra.tokenizers import (
     LineTokenizer,
     SpaceTokenizer,
     SymbolTokenizer,
-    UTF8Tokenizer,
+    CharTokenizer,
 )
 
 
@@ -14,7 +14,7 @@ from gaspra.tokenizers import (
         LineTokenizer,
         SpaceTokenizer,
         SymbolTokenizer,
-        UTF8Tokenizer,
+        CharTokenizer,
     )
 )
 def tokenizer(request: pytest.FixtureRequest):
@@ -46,13 +46,13 @@ def test_generic_encoder(string, tokenizer):
     try:
         string.decode("utf-8")
     except UnicodeDecodeError:
-        if type(tokenizer) in (UTF8Tokenizer, SymbolTokenizer):
+        if type(tokenizer) in (CharTokenizer, SymbolTokenizer):
             return
 
     encoded = tokenizer.from_bytes(string)
 
     # Another exception for the UTF8Tokenizer
-    if type(tokenizer) != UTF8Tokenizer:
+    if type(tokenizer) != CharTokenizer:
         assert len(encoded) < len(string)
 
     assert tokenizer.to_bytes(encoded) == string

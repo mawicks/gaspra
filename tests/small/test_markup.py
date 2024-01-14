@@ -5,7 +5,7 @@ from itertools import chain
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 from gaspra.types import Change
-from gaspra.tokenizers import ByteTokenizer
+from gaspra.tokenizers import NullTokenizer
 
 TEST_MARKUP = {
     "fragment": {
@@ -89,7 +89,7 @@ TEST_TOKEN_MARKUP = {
             "a\n< x\nb\n=\nc\n> y\nd\ne\nf\n< x\ng\n=\nh\n> y\n",
         ),
         #
-        # Two conflict in the same line
+        # Two conflicts in the same line
         (("a", ("b", "c"), "d", ("e", "f"), "g\n"), "< x\nabdeg\n=\nacdfg\n> y\n"),
         #
         # Malformed files without newlines.
@@ -106,7 +106,7 @@ def test_line_oriented_markup_changes(input_sequence, output):
     # encoding/decoding.  We don't encode() so we can't
     # dynamically determine the encoding.
 
-    tokenizer = ByteTokenizer()
+    tokenizer = NullTokenizer()
 
     line_oriented_markup_changes(
         output_buffer.write,

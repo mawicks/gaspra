@@ -1,5 +1,5 @@
-from collections.abc import Iterable, Sequence
-from typing import cast, Protocol
+from collections.abc import Hashable, Iterable, Sequence
+from typing import cast, Generic, Protocol, TypeVar
 import re
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
@@ -23,13 +23,18 @@ def line_encode_strings(
     return tuple([decoding, *encoded])
 
 
+BytesOrStr = TypeVar("BytesOrStr", bytes, str)
+
+
 def generic_decode(
-    contents: Iterable[int], decoding: Sequence[bytes], separator: bytes
+    contents: Iterable[int], decoding: Sequence[BytesOrStr], separator: BytesOrStr
 ):
     return separator.join(decoding[t] for t in contents)
 
 
-def encode(unencoded_tokens: Iterable[bytes], encoding: dict[bytes, int]):
+def generic_encode(
+    unencoded_tokens: Iterable[BytesOrStr], encoding: dict[BytesOrStr, int]
+):
     for token in unencoded_tokens:
         if token not in encoding:
             encoding[token] = len(encoding)
@@ -40,93 +45,164 @@ def encode(unencoded_tokens: Iterable[bytes], encoding: dict[bytes, int]):
 
 
 class Tokenizer(Protocol):
-    separator: bytes
-
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
+    def from_bytes(self, contents: BytesOrStr) -> Sequence[int] | str | bytes:
         raise NotImplemented
 
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
+    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
         raise NotImplemented
 
 
-# Here, we assume the input streams are sequences of bytes, typically
-# UTF-8.  That way, we don't worry about the encoding of the input file.
-# It could juse as well be UTF-8, ISO-8859-x or a binary file.
-# LineTokenizer should work fine on many text encodings (UTF-8,
-# ISO-8859-x, etc.) Lines are lines in all common encodings.
-# ByteTokenizer could split a multibyte unicode character so it should
-# only be used on binary files or files known not to contain multi-byte
-# characters.  UTF8Tokenizer is probably safer for text known to be
-# UTF-8 encoded, but likely slower.  For the time being, SymbolTokenizer
-# tokenizes sequences of ASCII alphanumeric symbols.  All other bytes
-# get encoded as single tokens, so words with non-ASCII characters would
-# get encoded as several tokens.  This should be safe but might produce
-# unintuitive results.  If you want to group on "words" or "symbols"
-# containing non-ASCII characters, you would need to do some combination
-# of UTF8Tokenizer and SymbolTokernizer that decodes the bytes, groups
-# the characters into tokens, and then encodes the tokens.
-class ByteTokenizer:
-    separator = b""
+# In the Tokenizer implementations, we do a lot of casing under the
+# assumption that to_bytes()/to_str() is only called on something
+# produced by from_bytes()/from_str() from the same tokenizer.  The
+# caller shouldn't care what's in the result of from from_bytes other
+# than being Iterable[Hashable] so that it can be passed to the suffix
+# automaton code, and the caller should only call to_bytes() on
+# something produced by from_bytes() using the same tokenizer.
+# Likewise, to_str() should only be called on something produced by
+# from_str() from the same tokenizer.  Calling to_str() on something
+# produced by from_bytes() may not even produce a string.
 
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
+# Here, we assume the input streams are str or byte (typically UTF-8).
+# Often we use byte so that we don't need to know anything about the
+# encoding of the input.  It could juse as well be UTF-8, ISO-8859-x or
+# a binary file.  LineTokenizer should work fine on bytes using many
+# different text encodings (UTF-8, # ISO-8859-x, etc.) Lines are lines
+# in all common encodings.  NullTokenizer could split a multibyte
+# unicode character so its from_bytes() method should only be used on
+# binary files or files known not to contain multi-byte characters.
+# UTF8Tokenizer is probably safer for text known to be UTF-8 encoded,
+# but likely slower.
+
+
+class NullTokenizer(Generic[BytesOrStr]):
+    source_type: type | None = None
+
+    """
+    The methods in NullTokenizer are no-ops.  NullTokenizer
+    is used to simplifiy code by always requiring a tokenizer.
+    """
+
+    def from_bytes(self, contents: BytesOrStr) -> BytesOrStr:
+        if self.source_type and self.source_type != type(contents):
+            raise RuntimeError("Can't mix type of 'contents' in different calls.")
+
+        self.source_type = type(contents)
         return contents
 
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
-        return cast(bytes, contents)
+    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+        return cast(BytesOrStr, contents)
 
 
-class UTF8Tokenizer:
-    separator = b""
-
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
-        return tuple(ord(c) for c in contents.decode("utf-8"))
-
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
-        return "".join(chr(code) for code in contents).encode("utf-8")
+def f(x: Tokenizer):
+    y = x.from_bytes(b"abc")
+    x.to_bytes(y)
+    return
 
 
-class LineTokenizer:
-    separator = "\n"
-    encoding: dict[bytes, int]
-    decoding: Sequence[bytes]
+f(NullTokenizer())
+
+
+class CharTokenizer(Generic[BytesOrStr]):
+    source_type: type | None = None
+
+    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+        if self.source_type and self.source_type != type(contents):
+            raise RuntimeError("Can't mix type of 'contents' in different calls.")
+
+        self.source_type = type(contents)
+
+        if isinstance(contents, bytes):
+            return tuple(ord(c) for c in contents.decode("utf-8"))
+        else:
+            return tuple(ord(c) for c in contents)
+
+    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+        if self.source_type is bytes:
+            return cast(
+                BytesOrStr,
+                b"".join(chr(cast(int, code)).encode("utf-8") for code in contents),
+            )
+        else:
+            return cast(
+                BytesOrStr,
+                "".join(chr(cast(int, code)) for code in contents),
+            )
+
+
+class LineTokenizer(Generic[BytesOrStr]):
+    source_type: type | None = None
+
+    bytes_encoding: dict[BytesOrStr, int]
+    bytes_decoding: Sequence[BytesOrStr]
+
+    def __init__(self):
+        self.bytes_encoding = {}
+
+    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+        if self.source_type and self.source_type != type(contents):
+            raise RuntimeError("Can't mix type of 'contents' in different calls.")
+        self.source_type = type(contents)
+
+        if isinstance(contents, bytes):
+            # As long as the contents of lines are treated as atomic,
+            # there's no need to decode them before splitting them.
+            lines = cast(list[BytesOrStr], contents.split(b"\n"))
+        else:
+            lines = cast(list[BytesOrStr], contents.split("\n"))
+
+        encoded, self.bytes_decoding = generic_encode(lines, self.bytes_encoding)
+        return encoded
+
+    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+        contents = cast(Iterable[int], contents)
+        if self.source_type is bytes:
+            joiner = b"\n"
+        else:
+            joiner = "\n"
+        return generic_decode(contents, self.bytes_decoding, cast(BytesOrStr, joiner))
+
+
+class SymbolTokenizer(Generic[BytesOrStr]):
+    source_type: type | None = None
+
+    encoding: dict[BytesOrStr, int]
+    decoding: Sequence[BytesOrStr]
 
     def __init__(self):
         self.encoding = {}
 
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
-        lines = contents.split(b"\n")
+    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+        if self.source_type and self.source_type != type(contents):
+            raise RuntimeError("Can't mix type of 'contents' in different calls.")
+        self.source_type = type(contents)
 
-        encoded, self.decoding = encode(lines, self.encoding)
+        if type(contents) == bytes:
+            unencoded_tokens = [
+                token[0].encode("utf-8")
+                for token in SYMBOLS.finditer(contents.decode("utf-8"))
+            ]
+        elif type(contents) == str:
+            unencoded_tokens = [token[0] for token in SYMBOLS.finditer(contents)]
+        else:
+            raise RuntimeError(f"Unexpected type of contents: {type(contents)}")
+
+        unencoded_tokens = cast(list[BytesOrStr], unencoded_tokens)
+        encoded, self.decoding = generic_encode(unencoded_tokens, self.encoding)
         return encoded
 
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
-        return generic_decode(contents, self.decoding, b"\n")
+    def to_bytes(self, contents: Iterable[Hashable]) -> bytes:
+        contents = cast(Iterable[int], contents)
 
+        if self.source_type == bytes:
+            joiner = b""
+        else:
+            joiner = ""
 
-class SymbolTokenizer:
-    separator = b""
-
-    encoding: dict[bytes, int]
-    decoding: Sequence[bytes]
-
-    def __init__(self):
-        self.encoding = {}
-
-    def from_bytes(self, contents: bytes) -> Sequence[int]:
-        unencoded_tokens = [
-            token[0].encode("utf-8")
-            for token in SYMBOLS.finditer(contents.decode("utf-8"))
-        ]
-
-        encoded, self.decoding = encode(unencoded_tokens, self.encoding)
-        return encoded
-
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
-        return generic_decode(contents, self.decoding, b"")
+        return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
 
 
 class SpaceTokenizer:
-    separator = b" "
     encoding: dict[bytes, int]
     decoding: Sequence[bytes]
 
@@ -136,8 +212,9 @@ class SpaceTokenizer:
     def from_bytes(self, contents: bytes) -> Sequence[int]:
         unencoded_tokens = contents.split(b" ")
 
-        encoded, self.decoding = encode(unencoded_tokens, self.encoding)
+        encoded, self.decoding = generic_encode(unencoded_tokens, self.encoding)
         return encoded
 
-    def to_bytes(self, contents: Iterable[int]) -> bytes:
+    def to_bytes(self, contents: Iterable[Hashable]) -> bytes:
+        contents = cast(Iterable[int], contents)
         return generic_decode(contents, self.decoding, b" ")

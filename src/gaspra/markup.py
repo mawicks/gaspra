@@ -169,7 +169,7 @@ def line_oriented_markup_changes(
     fragment_sequence,
     name0,
     name1,
-    tokenizer: Tokenizer,
+    tokenizer: Tokenizer[str],
     markup={},
     header: str | None = None,
     **__kwargs__,

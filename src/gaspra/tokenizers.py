@@ -44,11 +44,11 @@ def generic_encode(
     return tuple(encoding[token] for token in unencoded_tokens), decoding
 
 
-class Tokenizer(Protocol):
-    def from_bytes(self, contents: BytesOrStr) -> Sequence[int] | str | bytes:
+class Tokenizer(Protocol, Generic[BytesOrStr]):
+    def encode(self, contents: BytesOrStr) -> Sequence[int] | str | bytes:
         raise NotImplemented
 
-    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
         raise NotImplemented
 
 
@@ -83,21 +83,21 @@ class NullTokenizer(Generic[BytesOrStr]):
     is used to simplifiy code by always requiring a tokenizer.
     """
 
-    def from_bytes(self, contents: BytesOrStr) -> BytesOrStr:
+    def encode(self, contents: BytesOrStr) -> BytesOrStr:
         if self.source_type and self.source_type != type(contents):
             raise RuntimeError("Can't mix type of 'contents' in different calls.")
 
         self.source_type = type(contents)
         return contents
 
-    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
         return cast(BytesOrStr, contents)
 
 
 class CharTokenizer(Generic[BytesOrStr]):
     source_type: type | None = None
 
-    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+    def encode(self, contents: BytesOrStr) -> Sequence[int]:
         if self.source_type and self.source_type != type(contents):
             raise RuntimeError("Can't mix type of 'contents' in different calls.")
 
@@ -108,7 +108,7 @@ class CharTokenizer(Generic[BytesOrStr]):
         else:
             return tuple(ord(c) for c in contents)
 
-    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
         if self.source_type is bytes:
             return cast(
                 BytesOrStr,
@@ -130,7 +130,7 @@ class LineTokenizer(Generic[BytesOrStr]):
     def __init__(self):
         self.bytes_encoding = {}
 
-    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+    def encode(self, contents: BytesOrStr) -> Sequence[int]:
         if self.source_type and self.source_type != type(contents):
             raise RuntimeError("Can't mix type of 'contents' in different calls.")
         self.source_type = type(contents)
@@ -145,7 +145,7 @@ class LineTokenizer(Generic[BytesOrStr]):
         encoded, self.bytes_decoding = generic_encode(lines, self.bytes_encoding)
         return encoded
 
-    def to_bytes(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
         contents = cast(Iterable[int], contents)
         if self.source_type is bytes:
             joiner = b"\n"
@@ -163,7 +163,7 @@ class SymbolTokenizer(Generic[BytesOrStr]):
     def __init__(self):
         self.encoding = {}
 
-    def from_bytes(self, contents: BytesOrStr) -> Sequence[int]:
+    def encode(self, contents: BytesOrStr) -> Sequence[int]:
         if self.source_type and self.source_type != type(contents):
             raise RuntimeError("Can't mix type of 'contents' in different calls.")
         self.source_type = type(contents)
@@ -182,7 +182,7 @@ class SymbolTokenizer(Generic[BytesOrStr]):
         encoded, self.decoding = generic_encode(unencoded_tokens, self.encoding)
         return encoded
 
-    def to_bytes(self, contents: Iterable[Hashable]) -> bytes:
+    def decode(self, contents: Iterable[Hashable]) -> bytes:
         contents = cast(Iterable[int], contents)
 
         if self.source_type == bytes:

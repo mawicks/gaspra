@@ -48,14 +48,14 @@ def test_generic_encoder_on_bytes(string, tokenizer):
         if type(tokenizer) in (CharTokenizer, SymbolTokenizer):
             return
 
-    encoded = tokenizer.from_bytes(string)
+    encoded = tokenizer.encode(string)
 
     # Another exception for Chartokenizer and NullTokenizer which
     # don't group characters, so they're not expected to reduce.
     if type(tokenizer) not in (NullTokenizer, CharTokenizer):
         assert len(encoded) < len(string)
 
-    assert tokenizer.to_bytes(encoded) == string
+    assert tokenizer.decode(encoded) == string
 
 
 @pytest.mark.parametrize("string", ENCODER_TEST_CASES)
@@ -63,14 +63,14 @@ def test_generic_encoder_on_strs(string, tokenizer):
     if type(string) is bytes:
         return
 
-    encoded = tokenizer.from_bytes(string)
+    encoded = tokenizer.encode(string)
 
     # Another exception for Chartokenizer and NullTokenizer which
     # don't group characters, so they're not expected to reduce.
     if type(tokenizer) not in (NullTokenizer, CharTokenizer):
         assert len(encoded) < len(string)
 
-    assert tokenizer.to_bytes(encoded) == string
+    assert tokenizer.decode(encoded) == string
 
 
 @pytest.mark.parametrize(

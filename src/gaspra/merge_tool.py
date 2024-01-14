@@ -242,8 +242,8 @@ def diff_cli():
 
     tokenizer = make_tokenizer(arguments)
 
-    original = tokenizer.from_bytes(original)
-    modified = tokenizer.from_bytes(modified)
+    original = tokenizer.encode(original)
+    modified = tokenizer.encode(modified)
 
     changes = diff(original, modified)
 

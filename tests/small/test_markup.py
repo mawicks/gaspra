@@ -5,7 +5,7 @@ from itertools import chain
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 from gaspra.types import Change
-from gaspra.tokenizers import NullTokenizer
+from gaspra.tokenizers import NullTokenizer, Tokenizer
 
 TEST_MARKUP = {
     "fragment": {
@@ -106,7 +106,7 @@ def test_line_oriented_markup_changes(input_sequence, output):
     # encoding/decoding.  We don't encode() so we can't
     # dynamically determine the encoding.
 
-    tokenizer = NullTokenizer()
+    tokenizer = NullTokenizer[str]()
 
     line_oriented_markup_changes(
         output_buffer.write,

@@ -64,7 +64,7 @@ def add_common_arguments(parser):
         "-L",
         "--show-lines",
         action="store_true",
-        help="Perform a line-oriented diff, regardless of tokenization of input stream.",
+        help="Show a line-oriented diff, regardless of tokenization of input stream.",
     )
 
 
@@ -116,18 +116,19 @@ def get_torture_test_arguments():
 
 
 def get_markup_function(arguments, tokenizer, allow_strikeout=True):
-    if not arguments.characters:
-        wrapped_markup_function = token_oriented_markup_changes
-
-    elif arguments.lines:
+    if arguments.show_lines or arguments.git_compatible:
         wrapped_markup_function = line_oriented_markup_changes
     else:
         wrapped_markup_function = markup_changes
+
+    # Is there any use for this now?
+    # wrapped_markup_function = token_oriented_markup_changes
 
     markup = get_markup_style(arguments, allow_strikeout)
 
     def markup_function(
         writer,
+        escape,
         changeset: ChangeIterable,
         branch0: str,
         branch1: str,
@@ -135,6 +136,7 @@ def get_markup_function(arguments, tokenizer, allow_strikeout=True):
     ):
         wrapped_markup_function(
             writer,
+            escape,
             changeset,
             os.path.basename(branch0),
             os.path.basename(branch1),
@@ -147,10 +149,6 @@ def get_markup_function(arguments, tokenizer, allow_strikeout=True):
 
 
 def get_markup_style(arguments, allow_strikeout=True):
-    if not arguments.characters:
-        if arguments.git_compatible:
-            return TOKEN_GIT_MARKUP
-        return TOKEN_SCREEN_MARKUP
     if arguments.git_compatible:
         return GIT_MARKUP
     elif arguments.strikeout and allow_strikeout:
@@ -193,6 +191,7 @@ def _merge(parent_name, current_name, other_name, arguments):
         token_map, parent, current, other = line_encode_strings(parent, current, other)
 
     with get_writer(arguments) as writer:
+        writer, escape = writer
         if arguments.diff:
             diff_markup = get_markup_function(
                 arguments, token_map, allow_strikeout=True
@@ -203,6 +202,7 @@ def _merge(parent_name, current_name, other_name, arguments):
             def markup_one(changes, branch_name):
                 diff_markup(
                     writer,
+                    escape,
                     changes,
                     branch_name,
                     parent_name,
@@ -217,6 +217,7 @@ def _merge(parent_name, current_name, other_name, arguments):
 
         merge_markup(
             writer,
+            escape,
             merged,
             current_name,
             other_name,
@@ -250,8 +251,10 @@ def diff_cli():
     display_function = get_markup_function(arguments, tokenizer)
 
     with get_writer(arguments) as writer:
+        writer, escape = writer
         display_function(
             writer,
+            escape,
             changes,
             modified_name,
             original_name,

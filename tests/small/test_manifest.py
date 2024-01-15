@@ -1,5 +1,3 @@
-from collections.abc import Hashable
-import json
 import pytest
 
 from gaspra.versions import Versions

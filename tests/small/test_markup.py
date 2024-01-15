@@ -103,12 +103,6 @@ TEST_TOKEN_MARKUP = {
 def test_line_oriented_markup_changes(input_sequence, output):
     output_buffer = io.StringIO()
 
-    # It's important to use a tokenizer with a hard-coded
-    # encoding/decoding.  We don't encode() so we can't
-    # dynamically determine the encoding.
-
-    tokenizer = NullTokenizer[str]()
-
     line_oriented_markup_changes(
         output_buffer.write,
         input_sequence,
@@ -130,11 +124,11 @@ def tokenizer():
     # 1 -> "a\n"
     # 2 -> "b\n", etc
 
-    class Tokenizer:
+    class _Tokenizer:
         def decode(self, content):
             return "".join((_token_map[token] + "\n") for token in content)
 
-    return Tokenizer()
+    return _Tokenizer()
 
 
 @pytest.mark.parametrize(

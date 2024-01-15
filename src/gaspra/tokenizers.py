@@ -1,4 +1,4 @@
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Iterable, Sequence
 from typing import cast, Generic, Protocol, TypeVar
 import re
 
@@ -48,10 +48,10 @@ def generic_encode(
 
 class Tokenizer(Protocol, Generic[BytesOrStr]):
     def encode(self, contents: BytesOrStr) -> TokenIterable:
-        raise NotImplemented
+        raise NotImplementedError
 
     def decode(self, contents: TokenIterable) -> BytesOrStr:
-        raise NotImplemented
+        raise NotImplementedError
 
 
 # In the Tokenizer implementations, we do a lot of casing under the
@@ -172,12 +172,12 @@ class SymbolTokenizer(Generic[BytesOrStr]):
             raise RuntimeError("Can't mix type of 'contents' in different calls.")
         self.source_type = type(contents)
 
-        if type(contents) == bytes:
+        if type(contents) is bytes:
             unencoded_tokens = [
                 token[0].encode("utf-8")
                 for token in SYMBOLS.finditer(contents.decode("utf-8"))
             ]
-        elif type(contents) == str:
+        elif type(contents) is str:
             unencoded_tokens = [token[0] for token in SYMBOLS.finditer(contents)]
         else:
             raise RuntimeError(f"Unexpected type of contents: {type(contents)}")

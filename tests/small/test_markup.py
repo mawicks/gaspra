@@ -5,7 +5,7 @@ from itertools import chain
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 from gaspra.types import Change
-from gaspra.tokenizers import NullTokenizer, Tokenizer
+from gaspra.tokenizers import NullTokenizer, Tokenizer, decode_changes
 
 TEST_MARKUP = {
     "fragment": {
@@ -26,10 +26,6 @@ TEST_TOKEN_MARKUP = {
     "separator": "=\n",
     "header": {"prefix": "|", "suffix": "|"},
 }
-
-
-def escape(string):
-    return string
 
 
 @pytest.mark.parametrize(
@@ -115,11 +111,9 @@ def test_line_oriented_markup_changes(input_sequence, output):
 
     line_oriented_markup_changes(
         output_buffer.write,
-        escape,
         input_sequence,
         "x",
         "y",
-        tokenizer,
         markup=TEST_MARKUP,
         header="",
     )
@@ -227,11 +221,9 @@ def test_token_oriented_markup_changes(input_sequence, output, tokenizer):
 
     token_oriented_markup_changes(
         output_buffer.write,
-        escape,
-        tuple(input_sequence),
+        decode_changes(tokenizer, tuple(input_sequence)),
         "x",
         "y",
-        tokenizer=tokenizer,
         markup=TEST_TOKEN_MARKUP,
         header="",
     )

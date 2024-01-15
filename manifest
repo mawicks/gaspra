@@ -1,5 +1,5 @@
-C Get\stokenizer\sand\sescape()\sout\sof\smarkup.py
-D 2024-01-15T01:31:47.017
+C Remove\stokenizer\sand\sescape\sfrom\smarkup\scalls\sin\stest_markup
+D 2024-01-15T01:35:33.293
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -39,7 +39,7 @@ F tests/small/test_common.py 5b0ce088ad95d532e3548113b139d407444bd16743416e7b535
 F tests/small/test_db_collections.py afccee3bc47373beb7d900ad3d2d2bd884c861a7f49362ffff8f88a5abd7dfc6
 F tests/small/test_helpers.py e9f27f812214612222f10be37529446a52ce231a35472318938407e8f2f4868e
 F tests/small/test_manifest.py d74ff285e494f35e91a99c192713c18c12bcec3f3936b25db4c14e43232207ce
-F tests/small/test_markup.py 09ee8e290f7bee1c50b1147eba17648d9052513dbaf8f871577f2fa74c874147
+F tests/small/test_markup.py d26625570774a80ee9158e96c7ff562b82c7ca034c8c4896a7d8f6f586238711
 F tests/small/test_merge.py dbb075221388e11785598111463e5e1e8d2311c76c73ec8581eccae0d82812aa
 F tests/small/test_multiple_strings.py 6dafba6ed83077c1d748f904293c0ccd5cefd014249a3d17a096937b2fe12e40
 F tests/small/test_serialize.py d1eb71f73a98e88695acdb215ff494fa03e4a67530ea5bcd53b528eb95420f21
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 19973c77358bd362af9e196afc1581b9a0be13068eb31654c20e2b42cfeb83ee
-R 20bd9131ced2580f1cedfc88c8694440
+P 3650ca001d859c85b35b69579c59b7e37a3757b55a1930f314b624f5ceeb26de
+R 6178d6f413033a549112fffd28fa8957
 U mwicks
-Z 5c6028a791690ee150681134798499ea
+Z 703e2571b891b45476e423e08790d874
 # Remove this line to create a well-formed Fossil manifest.

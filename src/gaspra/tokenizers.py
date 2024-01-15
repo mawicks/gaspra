@@ -197,13 +197,21 @@ class SymbolTokenizer(Generic[BytesOrStr]):
         return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
 
 
-def decode_changes(
-    tokenizer: Tokenizer, changes: ChangeIterable, escape=lambda _: _
+def decode_and_transform_changes(
+    tokenizer: Tokenizer, changes: ChangeIterable, transform=lambda _: _
 ) -> ChangeIterable:
+    """
+    Decode a changeset.  Changesets are first computed on token stream.
+    This function decodes each token in a Changeestto a str or a bytes
+    object.
+
+    It also applies an optional function escape() to the result.
+    """
     for change in changes:
         if isinstance(change, Change):
             yield Change(
-                escape(tokenizer.decode(change.a)), escape(tokenizer.decode(change.b))
+                transform(tokenizer.decode(change.a)),
+                transform(tokenizer.decode(change.b)),
             )
         else:
-            yield escape(tokenizer.decode(change))
+            yield transform(tokenizer.decode(change))

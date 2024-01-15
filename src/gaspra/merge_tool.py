@@ -13,7 +13,7 @@ from gaspra.markup import (
 from gaspra.merge import merge
 from gaspra.changesets import diff
 from gaspra.tokenizers import (
-    decode_changes,
+    decode_and_transform_changes,
     line_encode_strings,
     CharTokenizer,
     LineTokenizer,
@@ -249,7 +249,7 @@ def diff_cli():
         writer, escape = writer
         display_function(
             writer,
-            decode_changes(tokenizer, changes, escape),
+            decode_and_transform_changes(tokenizer, changes, escape),
             escape(modified_name),
             escape(original_name),
         )

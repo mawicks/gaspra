@@ -1,5 +1,5 @@
-C Change\sscreen\scolors\sslightly.
-D 2024-01-15T02:23:47.715
+C Eliminate\sa\stype\swarning\sand\srename\smarkup.join\s->\sjoin_with_newline
+D 2024-01-15T02:36:11.185
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -19,7 +19,7 @@ F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971dc0ea9d9e7
-F src/gaspra/markup.py 5e6c013a14581c57b10f28421086312bd9bd83d750aad00be17ccb698f030027
+F src/gaspra/markup.py 154b5c9e65771ec64dedf7d9371725260a71a35f3e5492d31acd5a286ef49704
 F src/gaspra/memory_tree.py c638fdd0e1d489b6ebb22be0e761e97c382d4b4aa6d41b4839b20c8c550754d9
 F src/gaspra/merge.py c1ea0c1299610ddb32d66c6368db31a758443aff305fdd2392eba4b838ee922b
 F src/gaspra/merge_tool.py a5a43709da4a19b66589b4f1415c3072a429eddf0e80d9034a6b451710e02737
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 5a5b4359e9e1e6c006a28aed8ceb6a3377bc81b0a8992a97b767ad43f9a5f8a2
-R 2c8d0bae820e34c42585646cb4bd5977
+P 2fceb642e1d28f9d8fc5c59b4485ad745883483abec30206c357207ef1ecade3
+R 9579b81a90278cb16bfc28aff57738fa
 U mwicks
-Z f979ddac45d7748d9998b679f2faa305
+Z fbf18461b516a141387c25c971f57222
 # Remove this line to create a well-formed Fossil manifest.

@@ -14,12 +14,12 @@ def rich_escape(s):
 
 SCREEN_MARKUP = {
     "fragment": {
-        "into": {"prefix": "[bright_green]", "suffix": "[/]"},
-        "from": {"prefix": "[bright_red]", "suffix": "[/]"},
+        "into": {"prefix": "[light_green]", "suffix": "[/]"},
+        "from": {"prefix": "[pink1]", "suffix": "[/]"},
     },
     "line": {
-        "into": {"prefix": lambda _: "[green]", "suffix": lambda _: "[/]"},
-        "from": {"prefix": lambda _: "[red]", "suffix": lambda _: "[/]"},
+        "into": {"prefix": lambda _: "[green4]", "suffix": lambda _: "[/]"},
+        "from": {"prefix": lambda _: "[dark_red]", "suffix": lambda _: "[/]"},
     },
     "separator": "",
     "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>\n"},

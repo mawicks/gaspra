@@ -13,6 +13,7 @@ from gaspra.markup import (
 from gaspra.merge import merge
 from gaspra.changesets import diff
 from gaspra.tokenizers import (
+    decode_changes,
     line_encode_strings,
     CharTokenizer,
     LineTokenizer,
@@ -125,7 +126,6 @@ def get_markup_function(arguments, tokenizer, allow_strikeout=True):
 
     def markup_function(
         writer,
-        escape,
         changeset: ChangeIterable,
         branch0: str,
         branch1: str,
@@ -133,11 +133,9 @@ def get_markup_function(arguments, tokenizer, allow_strikeout=True):
     ):
         wrapped_markup_function(
             writer,
-            escape,
             changeset,
             os.path.basename(branch0),
             os.path.basename(branch1),
-            tokenizer,
             markup=markup,
             header=os.path.basename(header) if header else None,
         )
@@ -251,10 +249,9 @@ def diff_cli():
         writer, escape = writer
         display_function(
             writer,
-            escape,
-            changes,
-            modified_name,
-            original_name,
+            decode_changes(tokenizer, changes, escape),
+            escape(modified_name),
+            escape(original_name),
         )
 
 

@@ -197,9 +197,13 @@ class SymbolTokenizer(Generic[BytesOrStr]):
         return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
 
 
-def decode_changes(tokenizer: Tokenizer, changes: ChangeIterable) -> ChangeIterable:
+def decode_changes(
+    tokenizer: Tokenizer, changes: ChangeIterable, escape=lambda _: _
+) -> ChangeIterable:
     for change in changes:
         if isinstance(change, Change):
-            yield Change(tokenizer.decode(change.a), tokenizer.decode(change.b))
+            yield Change(
+                escape(tokenizer.decode(change.a)), escape(tokenizer.decode(change.b))
+            )
         else:
-            yield tokenizer.decode(change)
+            yield escape(tokenizer.decode(change))

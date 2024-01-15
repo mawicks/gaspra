@@ -6,7 +6,6 @@ import io
 from rich.console import Console
 
 from gaspra.types import Change
-from gaspra.tokenizers import Tokenizer
 
 
 def rich_escape(s):
@@ -58,26 +57,24 @@ DEPRECATED_TOKEN_SCREEN_MARKUP = {
 }
 
 
-def show_header(print, escape, header, markup={}):
+def show_header(print, header, markup={}):
     header_markup = markup.get("header", {})
     prefix = header_markup.get("prefix", "")
     suffix = header_markup.get("suffix", "")
     if header:
-        print(f"\n{prefix}{escape(header)}{suffix}")
+        print(f"\n{prefix}{header}{suffix}")
 
 
 def markup_changes(
     print,
-    escape,
     fragment_sequence: Iterable[Sequence[Hashable] | tuple[Sequence[Hashable]]],
     __name0__,
     __name1__,
-    tokenizer: Tokenizer,
     markup={},
     header: str | None = None,
     **__kwargs__,
 ):
-    show_header(print, escape, header, markup)
+    show_header(print, header, markup)
 
     fragment_markup = markup.get("fragment", {})
 
@@ -88,14 +85,14 @@ def markup_changes(
 
     for fragment in fragment_sequence:
         if isinstance(fragment, Change):
-            print_fragment(tokenizer.decode(fragment.a), fragment_markup["into"])
-            print_fragment(tokenizer.decode(fragment.b), fragment_markup["from"])
+            print_fragment(fragment.a, fragment_markup["into"])
+            print_fragment(fragment.b, fragment_markup["from"])
 
         else:
-            print(escape(tokenizer.decode(fragment)))
+            print(fragment)
 
 
-def print_line(print, escape, line, name, line_markup):
+def print_line(print, line, name, line_markup):
     prefix = line_markup["prefix"](name)
     suffix = line_markup["suffix"](name)
     print(f"{prefix}{line}{suffix}")
@@ -113,19 +110,17 @@ def _markup_and_add_fragment(partial_line, fragment, fragment_markup):
 def markup_and_add_fragment(
     partial_line_into: str,
     partial_line_from: str,
-    escape,
     fragment: Change,
-    tokenizer: Tokenizer[str],
     fragment_markup,
 ):
     partial_line_into = _markup_and_add_fragment(
         partial_line_into,
-        escape(tokenizer.decode(fragment.a)),
+        fragment.a,
         fragment_markup["into"],
     )
     partial_line_from = _markup_and_add_fragment(
         partial_line_from,
-        escape(tokenizer.decode(fragment.b)),
+        fragment.b,
         fragment_markup["from"],
     )
     return partial_line_into, partial_line_from
@@ -141,7 +136,7 @@ def update_partials(partial_line_into, partial_line_from, input_fragment):
     return partial_line_into, partial_line_from, input_fragment
 
 
-def conflict_finisher(print, escape, markup, name0, name1):
+def conflict_finisher(print, markup, name0, name1):
     line_markup = markup.get("line", {})
 
     def finish_conflict(partial_line_into, partial_line_from, input_fragment):
@@ -152,7 +147,6 @@ def conflict_finisher(print, escape, markup, name0, name1):
 
         print_line(
             print,
-            escape,
             partial_line_into,
             name0,
             line_markup["into"],
@@ -160,7 +154,6 @@ def conflict_finisher(print, escape, markup, name0, name1):
         print(markup["separator"])
         print_line(
             print,
-            escape,
             partial_line_from,
             name1,
             line_markup["from"],
@@ -172,19 +165,17 @@ def conflict_finisher(print, escape, markup, name0, name1):
 
 def line_oriented_markup_changes(
     print,
-    escape,
     fragment_sequence: Iterable[Sequence[Hashable]],
     name0,
     name1,
-    tokenizer: Tokenizer[str],
     markup={},
     header: str | None = None,
     **__kwargs__,
 ):
-    show_header(print, escape, header, markup)
+    show_header(print, header, markup)
     fragment_markup = markup.get("fragment", {})
 
-    finish_conflict = conflict_finisher(print, escape, markup, name0, name1)
+    finish_conflict = conflict_finisher(print, markup, name0, name1)
 
     in_conflict = False
     partial_line_into = partial_line_from = ""
@@ -194,13 +185,11 @@ def line_oriented_markup_changes(
             partial_line_into, partial_line_from = markup_and_add_fragment(
                 partial_line_into,
                 partial_line_from,
-                escape,
                 fragment,
-                tokenizer,
                 fragment_markup,
             )
         else:
-            lines = escape(tokenizer.decode(fragment)).split("\n")
+            lines = fragment.split("\n")
             if len(lines) > 1:  # Have a newline
                 if in_conflict:
                     finish_conflict(
@@ -255,7 +244,7 @@ def console_writer():
     return
 
 
-def print_conflict(print, version, tokenizer: Tokenizer, escape, name, markup):
+def print_conflict(print, version, name, markup):
     prefix = markup["prefix"](name)
     suffix = markup["suffix"](name)
     # Collect output in a buffer so that prefix and suffix
@@ -264,7 +253,7 @@ def print_conflict(print, version, tokenizer: Tokenizer, escape, name, markup):
     buffer = io.StringIO()
     if prefix is not None:
         buffer.write(prefix)
-    buffer.write(escape(tokenizer.decode(version)))
+    buffer.write(version)
     if suffix is not None:
         buffer.write(suffix)
     print(buffer.getvalue())
@@ -272,11 +261,9 @@ def print_conflict(print, version, tokenizer: Tokenizer, escape, name, markup):
 
 def token_oriented_markup_changes(
     print,
-    escape,
     fragment_sequence,
     name0,
     name1,
-    tokenizer: Tokenizer,
     markup={},
     header: str | None = None,
 ):
@@ -285,8 +272,8 @@ def token_oriented_markup_changes(
 
     for item in fragment_sequence:
         if isinstance(item, Change):
-            print_conflict(print, item.a, tokenizer, escape, name0, markup["into"])
+            print_conflict(print, item.a, name0, markup["into"])
             print(markup["separator"])
-            print_conflict(print, item.b, tokenizer, escape, name1, markup["from"])
+            print_conflict(print, item.b, name1, markup["from"])
         else:
-            print(escape(tokenizer.decode(item)))
+            print(item)

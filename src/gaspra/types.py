@@ -6,6 +6,7 @@ Token = Hashable
 TokenVar = TypeVar("TokenVar", bound=Hashable)
 Tag = TypeVar("Tag", bound=Hashable)
 TokenSequence = Sequence[Token]
+TokenIterable = Iterable[Token]
 TokenSequenceVar = TypeVar("TokenSequenceVar", str, bytes, Sequence[int])
 
 StringIterable = Iterable[str]

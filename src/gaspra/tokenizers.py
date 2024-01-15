@@ -2,6 +2,8 @@ from collections.abc import Hashable, Iterable, Sequence
 from typing import cast, Generic, Protocol, TypeVar
 import re
 
+from gaspra.types import Change, ChangeIterable, TokenIterable, Token
+
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
 
 
@@ -45,10 +47,10 @@ def generic_encode(
 
 
 class Tokenizer(Protocol, Generic[BytesOrStr]):
-    def encode(self, contents: BytesOrStr) -> Sequence[int] | str | bytes:
+    def encode(self, contents: BytesOrStr) -> TokenIterable:
         raise NotImplemented
 
-    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: TokenIterable) -> BytesOrStr:
         raise NotImplemented
 
 
@@ -90,7 +92,7 @@ class NullTokenizer(Generic[BytesOrStr]):
         self.source_type = type(contents)
         return contents
 
-    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: TokenIterable) -> BytesOrStr:
         return cast(BytesOrStr, contents)
 
 
@@ -108,7 +110,7 @@ class CharTokenizer(Generic[BytesOrStr]):
         else:
             return tuple(ord(c) for c in contents)
 
-    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: TokenIterable) -> BytesOrStr:
         if self.source_type is bytes:
             return cast(
                 BytesOrStr,
@@ -147,7 +149,7 @@ class LineTokenizer(Generic[BytesOrStr]):
         encoded, self.bytes_decoding = generic_encode(lines, self.bytes_encoding)
         return encoded
 
-    def decode(self, contents: Iterable[Hashable]) -> BytesOrStr:
+    def decode(self, contents: Iterable[Token]) -> BytesOrStr:
         contents = cast(Iterable[int], contents)
         if self.source_type is bytes:
             joiner = b""
@@ -184,7 +186,7 @@ class SymbolTokenizer(Generic[BytesOrStr]):
         encoded, self.decoding = generic_encode(unencoded_tokens, self.encoding)
         return encoded
 
-    def decode(self, contents: Iterable[Hashable]) -> bytes:
+    def decode(self, contents: TokenIterable) -> bytes:
         contents = cast(Iterable[int], contents)
 
         if self.source_type == bytes:
@@ -193,3 +195,11 @@ class SymbolTokenizer(Generic[BytesOrStr]):
             joiner = ""
 
         return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
+
+
+def decode_changes(tokenizer: Tokenizer, changes: ChangeIterable) -> ChangeIterable:
+    for change in changes:
+        if isinstance(change, Change):
+            yield Change(tokenizer.decode(change.a), tokenizer.decode(change.b))
+        else:
+            yield tokenizer.decode(change)

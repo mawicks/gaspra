@@ -189,7 +189,16 @@ def line_oriented_markup_changes(
     in_conflict = False
     partial_line_into = partial_line_from = ""
     for fragment in fragment_sequence:
-        if not isinstance(fragment, Change):
+        if isinstance(fragment, Change):
+            in_conflict = True
+            partial_line_into, partial_line_from = markup_and_add_fragment(
+                partial_line_into,
+                partial_line_from,
+                fragment,
+                tokenizer,
+                fragment_markup,
+            )
+        else:
             lines = tokenizer.decode(fragment).split("\n")
             if len(lines) > 1:  # Have a newline
                 if in_conflict:
@@ -207,15 +216,6 @@ def line_oriented_markup_changes(
                 partial_line_into += lines[0]
                 partial_line_from += lines[0]
 
-        if isinstance(fragment, Change):
-            in_conflict = True
-            partial_line_into, partial_line_from = markup_and_add_fragment(
-                partial_line_into,
-                partial_line_from,
-                fragment,
-                tokenizer,
-                fragment_markup,
-            )
     if in_conflict:
         if partial_line_into[-1:] != "\n" or partial_line_from[-1:] != "\n":
             tail = "\n"

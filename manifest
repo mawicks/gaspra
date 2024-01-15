@@ -1,5 +1,5 @@
-C Eliminate\sa\stype\swarning\sand\srename\smarkup.join\s->\sjoin_with_newline
-D 2024-01-15T02:36:11.185
+C Use\stokenizer\sin\smerge\stool\sas\swell.
+D 2024-01-15T14:22:47.708
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -22,7 +22,7 @@ F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971d
 F src/gaspra/markup.py 154b5c9e65771ec64dedf7d9371725260a71a35f3e5492d31acd5a286ef49704
 F src/gaspra/memory_tree.py c638fdd0e1d489b6ebb22be0e761e97c382d4b4aa6d41b4839b20c8c550754d9
 F src/gaspra/merge.py c1ea0c1299610ddb32d66c6368db31a758443aff305fdd2392eba4b838ee922b
-F src/gaspra/merge_tool.py a5a43709da4a19b66589b4f1415c3072a429eddf0e80d9034a6b451710e02737
+F src/gaspra/merge_tool.py 69607993bdc0bd9a34e4e70ba9dec7716dfa6139821aa02fbdafa4ef3392742c
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
 F src/gaspra/serialize.py cd54c7e72b49dabfb00fa63afa46b698ebed28d0ee82f24a719d22c98701e1bc
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 2fceb642e1d28f9d8fc5c59b4485ad745883483abec30206c357207ef1ecade3
-R 9579b81a90278cb16bfc28aff57738fa
+P 4fac8a5769527f18d2355b87844ef4fbc2659cdf7960c8838ab2177159cb8034
+R 0a3fd5ef7d5f73a86408a71a3dddd3fa
 U mwicks
-Z fbf18461b516a141387c25c971f57222
+Z 1e42bdc95f0f68ec6ad40d9c1d5159fb
 # Remove this line to create a well-formed Fossil manifest.

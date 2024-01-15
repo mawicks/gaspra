@@ -14,7 +14,6 @@ from gaspra.merge import merge
 from gaspra.changesets import diff
 from gaspra.tokenizers import (
     decode_and_transform_changes,
-    line_encode_strings,
     CharTokenizer,
     LineTokenizer,
     SymbolTokenizer,
@@ -52,6 +51,13 @@ def add_common_arguments(parser):
     )
 
     parser.add_argument(
+        "-L",
+        "--show-lines",
+        action="store_true",
+        help="Show line-oriented diffs, regardless of tokenization of input stream.",
+    )
+
+    parser.add_argument(
         "-g",
         "--git-compatible",
         action="store_true",
@@ -59,10 +65,10 @@ def add_common_arguments(parser):
     )
 
     parser.add_argument(
-        "-L",
-        "--show-lines",
+        "-s",
+        "--strikeout",
         action="store_true",
-        help="Show a line-oriented diff, regardless of tokenization of input stream.",
+        help="Use a strikeout font for deletions (only on diffs))",
     )
 
 
@@ -89,13 +95,6 @@ def get_diff_arguments():
     parser.add_argument("modified")
 
     add_common_arguments(parser)
-    parser.add_argument(
-        "-s",
-        "--strikeout",
-        action="store_true",
-        help="Use a strikeout font for deletions (only on diffs).",
-    )
-
     args = parser.parse_args()
     return args
 
@@ -113,7 +112,7 @@ def get_torture_test_arguments():
     return args
 
 
-def get_markup_function(arguments, tokenizer, allow_strikeout=True):
+def get_markup_function(arguments, allow_strikeout=True):
     if arguments.show_lines or arguments.git_compatible:
         wrapped_markup_function = line_oriented_markup_changes
     else:
@@ -181,23 +180,26 @@ def torture_cli():
 def _merge(parent_name, current_name, other_name, arguments):
     parent, current, other = get_text(parent_name, current_name, other_name)
 
-    token_map = None
-    if not arguments.characters:
-        token_map, parent, current, other = line_encode_strings(parent, current, other)
+    tokenizer = make_tokenizer(arguments)
 
-    with get_writer(arguments) as writer:
-        writer, escape = writer
+    parent = tokenizer.encode(parent)
+    current = tokenizer.encode(current)
+    other = tokenizer.encode(other)
+
+    with get_writer(arguments) as writer_and_escape:
+        writer, escape = writer_and_escape
         if arguments.diff:
-            diff_markup = get_markup_function(
-                arguments, token_map, allow_strikeout=True
+            diff_markup = get_markup_function(arguments, allow_strikeout=True)
+            current_changes = decode_and_transform_changes(
+                tokenizer, diff(parent, current), escape
             )
-            current_changes = diff(parent, current)
-            other_changes = diff(parent, other)
+            other_changes = decode_and_transform_changes(
+                tokenizer, diff(parent, other), escape
+            )
 
             def markup_one(changes, branch_name):
                 diff_markup(
                     writer,
-                    escape,
                     changes,
                     branch_name,
                     parent_name,
@@ -208,12 +210,11 @@ def _merge(parent_name, current_name, other_name, arguments):
             markup_one(other_changes, other_name)
 
         merged = merge(parent, current, other)
-        merge_markup = get_markup_function(arguments, token_map, allow_strikeout=False)
+        merge_markup = get_markup_function(arguments, allow_strikeout=False)
 
         merge_markup(
             writer,
-            escape,
-            merged,
+            decode_and_transform_changes(tokenizer, merged, escape),
             current_name,
             other_name,
             header="Merged" if arguments.diff else None,
@@ -243,7 +244,7 @@ def diff_cli():
 
     changes = diff(original, modified)
 
-    display_function = get_markup_function(arguments, tokenizer)
+    display_function = get_markup_function(arguments, allow_strikeout=True)
 
     with get_writer(arguments) as writer:
         writer, escape = writer

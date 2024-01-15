@@ -5,7 +5,7 @@ from itertools import chain
 
 from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
 from gaspra.types import Change
-from gaspra.tokenizers import NullTokenizer, Tokenizer, decode_and_transform_changes
+from gaspra.tokenizers import decode_and_transform_changes
 
 TEST_MARKUP = {
     "fragment": {

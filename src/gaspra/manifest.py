@@ -1,7 +1,7 @@
 import json
 from collections.abc import Hashable, Mapping
 from gaspra.versions import Versions
-from gaspra.types import Tag, Token, TokenSequence
+from gaspra.types import Tag
 
 Manifest = dict[Tag, Tag]
 

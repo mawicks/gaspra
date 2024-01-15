@@ -6,16 +6,18 @@ from gaspra.markup import (
     GIT_MARKUP,
     SCREEN_MARKUP,
     STRIKEOUT_SCREEN_MARKUP,
-    TOKEN_GIT_MARKUP,
-    TOKEN_SCREEN_MARKUP,
     line_oriented_markup_changes,
     markup_changes,
-    token_oriented_markup_changes,
 )
 
 from gaspra.merge import merge
 from gaspra.changesets import diff
-from gaspra.encoders import line_encode_strings
+from gaspra.tokenizers import (
+    decode_and_transform_changes,
+    CharTokenizer,
+    LineTokenizer,
+    SymbolTokenizer,
+)
 from gaspra.types import ChangeIterable
 import gaspra.torture_test as torture_test
 
@@ -27,29 +29,46 @@ def add_common_arguments(parser):
         help="Output file",
         default=None,
     )
-    parser.add_argument(
-        "-l",
-        "--line-oriented",
-        action="store_true",
-        help="Use a line-oriented diff for output, even if the processing was character-oriented",
-    )
-    parser.add_argument(
+    token_group = parser.add_mutually_exclusive_group()
+
+    token_group.add_argument(
         "-c",
-        "--character-oriented",
+        "--characters",
         action="store_true",
-        help="Use a character-oriented diff as opposed to line-oriented.",
+        help="Process input as stream of characters",
     )
+    token_group.add_argument(
+        "-w",
+        "--words",
+        action="store_true",
+        help="Process input as stream of words or symbols",
+    )
+    token_group.add_argument(
+        "-l",
+        "--lines",
+        action="store_true",
+        help="Process input stream of lines",
+    )
+
     parser.add_argument(
-        "-f",
-        "--file-style",
+        "-L",
+        "--show-lines",
         action="store_true",
-        help="Use file-oriented vs screen-oriented markup (git-style, no color)",
+        help="Show line-oriented diffs, regardless of tokenization of input stream.",
     )
+
+    parser.add_argument(
+        "-g",
+        "--git-compatible",
+        action="store_true",
+        help="Use git-compatible merge conflict markers (no color)",
+    )
+
     parser.add_argument(
         "-s",
         "--strikeout",
         action="store_true",
-        help="Use a strikeout font for deletions (only on diffs).",
+        help="Use a strikeout font for deletions (only on diffs))",
     )
 
 
@@ -71,11 +90,11 @@ def get_merge_arguments():
 
 def get_diff_arguments():
     parser = argparse.ArgumentParser()
+
     parser.add_argument("original")
     parser.add_argument("modified")
 
     add_common_arguments(parser)
-
     args = parser.parse_args()
     return args
 
@@ -93,14 +112,14 @@ def get_torture_test_arguments():
     return args
 
 
-def get_markup_function(arguments, token_map=(), allow_strikeout=True):
-    if not arguments.character_oriented:
-        wrapped_markup_function = token_oriented_markup_changes
-
-    elif arguments.line_oriented:
+def get_markup_function(arguments, allow_strikeout=True):
+    if arguments.show_lines or arguments.git_compatible:
         wrapped_markup_function = line_oriented_markup_changes
     else:
         wrapped_markup_function = markup_changes
+
+    # Is there any use for this now?
+    # wrapped_markup_function = token_oriented_markup_changes
 
     markup = get_markup_style(arguments, allow_strikeout)
 
@@ -118,18 +137,13 @@ def get_markup_function(arguments, token_map=(), allow_strikeout=True):
             os.path.basename(branch1),
             markup=markup,
             header=os.path.basename(header) if header else None,
-            token_map=token_map,
         )
 
     return markup_function
 
 
 def get_markup_style(arguments, allow_strikeout=True):
-    if not arguments.character_oriented:
-        if arguments.file_style:
-            return TOKEN_GIT_MARKUP
-        return TOKEN_SCREEN_MARKUP
-    if arguments.file_style:
+    if arguments.git_compatible:
         return GIT_MARKUP
     elif arguments.strikeout and allow_strikeout:
         return STRIKEOUT_SCREEN_MARKUP
@@ -166,17 +180,22 @@ def torture_cli():
 def _merge(parent_name, current_name, other_name, arguments):
     parent, current, other = get_text(parent_name, current_name, other_name)
 
-    token_map = None
-    if not arguments.character_oriented:
-        token_map, parent, current, other = line_encode_strings(parent, current, other)
+    tokenizer = make_tokenizer(arguments)
 
-    with get_writer(arguments) as writer:
+    parent = tokenizer.encode(parent)
+    current = tokenizer.encode(current)
+    other = tokenizer.encode(other)
+
+    with get_writer(arguments) as writer_and_escape:
+        writer, escape = writer_and_escape
         if arguments.diff:
-            diff_markup = get_markup_function(
-                arguments, token_map, allow_strikeout=True
+            diff_markup = get_markup_function(arguments, allow_strikeout=True)
+            current_changes = decode_and_transform_changes(
+                tokenizer, diff(parent, current), escape
             )
-            current_changes = diff(parent, current)
-            other_changes = diff(parent, other)
+            other_changes = decode_and_transform_changes(
+                tokenizer, diff(parent, other), escape
+            )
 
             def markup_one(changes, branch_name):
                 diff_markup(
@@ -191,15 +210,23 @@ def _merge(parent_name, current_name, other_name, arguments):
             markup_one(other_changes, other_name)
 
         merged = merge(parent, current, other)
-        merge_markup = get_markup_function(arguments, token_map, allow_strikeout=False)
+        merge_markup = get_markup_function(arguments, allow_strikeout=False)
 
         merge_markup(
             writer,
-            merged,
+            decode_and_transform_changes(tokenizer, merged, escape),
             current_name,
             other_name,
             header="Merged" if arguments.diff else None,
         )
+
+
+def make_tokenizer(arguments):
+    if arguments.words:
+        return SymbolTokenizer()
+    if arguments.lines:
+        return LineTokenizer()
+    return CharTokenizer()
 
 
 def diff_cli():
@@ -210,24 +237,26 @@ def diff_cli():
 
     original, modified = get_text(original_name, modified_name)
 
-    token_map = None
-    if not arguments.character_oriented:
-        token_map, original, modified = line_encode_strings(original, modified)
+    tokenizer = make_tokenizer(arguments)
+
+    original = tokenizer.encode(original)
+    modified = tokenizer.encode(modified)
 
     changes = diff(original, modified)
 
-    display_function = get_markup_function(arguments, token_map)
+    display_function = get_markup_function(arguments, allow_strikeout=True)
 
     with get_writer(arguments) as writer:
+        writer, escape = writer
         display_function(
             writer,
-            changes,
-            modified_name,
-            original_name,
+            decode_and_transform_changes(tokenizer, changes, escape),
+            escape(modified_name),
+            escape(original_name),
         )
 
 
-def get_text(*filenames: str):
+def get_text(*filenames: str) -> tuple[str, ...]:
     data = []
     for filename in filenames:
         try:
@@ -241,5 +270,13 @@ def get_text(*filenames: str):
     return tuple(data)
 
 
+def get_bytes(*filenames: str) -> tuple[bytes, ...]:
+    data = []
+    for filename in filenames:
+        with open(filename, "rb") as f:
+            data.append(f.read())
+    return tuple(data)
+
+
 if __name__ == "__main__":
-    torture_cli()
+    diff_cli()

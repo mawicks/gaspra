@@ -1,18 +1,20 @@
 import pytest
 
-from gaspra.encoders import (
+from gaspra.tokenizers import (
+    CharTokenizer,
+    LineTokenizer,
+    NullTokenizer,
+    SymbolTokenizer,
     line_encode_strings,
-    LineEncoder,
-    SpaceEncoder,
-    TokenEncoder,
 )
 
 
 @pytest.fixture(
     params=(
-        LineEncoder,
-        SpaceEncoder,
-        TokenEncoder,
+        NullTokenizer,
+        CharTokenizer,
+        LineTokenizer,
+        SymbolTokenizer,
     )
 )
 def tokenizer(request: pytest.FixtureRequest):
@@ -31,13 +33,42 @@ ENCODER_TEST_CASES = [
 
 
 @pytest.mark.parametrize("string", ENCODER_TEST_CASES)
-def test_generic_encoder(string, tokenizer):
+def test_generic_encoder_on_bytes(string, tokenizer):
     if type(string) is str:
         string = string.encode("utf-8")
 
+    # There's an arbitrary bytes string in the test data which is a good
+    # test case for the encoders that don't require a UTF-8 encoding.
+    # However it's not a good test for CharTokenizer or SymbolTokenizer,
+    # which do assume UTF-8.  Don't test those for any such test cases.
+
+    try:
+        string.decode("utf-8")
+    except UnicodeDecodeError:
+        if type(tokenizer) in (CharTokenizer, SymbolTokenizer):
+            return
+
     encoded = tokenizer.encode(string)
 
-    assert len(encoded) < len(string)
+    # Another exception for Chartokenizer and NullTokenizer which
+    # don't group characters, so they're not expected to reduce.
+    if type(tokenizer) not in (NullTokenizer, CharTokenizer):
+        assert len(encoded) < len(string)
+
+    assert tokenizer.decode(encoded) == string
+
+
+@pytest.mark.parametrize("string", ENCODER_TEST_CASES)
+def test_generic_encoder_on_strs(string, tokenizer):
+    if type(string) is bytes:
+        return
+
+    encoded = tokenizer.encode(string)
+
+    # Another exception for Chartokenizer and NullTokenizer which
+    # don't group characters, so they're not expected to reduce.
+    if type(tokenizer) not in (NullTokenizer, CharTokenizer):
+        assert len(encoded) < len(string)
 
     assert tokenizer.decode(encoded) == string
 

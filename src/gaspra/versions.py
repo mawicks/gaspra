@@ -9,7 +9,7 @@ from gaspra.changesets import (
     apply,
     strip_forward,
 )
-from gaspra.encoders import NullTokenizer, Tokenizer
+from gaspra.tokenizers import NullTokenizer, Tokenizer
 from gaspra.serialize import deserialize_changeset, serialize_changeset
 from gaspra.tree import Tree
 from gaspra.memory_tree import MemoryTree
@@ -29,7 +29,7 @@ class Versions:
     tree: Tree = field(default_factory=MemoryTree)
 
     # Encoder converts bytes to tokens (ints)
-    tokenizer_factory: Callable[[], Tokenizer | NullTokenizer] = NullTokenizer
+    tokenizer_factory: Callable[[], Tokenizer] = NullTokenizer
 
     def add(self, tag: Hashable, version: bytes, existing_head: Hashable | None = None):
         self.head_version[tag] = version

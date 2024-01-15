@@ -6,11 +6,8 @@ from gaspra.markup import (
     GIT_MARKUP,
     SCREEN_MARKUP,
     STRIKEOUT_SCREEN_MARKUP,
-    TOKEN_GIT_MARKUP,
-    TOKEN_SCREEN_MARKUP,
     line_oriented_markup_changes,
     markup_changes,
-    token_oriented_markup_changes,
 )
 
 from gaspra.merge import merge

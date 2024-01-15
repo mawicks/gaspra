@@ -1,5 +1,5 @@
-C Fix\sline_oriented_markup_changes()\sand\suse\sChange\sin\sits\stest.
-D 2024-01-15T00:32:30.905
+C Only\scall\sescape()\swhen\sdecoding.
+D 2024-01-15T00:57:31.146
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -19,10 +19,10 @@ F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/examples.py f486a2641fb65087d8832341609214c7913b98944ca2944fe7f0434fad426f90
 F src/gaspra/manifest.py aab772e57cfa9352954eb90ce011fecc91436cefdd566293573971dc0ea9d9e7
-F src/gaspra/markup.py 80093bb5588df8c5ada650a2230e086020000e7fc7acca07bf48e2a3a5a36e5f
+F src/gaspra/markup.py ab31e98d516742981ffa0e0152a21395e7eecfa88b591ba19dc78c812c65d0b8
 F src/gaspra/memory_tree.py c638fdd0e1d489b6ebb22be0e761e97c382d4b4aa6d41b4839b20c8c550754d9
 F src/gaspra/merge.py c1ea0c1299610ddb32d66c6368db31a758443aff305fdd2392eba4b838ee922b
-F src/gaspra/merge_tool.py 4ca62be249949e964f8af48bfd4b246604342d565088efce027119659e18cc36
+F src/gaspra/merge_tool.py fb544ae0037be77620a6a959bb4c50e7c21096084ab8d8cd9030970836d1bee5
 F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a36eaef7557320d5b5
 F src/gaspra/serialize.py cd54c7e72b49dabfb00fa63afa46b698ebed28d0ee82f24a719d22c98701e1bc
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 94d9d05c6e21c874314e8a7aa9de4bb02f0c6a7b5ac20b2bd00a28cc1bb38a22
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P e37dfb4ae32dce157a07032511b8aedcf4f580894b652392d39427ac850d4fce
-R 49821ab1549a6ad0f82893ff5084940a
+P a48c48f9922237dca6248bc2a8d4c7d24ced75db5372ca8dd59952bec28b170d
+R 9840e5196b2c7539edd32e84e2b7623e
 U mwicks
-Z 365c4e60fa71a25bcdda0a3f90d90bde
+Z e492504610f537d11e0a70ec25b6035c
 # Remove this line to create a well-formed Fossil manifest.

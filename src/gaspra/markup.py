@@ -2,7 +2,6 @@ from collections.abc import Hashable, Iterable, Sequence
 from contextlib import contextmanager
 from copy import deepcopy
 import io
-from typing import cast
 
 from rich.console import Console
 
@@ -44,14 +43,14 @@ GIT_MARKUP = {
     "header": {"prefix": "<<<", "suffix": ">>>\n"},
 }
 
-TOKEN_GIT_MARKUP = {
+DEPRECATED_TOKEN_GIT_MARKUP = {
     "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
     "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
     "separator": "=======\n",
     "header": {"prefix": "<<<", "suffix": ">>>"},
 }
 
-TOKEN_SCREEN_MARKUP = {
+DEPRECATED_TOKEN_SCREEN_MARKUP = {
     "into": {"prefix": lambda _: "[bright_green]", "suffix": lambda _: "[/]"},
     "from": {"prefix": lambda _: "[bright_red]", "suffix": lambda _: "[/]"},
     "separator": "",
@@ -85,7 +84,7 @@ def markup_changes(
     def print_fragment(fragment, fragment_markup):
         prefix = fragment_markup["prefix"]
         suffix = fragment_markup["suffix"]
-        print(f"{prefix}{escape(fragment)}{suffix}")
+        print(f"{prefix}{fragment}{suffix}")
 
     for fragment in fragment_sequence:
         if isinstance(fragment, Change):
@@ -99,7 +98,7 @@ def markup_changes(
 def print_line(print, escape, line, name, line_markup):
     prefix = line_markup["prefix"](name)
     suffix = line_markup["suffix"](name)
-    print(f"{prefix}{escape(line)}{suffix}")
+    print(f"{prefix}{line}{suffix}")
 
 
 def _markup_and_add_fragment(partial_line, fragment, fragment_markup):
@@ -114,18 +113,19 @@ def _markup_and_add_fragment(partial_line, fragment, fragment_markup):
 def markup_and_add_fragment(
     partial_line_into: str,
     partial_line_from: str,
+    escape,
     fragment: Change,
     tokenizer: Tokenizer[str],
     fragment_markup,
 ):
     partial_line_into = _markup_and_add_fragment(
         partial_line_into,
-        tokenizer.decode(fragment.a),
+        escape(tokenizer.decode(fragment.a)),
         fragment_markup["into"],
     )
     partial_line_from = _markup_and_add_fragment(
         partial_line_from,
-        tokenizer.decode(fragment.b),
+        escape(tokenizer.decode(fragment.b)),
         fragment_markup["from"],
     )
     return partial_line_into, partial_line_from
@@ -145,7 +145,7 @@ def conflict_finisher(print, escape, markup, name0, name1):
     line_markup = markup.get("line", {})
 
     def finish_conflict(partial_line_into, partial_line_from, input_fragment):
-        input_fragment = escape(input_fragment)
+        input_fragment = input_fragment
         partial_line_into, partial_line_from, input_fragment = update_partials(
             partial_line_into, partial_line_from, input_fragment
         )
@@ -194,12 +194,13 @@ def line_oriented_markup_changes(
             partial_line_into, partial_line_from = markup_and_add_fragment(
                 partial_line_into,
                 partial_line_from,
+                escape,
                 fragment,
                 tokenizer,
                 fragment_markup,
             )
         else:
-            lines = tokenizer.decode(fragment).split("\n")
+            lines = escape(tokenizer.decode(fragment)).split("\n")
             if len(lines) > 1:  # Have a newline
                 if in_conflict:
                     finish_conflict(
@@ -207,9 +208,9 @@ def line_oriented_markup_changes(
                         partial_line_from,
                         lines[0] + "\n",
                     )
-                    print(escape(join(lines[1:-1])))
+                    print(join(lines[1:-1]))
                 else:
-                    print(escape(join(lines[:-1])))
+                    print(join(lines[:-1]))
                 in_conflict = False
                 partial_line_into = partial_line_from = lines[-1]
             else:
@@ -225,7 +226,7 @@ def line_oriented_markup_changes(
     elif partial_line_from:
         # If not in a conflict, partial_line_into should be
         # exactly the same as partial_line_from.
-        print(escape(partial_line_from) + "\n")
+        print(partial_line_from + "\n")
 
 
 def join(lines):

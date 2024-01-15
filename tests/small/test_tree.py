@@ -68,8 +68,9 @@ def test_path_to_with_linear_change_parent(tree):
             tree.change_parent(base, id)
 
         # Check paths to all existing nodes from node just inserted.
-        for earlier_index in range(index + 1):
-            path = TAGS[earlier_index : index + 1]
+        index_plus_one = index + 1
+        for earlier_index in range(index_plus_one):
+            path = TAGS[earlier_index:index_plus_one]
             assert tuple(tree.path_to(TAGS[earlier_index])) == tuple(reversed(path))
         base = id
 

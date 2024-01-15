@@ -46,7 +46,7 @@ SELECT tag FROM path
 """
 
 CHANGE_PARENT = """
-UPDATE graph 
+UPDATE graph
 SET parent = ?, parent_rid = ?
 WHERE rowid = ?
 """
@@ -56,13 +56,13 @@ UPDATE graph SET child{x}_rid = ? WHERE rowid = ?
 """
 
 REMOVE_IF_CHILDx = """
-UPDATE graph 
+UPDATE graph
 SET child{x}_rid = NULL
 WHERE rowid = ? AND child{x}_rid = ?
 """
 
 GET_START_PATH = """
-SELECT height, rowid 
+SELECT height, rowid
 FROM graph
 WHERE tag = ?
 """
@@ -146,7 +146,7 @@ WHERE
 """
 
 OLD_START_PATH = """
-SELECT height, rowid 
+SELECT height, rowid
 FROM graph
 WHERE tag = ?
 """
@@ -157,7 +157,7 @@ SELECT
     g.tag,
     g.rowid as graph_rowid,
     g.height,
-    row_number() over 
+    row_number() over
     (partition by g.parent_rid
     order by height desc, g.rowid desc)   AS priority
 FROM graph g
@@ -178,7 +178,7 @@ WITH subtree AS (
     FROM graph g
     LEFT JOIN (
     SELECT
-        sum(size) as size, 
+        sum(size) as size,
         max(height) as height,
         parent_rid
     FROM graph
@@ -187,7 +187,7 @@ WITH subtree AS (
     ON metrics.parent_rid = g.rowid
 ),
 recursive_subtree AS (
-    SELECT 
+    SELECT
         tag,
         rid,
         parent_rid,
@@ -198,7 +198,7 @@ recursive_subtree AS (
 
     UNION ALL
 
-    SELECT 
+    SELECT
         subtree.tag,
         subtree.rid,
         subtree.parent_rid,
@@ -208,18 +208,18 @@ recursive_subtree AS (
     JOIN recursive_subtree rst ON subtree.rid = rst.parent_rid
 )
 UPDATE graph
-SET 
+SET
     size = (
-        SELECT size 
-        FROM recursive_subtree 
+        SELECT size
+        FROM recursive_subtree
         WHERE recursive_subtree.tag = graph.tag
     ),
     height = (
-        SELECT height 
-        FROM recursive_subtree 
+        SELECT height
+        FROM recursive_subtree
         WHERE recursive_subtree.tag = graph.tag
     )
-WHERE 
+WHERE
     tag IN (SELECT tag FROM recursive_subtree);
 
 """

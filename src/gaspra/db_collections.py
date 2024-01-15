@@ -16,15 +16,15 @@ FROM {table}
 """
 
 DELETE = """
-DELETE 
+DELETE
 FROM {table}
 WHERE tag = ?
 """
 
 INSERT = """
-INSERT INTO {table} (tag, data) VALUES(?,?) 
+INSERT INTO {table} (tag, data) VALUES(?,?)
 ON CONFLICT (tag)
-DO 
+DO
   UPDATE SET data=excluded.data
 """
 

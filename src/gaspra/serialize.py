@@ -85,7 +85,7 @@ def serialize_changeset(changeset: StrippedChangeIterable):
             serialized += vserialize_int(0)
         # If expecting slice and got bytes, insert
         # an empty slice object to sync up.
-        elif not next_is_bytes and type(change) == bytes:
+        elif not next_is_bytes and type(change) is bytes:
             serialized += vserialize_int(0)
             serialized += vserialize_int(0)
 

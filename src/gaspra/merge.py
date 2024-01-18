@@ -14,11 +14,16 @@ OutputType = CopyFragment | ChangeFragment | ConflictFragment
 InputType = CopyFragment | ChangeFragment
 
 
-def merge(
+def merge_token_sequence(
     parent: str | TokenSequence,
     branch0: str | TokenSequence,
     branch1: str | TokenSequence,
 ):
+    """
+    This is a fairly low-level function.  For most use cases
+    you should use tokenizers.merge()
+    """
+
     empty = parent[0:0]
 
     changeset0 = find_changeset(parent, branch0)
@@ -118,8 +123,13 @@ def consolidate_all(staged, empty: str | TokenSequence = ""):
 
 
 def _merge(fragments0: list[InputType], fragments1):
-    """Process changes in fragments0 and fragments1 until
-    they are empty.  Note, this function modifies the passed lists"""
+    """This is an extremely low level merge function only meant
+    to be called within this module.
+
+    Process changes in fragments0 and fragments1 until
+    they are empty.
+
+    Note, this function modifies the passed lists"""
 
     within_conflict = False
 

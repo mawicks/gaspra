@@ -3,7 +3,8 @@ from typing import cast, Generic, Protocol, TypeVar
 import re
 
 from gaspra.types import Change, ChangeIterable, TokenIterable, TokenSequence, Token
-from gaspra.changesets import diff
+from gaspra.changesets import diff_token_sequences
+from gaspra.merge import merge_token_sequence
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
 
@@ -199,7 +200,7 @@ class SymbolTokenizer(Generic[BytesOrStr]):
 
 
 def decode_and_transform_changes(
-    tokenizer: Tokenizer, changes: ChangeIterable, transform=lambda _: _
+    changes: ChangeIterable, tokenizer: Tokenizer, transform=lambda _: _
 ) -> ChangeIterable:
     """
     Decode a changeset.  Changesets are first computed on token stream.
@@ -218,7 +219,7 @@ def decode_and_transform_changes(
             yield transform(tokenizer.decode(change))
 
 
-def diff_and_transform(
+def diff(
     original, modified, tokenizer: Tokenizer = NullTokenizer(), transformer=lambda _: _
 ):
     """
@@ -230,6 +231,28 @@ def diff_and_transform(
     encoded_original = tokenizer.encode(original)
     encoded_modified = tokenizer.encode(modified)
 
-    changes = diff(encoded_original, encoded_modified)
-    transformed = decode_and_transform_changes(tokenizer, changes, transformer)
+    changes = diff_token_sequences(encoded_original, encoded_modified)
+    transformed = decode_and_transform_changes(changes, tokenizer, transformer)
     return transformed
+
+
+def merged(
+    parent,
+    current,
+    other,
+    tokenizer: Tokenizer = NullTokenizer(),
+    transformer=lambda _: _,
+):
+    """
+    High level diff() call that optionally encodes the sequences to be
+    compared, compares the sequences, decodes, and transforms the
+    result.  This is the diff() function for most use cases.
+
+    """
+    encoded_parent = tokenizer.encode(parent)
+    encoded_current = tokenizer.encode(current)
+    encoded_other = tokenizer.encode(other)
+
+    changes = merge_token_sequence(encoded_parent, encoded_current, encoded_other)
+    merged = decode_and_transform_changes(changes, tokenizer, transformer)
+    return merged

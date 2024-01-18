@@ -58,7 +58,7 @@ class ChangesetLeaf:
                 ),
             )
 
-    def diff_stream(self, _: str | TokenSequence) -> ChangeIterable:
+    def as_diff_stream(self, _: str | TokenSequence) -> ChangeIterable:
         """Produce a simpler output stream than _stream() suitable
         or building diff output."""
 
@@ -118,13 +118,13 @@ class Changeset:
         yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix._stream(original)
 
-    def diff_stream(self, original: str | TokenSequence) -> ChangeIterable:
+    def as_diff_stream(self, original: str | TokenSequence) -> ChangeIterable:
         """Produce a simpler output stream than _stream() suitable
         or building diff output."""
 
-        yield from self.prefix.diff_stream(original)
+        yield from self.prefix.as_diff_stream(original)
         yield original[self.common_original]
-        yield from self.suffix.diff_stream(original)
+        yield from self.suffix.as_diff_stream(original)
 
     def change_stream(self) -> ReducedChangeIterable:
         """Produce a simple output stream containing only changes.
@@ -174,10 +174,13 @@ def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
             yield change[1]
 
 
-def diff(
+def diff_token_sequences(
     original: str | TokenSequence, modified: str | TokenSequence
 ) -> ChangeIterable:
     """Returns the changes between a and b.
+
+    This is a fairly low-level function.  For most use cases
+    you should use tokenizers.diff()
 
     Arguments:
         original: str
@@ -198,7 +201,7 @@ def diff(
 
     """
     changeset = find_changeset(original, modified)
-    yield from changeset.diff_stream(original)
+    yield from changeset.as_diff_stream(original)
 
 
 def find_changeset(

@@ -215,7 +215,7 @@ def test_token_oriented_markup_changes(input_sequence, output, tokenizer):
 
     token_oriented_markup_changes(
         output_buffer.write,
-        decode_and_transform_changes(tokenizer, tuple(input_sequence)),
+        decode_and_transform_changes(tuple(input_sequence), tokenizer),
         "x",
         "y",
         markup=TEST_TOKEN_MARKUP,

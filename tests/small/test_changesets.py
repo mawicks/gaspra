@@ -6,7 +6,7 @@ from gaspra.changesets import (
     apply_reverse,
     old_apply_forward,
     old_apply_reverse,
-    diff,
+    diff_token_sequences,
     find_changeset,
     strip_forward,
     strip_reverse,
@@ -140,7 +140,7 @@ def test_find_changesets_and_alt_apply_reverse_reproduces_string(s1: str, s2: st
     ],
 )
 def test_all_string_changeset_tuples_are_typed(s1: str, s2: str):
-    diffed = diff(s1, s2)
+    diffed = diff_token_sequences(s1, s2)
     assert all(
         isinstance(change, Change) or type(change) in (bytes, str) for change in diffed
     )

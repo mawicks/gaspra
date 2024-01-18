@@ -186,14 +186,15 @@ def diff(
             The "modified" string
 
     Returns:
-        Iterable[str]
+        ChangeIterable
             The changes between a and b.  Each item in the sequence is
-            either a string or a tuple of two strings.  If the item is a
-            string, it is unchanged test between `original` and
-            ``modified`.  If the item is a [named] tuple, the first
-            string is the string inserted at that point in `original` to
-            get `modified` and the second string is the string that was
-            deleted.
+            either a TokenSequence or a `Change` named tuple which is a
+            tuple of two strings.  If the item is not a Change, it is an
+            unchanged token sequence common to `original` and
+            `modified`.  If the item is a Change tuple, the first element
+            is the sequence inserted at that point in `original` to get
+            `modified` and the second element is the sequence
+            that was deleted.
 
     """
     changeset = find_changeset(original, modified)
@@ -201,8 +202,8 @@ def diff(
 
 
 def find_changeset(
-    original: str | TokenSequence,
-    modified: str | TokenSequence,
+    original: TokenSequence,
+    modified: TokenSequence,
     original_slice: slice = slice(0, None),
     modified_slice: slice = slice(0, None),
 ) -> Changeset | ChangesetLeaf:
@@ -267,8 +268,9 @@ def apply(
     """
     Apply a changeset to a version sequence.
 
-    A StrippedChangeIterable is produced from strip_forward() or strip_reverse()
-    has no sense of direction.  It just applies the changes to the string.
+    A StrippedChangeIterable is produced from strip_forward() or
+    strip_reverse() This code has no sense of direction.  It just
+    applies the changes to the string.
     """
 
     def _apply() -> Iterable[TokenSequenceVar]:

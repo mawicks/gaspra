@@ -14,6 +14,7 @@ from gaspra.merge import merge
 from gaspra.changesets import diff
 from gaspra.tokenizers import (
     decode_and_transform_changes,
+    diff_and_transform,
     CharTokenizer,
     LineTokenizer,
     SymbolTokenizer,
@@ -239,18 +240,14 @@ def diff_cli():
 
     tokenizer = make_tokenizer(arguments)
 
-    original = tokenizer.encode(original)
-    modified = tokenizer.encode(modified)
-
-    changes = diff(original, modified)
-
     display_function = get_markup_function(arguments, allow_strikeout=True)
 
     with get_writer(arguments) as writer:
         writer, escape = writer
+
         display_function(
             writer,
-            decode_and_transform_changes(tokenizer, changes, escape),
+            diff_and_transform(original, modified, tokenizer, escape),
             escape(modified_name),
             escape(original_name),
         )

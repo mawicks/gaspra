@@ -3,6 +3,7 @@ from typing import cast, Generic, Protocol, TypeVar
 import re
 
 from gaspra.types import Change, ChangeIterable, TokenIterable, Token
+from gaspra.changesets import diff
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
 
@@ -215,3 +216,20 @@ def decode_and_transform_changes(
             )
         else:
             yield transform(tokenizer.decode(change))
+
+
+def diff_and_transform(
+    original, modified, tokenizer: Tokenizer = NullTokenizer(), transformer=lambda _: _
+):
+    """
+    High level diff() call that optionally encodes the sequences to be
+    compared, compares the sequences, decodes, and transforms the
+    result.  This is the diff() function for most use cases.
+
+    """
+    encoded_original = tokenizer.encode(original)
+    encoded_modified = tokenizer.encode(modified)
+
+    changes = diff(encoded_original, encoded_modified)
+    transformed = decode_and_transform_changes(tokenizer, changes, transformer)
+    return transformed

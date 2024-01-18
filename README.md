@@ -30,9 +30,31 @@ The result shown is the output of the command:
 gaspra-merge -sdc data/tale0 data/tale1-reflowed data/tale2-edited
 ```
 
-![Merged a reflowed and an edited version of text](./images/text-merge.png)
+![Merged and reflowed and an edited version of
+text](./images/text-merge.png)
+*Merged and reflowed and an edited version of
+text*
 
 See [Merging](#merging) for another example.
+
+
+Here's another example showing the difference between the
+interpretability of a character-oriented diff compared to a line-oriented
+diff:
+
+![Code change displayed as a character-oriented diff. Green text was inserted.  Red text was
+removed](./images/character-diff.png)
+*Code change displayed as a character-oriented diff. Green text was inserted.*
+
+![Same code change as a line-oriented diff. Green text was inserted.  Red text was
+removed](./images/line-diff.png)
+*Same code change as a line-oriented diff. Green text was inserted.  Red text was
+removed*
+
+
+
+
+
 
 
 # What's included
@@ -162,6 +184,8 @@ where the deletion string is empty, and vice versa.
 >>> list(gaspra.diff(original, modified))
 ['The quick brown fox ', ('lea', 'jum'), 'ps over the lazy dog', ('s', ''), ' near the river', ('', 'bank.')]
 ```
+
+
 
 # Merging
 

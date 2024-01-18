@@ -1,8 +1,10 @@
-C Tokenizer.encode()\sreturns\sSequence,\snot\sIterable.
-D 2024-01-18T02:12:54.299
+C Add\sscreenshot\sof\sexample\sto\sreadme.
+D 2024-01-18T02:30:08.995
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
-F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
+F README.md 168d324c360e400ef2df8d3d8486425e70b79f0855b1e81af437edd6bc9447b9
+F images/character-diff.png ba94194cb59c482ed2c20a15d89dd245a7880879e99c1386963c247a086598aa
+F images/line-diff.png 0571fb186df03d4a07544530875d692487b5215749a459fa48cd376ce009a014
 F images/text-merge.png eb11a6e79dc30b2587f677063174a91e07479f9296bcd7bbc3dd02c86516974e
 F poetry.lock fd150f0c904d2bb772db9f59b9efd2d419748902e43a22e1fba4543ba0784753
 F pyproject.toml eae20f5b6a65e5c9a2c5dba7d8dee8b282774987100806af15aaefddf3a4d049
@@ -48,8 +50,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 5d3c3946d6ffa241380bf68440d943a28517e04e99e0a8d6a59b62a0b431493a
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P c649e26a4d92112f6abfc8b27533cb6da53f8ce46e0d9d10faffb14d4ae8cd04
-R 2cd7205a5eb8c63b781e87bd990c297b
+P 6bc4c477b8528e919903e520c722127cbcfc8ad86f48d5566df59281e67bde9f
+R 49fcd7d4595e7bd91c34e97403d9be22
 U mwicks
-Z c2959e558e1502147fd761fa92e9816c
+Z 8bbb313471528f060acddd6fddce57a7
 # Remove this line to create a well-formed Fossil manifest.

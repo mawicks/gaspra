@@ -1,5 +1,5 @@
-C Add\sdiff_and_transform()\sin\stokernizers.py
-D 2024-01-18T02:10:48.996
+C Tokenizer.encode()\sreturns\sSequence,\snot\sIterable.
+D 2024-01-18T02:12:54.299
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 3435c35c5bfa3d4811a5f4bd3f2f75990adad279d29cb2b023119de1ea13f60c
@@ -27,7 +27,7 @@ F src/gaspra/multiple_strings.py f5483baf92352c18c183c6d2e2050a577449106a6402d4a
 F src/gaspra/serialize.py 98e95a7412f1b9c4c4aef738696c08948a57f0e1c8b1eb0e95556513b16af26f
 F src/gaspra/suffix_automaton.py 2c9fe7de7252dc962266417a24f7bf243d26dd6faa4d7266a190ca86460c940d
 F src/gaspra/test_helpers/helpers.py 531e96aaefeaf2b9760d748f5ddf20dde004676e10771743f28775eab4a0b069
-F src/gaspra/tokenizers.py 83c7301389c2097549a88e0fb784b6de193fc16c2e6016b3905c91343f4e8d3d
+F src/gaspra/tokenizers.py 0934d7f026c5e09e3acbba7e99f40b566c823e7ee8d2114f42e3dc6101cf9188
 F src/gaspra/torture_test.py a2eb4edc657532ecc7757658fcd9763bb9985c8b35401b594e6ab2eb83af1a20
 F src/gaspra/tree.py 8ee91567241c6e9aa1d6c77966ec1054aff42701a39802b4c52739c44965068f
 F src/gaspra/types.py 75f055a3f9374fe3f64cf8ba14147721162b76a362887a247b41bb78c64e4b6c
@@ -48,8 +48,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 5d3c3946d6ffa241380bf68440d943a28517e04e99e0a8d6a59b62a0b431493a
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py b649abc088675d8e3311a9057e7be67738fa58c0701e9089c5cb9b1947e3eede
-P 23c0ca8856ef97c44924e58f3183dedb2685ff5a32b4b1563aa13748e4012c38
-R b7040faecb18201ae0acec5a7b9e505c
+P c649e26a4d92112f6abfc8b27533cb6da53f8ce46e0d9d10faffb14d4ae8cd04
+R 2cd7205a5eb8c63b781e87bd990c297b
 U mwicks
-Z d543e8c9b5bc2b6e5cb227094af29b84
+Z c2959e558e1502147fd761fa92e9816c
 # Remove this line to create a well-formed Fossil manifest.

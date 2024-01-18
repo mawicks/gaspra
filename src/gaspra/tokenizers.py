@@ -2,7 +2,7 @@ from collections.abc import Iterable, Sequence
 from typing import cast, Generic, Protocol, TypeVar
 import re
 
-from gaspra.types import Change, ChangeIterable, TokenIterable, Token
+from gaspra.types import Change, ChangeIterable, TokenIterable, TokenSequence, Token
 from gaspra.changesets import diff
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
@@ -48,7 +48,7 @@ def generic_encode(
 
 
 class Tokenizer(Protocol, Generic[BytesOrStr]):
-    def encode(self, contents: BytesOrStr) -> TokenIterable:
+    def encode(self, contents: BytesOrStr) -> TokenSequence:
         raise NotImplementedError
 
     def decode(self, contents: TokenIterable) -> BytesOrStr:

@@ -61,7 +61,7 @@ def test_find_changesets_and_apply_forward_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_strip_forward_and_apply_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    reduced_changeset = list(changeset.change_stream())
+    reduced_changeset = list(changeset.as_change_stream())
     assert s2 == apply(strip_forward(reduced_changeset), s1)
 
 
@@ -75,7 +75,7 @@ def test_find_changesets_strip_forward_and_apply_reproduces_string(s1: str, s2: 
 )
 def test_find_changesets_strip_reverse_and_apply_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    reduced_changeset = list(changeset.change_stream())
+    reduced_changeset = list(changeset.as_change_stream())
     assert s1 == apply(strip_reverse(reduced_changeset), s2)
 
 
@@ -89,7 +89,7 @@ def test_find_changesets_strip_reverse_and_apply_reproduces_string(s1: str, s2: 
 )
 def test_find_changesets_and_alt_apply_forward_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    alt_changeset = changeset.change_stream()
+    alt_changeset = changeset.as_change_stream()
     assert s2 == apply_forward(alt_changeset, s1)
 
 
@@ -116,7 +116,7 @@ def test_find_changesets_and_apply_reverse_reproduces_string(s1: str, s2: str):
 )
 def test_find_changesets_and_alt_apply_reverse_reproduces_string(s1: str, s2: str):
     changeset = find_changeset(s1, s2)
-    reduced_changeset = list(changeset.change_stream())
+    reduced_changeset = list(changeset.as_change_stream())
     assert s1 == apply_reverse(reduced_changeset, s2)
 
 

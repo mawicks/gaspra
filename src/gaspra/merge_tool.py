@@ -19,7 +19,7 @@ from gaspra.tokenizers import (
     LineTokenizer,
     SymbolTokenizer,
 )
-from gaspra.types import ChangeIterable
+from gaspra.types import DiffIterable
 import gaspra.torture_test as torture_test
 
 
@@ -126,7 +126,7 @@ def get_markup_function(arguments, allow_strikeout=True):
 
     def markup_function(
         writer,
-        changeset: ChangeIterable,
+        changeset: DiffIterable,
         branch0: str,
         branch1: str,
         header: str | None = "",

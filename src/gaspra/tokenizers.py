@@ -2,7 +2,7 @@ from collections.abc import Iterable, Sequence
 from typing import cast, Generic, Protocol, TypeVar
 import re
 
-from gaspra.types import Change, ChangeIterable, TokenIterable, TokenSequence, Token
+from gaspra.types import Change, DiffIterable, TokenIterable, TokenSequence, Token
 from gaspra.changesets import diff_token_sequences
 from gaspra.merge import merge_token_sequence
 
@@ -200,8 +200,8 @@ class SymbolTokenizer(Generic[BytesOrStr]):
 
 
 def decode_and_transform_changes(
-    changes: ChangeIterable, tokenizer: Tokenizer, transform=lambda _: _
-) -> ChangeIterable:
+    changes: DiffIterable, tokenizer: Tokenizer, transform=lambda _: _
+) -> DiffIterable:
     """
     Decode a changeset.  Changesets are first computed on token stream.
     This function decodes each token in a Changeestto a str or a bytes

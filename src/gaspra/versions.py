@@ -69,7 +69,7 @@ class Versions:
 
         encoded_changeset = tuple(
             strip_forward(
-                find_changeset(encoded_original, encoded_modified).change_stream()
+                find_changeset(encoded_original, encoded_modified).as_change_stream()
             )
         )
 

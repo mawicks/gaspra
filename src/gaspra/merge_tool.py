@@ -279,4 +279,4 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
-    diff_cli()
+    merge_cli()

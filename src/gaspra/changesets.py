@@ -9,7 +9,7 @@ from gaspra.suffix_automaton import build, find_lcs
 from gaspra.types import (
     Change,
     DiffIterable,
-    Common,
+    CommonSlice,
     ReducedChangeIterable,
     StrippedChangeIterable,
     TokenSequence,
@@ -77,7 +77,10 @@ class ChangesetLeaf:
         """Produce a simpler output stream than _stream() suitable
         or building diff output."""
 
-        yield from self.as_change_stream()
+        # Construction of the tree creates "empty" changesets.  Omit
+        # those from the output stream.
+        if self.modified or self.original:
+            yield Change(self.modified, self.original)
 
     def old_apply_forward(self, _: str | TokenSequence):
         yield self.modified
@@ -120,13 +123,13 @@ class Changeset:
         """Produce a simple output stream containing only changes.
 
         Elements of the stream are either 1) a tuple with pairs of
-        slices of common sequences from the two strings or 2) an
+        slices of common sequences from the two sequences or 2) an
         instance of `Change` (a named tuple) for fragments that are
         different.  The simpler objects can returned to a caller without
         exposing the Change tree implementation."""
 
         yield from self.prefix.as_change_stream()
-        yield Common(self.common_original, self.common_modified)
+        yield CommonSlice(self.common_original, self.common_modified)
         yield from self.suffix.as_change_stream()
 
     def as_diff_stream(self, original: str | TokenSequence) -> DiffIterable:
@@ -164,7 +167,7 @@ def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
     for change in stream:
         if isinstance(change, Change) and change.a:
             yield change.a
-        elif isinstance(change, Common) and change.a_slice:
+        elif isinstance(change, CommonSlice) and change.a_slice:
             yield change.a_slice
 
 
@@ -173,7 +176,7 @@ def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
     for change in stream:
         if isinstance(change, Change) and change.b:
             yield change.b
-        elif isinstance(change, Common) and change.a_slice:
+        elif isinstance(change, CommonSlice) and change.a_slice:
             yield change.b_slice
 
 

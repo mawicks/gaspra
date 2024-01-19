@@ -17,21 +17,21 @@ Separator = namedtuple("Separator", "index")
 Change = namedtuple("Change", ["a", "b"])
 CommonSlice = namedtuple("Common", ["a_slice", "b_slice"])
 
-# ReducedChangeIterable is agnostic about direction.  It can be used to
+# ChangeIterable is agnostic about direction.  It can be used to
 # apply changes in either direction.
-ReducedChangeIterable = Iterable[CommonSlice | Change]
+ChangeIterable = Iterable[CommonSlice | Change]
 
-# StrippedChangeIterable/Sequence is used where a direction has been
-# selected and stripped out of a ReducedChangeIterable. It represents
-# only slices are used for common sections under the assumption
-# that the original sequence is available for slicing.
-StrippedChangeIterable = Iterable[slice | TokenSequence]
-StrippedChangeSequence = Sequence[slice | TokenSequence]
+# PatchIterable/Sequence is used where a direction has been selected and
+# stripped out of a ChangeIterable. Only slices are used for common
+# sections under the assumption that the original sequence is available
+# for slicing.
+PatchIterable = Iterable[slice | TokenSequence]
+PatchSequence = Sequence[slice | TokenSequence]
 
-# DiffIterable is different from StrippedChangeIterable in the sense
-# that slices have been replaced by token sqeuences and that both
-# directions of the change are available so that they can be displayed
-# as a diff.  In other words, StrippedChangeIterable is a compact diff
-# that can be *applied* in one direction. DiffIterable is a human
-# readable diff intended for display.
+# DiffIterable is also derived from ChangeIterable, but different from
+# PatchIterable in the sense that slices have been replaced by token
+# sqeuences and that both directions of the change are available so that
+# they can be displayed as a diff.  In other words, PatchIterable is a
+# compact diff that can be *applied* in one direction. DiffIterable is a
+# human readable diff intended for display.
 DiffIterable = Iterable[TokenSequence | Change]

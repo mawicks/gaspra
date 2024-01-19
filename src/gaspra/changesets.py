@@ -10,8 +10,8 @@ from gaspra.types import (
     Change,
     DiffIterable,
     CommonSlice,
-    ReducedChangeIterable,
-    StrippedChangeIterable,
+    ChangeIterable,
+    PatchIterable,
     TokenSequence,
     TokenSequenceVar,
 )
@@ -59,8 +59,8 @@ class ChangesetLeaf:
                 ),
             )
 
-    def as_change_stream(self) -> ReducedChangeIterable:
-        """Produce a simple output stream containing only changes.
+    def as_change_stream(self) -> ChangeIterable:
+        """Produce a simple output stream containing changes.
 
         Elements of the stream are either 1) a tuple with pairs of
         slices of common fragments from the two strings or 2) instances
@@ -119,8 +119,8 @@ class Changeset:
         yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix._stream(original)
 
-    def as_change_stream(self) -> ReducedChangeIterable:
-        """Produce a simple output stream containing only changes.
+    def as_change_stream(self) -> ChangeIterable:
+        """Produce a simple output stream containing changes.
 
         Elements of the stream are either 1) a tuple with pairs of
         slices of common sequences from the two sequences or 2) an
@@ -162,7 +162,7 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
-def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+def strip_forward(stream: ChangeIterable) -> PatchIterable:
     """Return just the forward changes from a changeset."""
     for change in stream:
         if isinstance(change, Change) and change.a:
@@ -171,7 +171,7 @@ def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
             yield change.a_slice
 
 
-def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+def strip_reverse(stream: ChangeIterable) -> PatchIterable:
     """Return just the reverse changes from a changeset."""
     for change in stream:
         if isinstance(change, Change) and change.b:
@@ -272,7 +272,7 @@ def join_changes(
 
 
 def apply(
-    stripped_changeset: StrippedChangeIterable, version: TokenSequenceVar
+    stripped_changeset: PatchIterable, version: TokenSequenceVar
 ) -> TokenSequenceVar:
     """
     Apply a changeset to a version sequence.
@@ -292,15 +292,11 @@ def apply(
     return join_changes(version, _apply())
 
 
-def apply_forward(
-    reduced_changeset: ReducedChangeIterable, original: Sequence[Hashable]
-):
+def apply_forward(reduced_changeset: ChangeIterable, original: Sequence[Hashable]):
     return apply(strip_forward(reduced_changeset), original)
 
 
-def apply_reverse(
-    reduced_changeset: ReducedChangeIterable, modified: Sequence[Hashable]
-):
+def apply_reverse(reduced_changeset: ChangeIterable, modified: Sequence[Hashable]):
     return apply(strip_reverse(reduced_changeset), modified)
 
 

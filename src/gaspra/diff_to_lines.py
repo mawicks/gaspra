@@ -69,11 +69,11 @@ class DiffAccumulator:
             yield input_fragment
 
     def flush(self):
-        if (
-            not self.in_conflict
-            and self.partial_line_from
-            and self.partial_line_from[0]
-        ):
+        if self.in_conflict:
+            tail = "" if self.finishable else "\n"
+            yield from self.finish_conflict(tail)
+
+        elif self.partial_line_from and self.partial_line_from[0]:
             # If not in a conflict, partial_line_into should be exactly
             # the same as partial_line_from so we disregard ignore
             # partial_line_into
@@ -87,13 +87,13 @@ def to_line_diff(
     accumulator = DiffAccumulator()
     empty = True
     for fragment in fragment_sequence:
+        if not fragment:
+            continue
+
+        empty = False
         if isinstance(fragment, Change):
             accumulator.add_conflict(fragment)
-            empty = False
         elif isinstance(fragment, str):
-            if fragment:
-                empty = False
-
             if accumulator.finishable and accumulator.is_nonempty():
                 yield from accumulator.finish_conflict("")
 
@@ -112,11 +112,8 @@ def to_line_diff(
             else:
                 accumulator.add(lines[0])
 
-    if accumulator.in_conflict:
-        tail = "" if accumulator.finishable else "\n"
-        yield from accumulator.finish_conflict(tail)
-    else:
-        yield from accumulator.flush()
+    yield from accumulator.flush()
+
     if empty:
         yield ""
 

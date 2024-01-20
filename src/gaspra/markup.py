@@ -170,7 +170,6 @@ def line_oriented_markup_changes(
     name1,
     markup={},
     header: str | None = None,
-    **__kwargs__,
 ):
     show_header(print, header, markup)
     fragment_markup = markup.get("fragment", {})
@@ -279,36 +278,25 @@ def token_oriented_markup_changes(
             print(item)
 
 
-def markup_single_change(print, change: Change, markup):
-    markup_into = markup["into"]
-    markup_from = markup["from"]
-
-    if change.a:
-        print(markup_into["prefix"])
-        print(change.a)
-        print(markup_into["suffix"])
-
-    if change.b:
-        print(markup_from["prefix"])
-        print(change.b)
-        print(markup_from["suffix"])
-
-
-def markup_stream(print, stream, name_into, name_from, markup0, markup1=None):
+def markup_stream(
+    print, stream, name_into, name_from, markup0, markup1=None, escape=lambda _: _
+):
     markup_into = markup0["into"]
     markup_from = markup0["from"]
 
     for item in stream:
         if isinstance(item, str):
-            print(item)
+            print(escape(item))
             continue
         if isinstance(item, Change):
             if item.a:
                 print(markup_into["prefix"](name_into))
                 if isinstance(item.a, str):
-                    print(item.a)
+                    print(escape(item.a))
                 else:
-                    markup_stream(print, item.a, name_into, name_from, markup1)
+                    markup_stream(
+                        print, item.a, name_into, name_from, markup1, escape=escape
+                    )
                 print(markup_into["suffix"](name_into))
 
             print(markup0["separator"])
@@ -316,12 +304,12 @@ def markup_stream(print, stream, name_into, name_from, markup0, markup1=None):
             if item.b:
                 print(markup_from["prefix"](name_from))
                 if isinstance(item.b, str):
-                    print(item.b)
+                    print(escape(item.b))
                 else:
-                    markup_stream(print, item.b, name_into, name_from, markup1)
+                    markup_stream(
+                        print, item.b, name_into, name_from, markup1, escape=escape
+                    )
                 print(markup_from["suffix"](name_from))
-        else:
-            print(item)
 
 
 def markup_changes(
@@ -329,13 +317,12 @@ def markup_changes(
     stream,
     name_into,
     name_from,
-    markup={},
+    markup0={},
+    markup1={},
     header: str | None = None,
+    escape=lambda _: _,
 ):
     if header:
-        show_header(print, header, markup)
+        show_header(print, header, markup0)
 
-    markup0 = markup["level0"]
-    markup1 = markup["level1"]
-
-    markup_stream(print, stream, name_into, name_from, markup0, markup1)
+    markup_stream(print, stream, name_into, name_from, markup0, markup1, escape)

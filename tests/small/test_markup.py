@@ -36,13 +36,13 @@ TEST_DIFF_MARKUP = {
             "suffix": lambda s: f"> {s}\n",
         },
         "separator": "=\n",
+        "header": {"prefix": "{", "suffix": "}"},
     },
     "level1": {
-        "into": {"prefix": "<", "suffix": ">"},
-        "from": {"prefix": "[", "suffix": "]"},
+        "into": {"prefix": lambda _: "<", "suffix": lambda _: ">"},
+        "from": {"prefix": lambda _: "[", "suffix": lambda _: "]"},
         "separator": "|",
     },
-    "header": {"prefix": "{", "suffix": ""},
 }
 
 TEST_TOKEN_MARKUP = {
@@ -476,11 +476,68 @@ def test_diff_to_lines(input_sequence, output):
             (Change("a\n", "b\n"),),
             "< x\na\n[i]=\n[f]b\n> y\n",
         ),
+        (
+            (
+                "a\n",
+                Change(
+                    ("b", Change("c", ""), "\n"),
+                    ("d", Change("", "e"), "\n"),
+                ),
+                "f\n",
+            ),
+            "a\n< x\nb<c>|\n[i]=\n[f]d|[e]\n> y\nf\n",
+        ),
     ],
 )
 def test_markup_changes(input_sequence, output):
     output_buffer = io.StringIO()
 
-    markup_changes(output_buffer.write, input_sequence, "x", "y", TEST_DIFF_MARKUP)
+    markup_changes(
+        output_buffer.write,
+        input_sequence,
+        "x",
+        "y",
+        TEST_DIFF_MARKUP["level0"],
+        TEST_DIFF_MARKUP["level1"],
+    )
+
+    assert output_buffer.getvalue() == output
+
+
+@pytest.mark.parametrize(
+    "input_sequence,output",
+    [
+        # Empty file remains empty.
+        (("",), ""),
+        (("a\n",), "A\n"),
+        (
+            (Change("a\n", "b\n"),),
+            "< x\nA\n[i]=\n[f]B\n> y\n",
+        ),
+        (
+            (
+                "a\n",
+                Change(
+                    ("b", Change("c", ""), "\n"),
+                    ("d", Change("", "e"), "\n"),
+                ),
+                "f\n",
+            ),
+            "A\n< x\nB<C>|\n[i]=\n[f]D|[E]\n> y\nF\n",
+        ),
+    ],
+)
+def test_markup_changes_applies_escape(input_sequence, output):
+    output_buffer = io.StringIO()
+
+    markup_changes(
+        output_buffer.write,
+        input_sequence,
+        "x",
+        "y",
+        TEST_DIFF_MARKUP["level0"],
+        TEST_DIFF_MARKUP["level1"],
+        escape=str.upper,
+    )
 
     assert output_buffer.getvalue() == output

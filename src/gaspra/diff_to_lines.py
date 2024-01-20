@@ -38,9 +38,7 @@ class DiffAccumulator:
         self.in_conflict = True
 
     def conditional_add(self, input_fragment: str):
-        if (self.partial_line_into and self.partial_line_into[-1] != "\n") or (
-            self.partial_line_from and self.partial_line_from[-1] != "\n"
-        ):
+        if not self.finishable:
             if input_fragment:
                 self.partial_line_into.append(input_fragment)
                 self.partial_line_from.append(input_fragment)
@@ -51,7 +49,7 @@ class DiffAccumulator:
         self.partial_line_into.append(input_fragment)
         self.partial_line_from.append(input_fragment)
 
-    def nonempty(self):
+    def is_nonempty(self):
         return bool(self.partial_line_into and self.partial_line_from)
 
     def finish_conflict(self, input_fragment):
@@ -71,9 +69,14 @@ class DiffAccumulator:
             yield input_fragment
 
     def flush(self):
-        if self.partial_line_from and self.partial_line_from[0]:
-            # If not in a conflict, partial_line_into should be
-            # exactly the same as partial_line_from.
+        if (
+            not self.in_conflict
+            and self.partial_line_from
+            and self.partial_line_from[0]
+        ):
+            # If not in a conflict, partial_line_into should be exactly
+            # the same as partial_line_from so we disregard ignore
+            # partial_line_into
             self.partial_line_from.append("\n")
             yield "".join(self.partial_line_from)  # type: ignore
 
@@ -91,7 +94,7 @@ def to_line_diff(
             if fragment:
                 empty = False
 
-            if accumulator.finishable and accumulator.nonempty():
+            if accumulator.finishable and accumulator.is_nonempty():
                 yield from accumulator.finish_conflict("")
 
             lines = fragment.split("\n")

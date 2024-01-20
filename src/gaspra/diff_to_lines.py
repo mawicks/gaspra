@@ -75,7 +75,7 @@ class DiffAccumulator:
 
         elif self.partial_line_from and self.partial_line_from[0]:
             # If not in a conflict, partial_line_into should be exactly
-            # the same as partial_line_from so we disregard ignore
+            # the same as partial_line_from so we disregard
             # partial_line_into
             self.partial_line_from.append("\n")
             yield "".join(self.partial_line_from)  # type: ignore
@@ -101,11 +101,11 @@ def to_line_diff(
             if len(lines) > 1:  # Have a newline
                 if accumulator.in_conflict:
                     yield from accumulator.finish_conflict(lines[0] + "\n")
-                    if _ := join_with_newline(lines[1:-1]):
-                        yield _
+                    if joined := join_with_newline(lines[1:-1]):
+                        yield joined
                 else:
-                    if _ := join_with_newline(lines[:-1]):
-                        yield _
+                    if joined := join_with_newline(lines[:-1]):
+                        yield joined
 
                 if lines[-1]:
                     accumulator.add(lines[-1])

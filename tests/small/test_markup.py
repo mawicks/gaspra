@@ -322,8 +322,19 @@ def test_line_oriented_markup_changes(input_sequence, output):
         # a bug that needed two lines to trigger it:
         #
         (
-            ("a\n", Change("b\n", "c\n"), "d\n", Change("e\n", "f\n")),
-            ("a\n", Change("b\n", "c\n"), "d\n", Change("e\n", "f\n")),
+            ("a\n", Change("b", "c"), "\nd\n", Change("e", "f"), "\n"),
+            (
+                "a\n",
+                Change(
+                    (Change("b", ""), "\n"),
+                    (Change("", "c"), "\n"),
+                ),
+                "d\n",
+                Change(
+                    (Change("e", ""), "\n"),
+                    (Change("", "f"), "\n"),
+                ),
+            ),
         ),
         # Two conflicts with two lines between them:
         #

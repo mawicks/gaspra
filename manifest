@@ -1,5 +1,5 @@
-C Adding\sprogress\son\sto_line_diff()
-D 2024-01-20T15:39:26.993
+C Fix\sanother\stest.
+D 2024-01-20T15:59:08.556
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 168d324c360e400ef2df8d3d8486425e70b79f0855b1e81af437edd6bc9447b9
@@ -42,7 +42,7 @@ F tests/small/test_common.py 5b0ce088ad95d532e3548113b139d407444bd16743416e7b535
 F tests/small/test_db_collections.py afccee3bc47373beb7d900ad3d2d2bd884c861a7f49362ffff8f88a5abd7dfc6
 F tests/small/test_helpers.py e9f27f812214612222f10be37529446a52ce231a35472318938407e8f2f4868e
 F tests/small/test_manifest.py 11bf26767bd9e3ed955e1dca0e85560f53710b7a555ba15ad07cfc16d10f002d
-F tests/small/test_markup.py bea985bff02fe11c6151ee3ecac8771d36f7e50ede68753a6c925b93bd1d6039
+F tests/small/test_markup.py d2bdd26edc14cfbe63b1415d17019cfaa6ee3c0366fc7d603f717451bd0e5676
 F tests/small/test_merge.py c5f09bc52b26ea95da1a7b504b803f5fcab6a5abff9f7f4e029985c07a85439e
 F tests/small/test_multiple_strings.py 6dafba6ed83077c1d748f904293c0ccd5cefd014249a3d17a096937b2fe12e40
 F tests/small/test_serialize.py d1eb71f73a98e88695acdb215ff494fa03e4a67530ea5bcd53b528eb95420f21
@@ -51,8 +51,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 5d3c3946d6ffa241380bf68440d943a28517e04e99e0a8d6a59b62a0b431493a
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py ae0fd279a6406163e949fc27e0e8b17f62dcaf199c0da085af3ce6abe22c8f3c
-P 31f7180b92761431895e3b1d057aa33e2866378202d2d8b82ee2c9c3b7365539
-R fe64dda9f2ae2814c839dacb1ecee5f8
+P cf7ff2420cf80e703b25ed0865d90d826360c25939dbd3dfce264a328ce57114
+R 6cde91d0899a1607164ffca9b2a9fbed
 U mwicks
-Z 37316cc961aee746fc8f746b1868656f
+Z 574f0863699c51d52412230d9831ba3b
 # Remove this line to create a well-formed Fossil manifest.

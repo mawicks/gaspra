@@ -1,4 +1,4 @@
-from gaspra.types import StrippedChangeIterable
+from gaspra.types import PatchIterable
 
 
 def vserialize_int(value: int):
@@ -72,7 +72,7 @@ def deserialize_int(stream: bytes):
     return value, stream[4:]
 
 
-def serialize_changeset(changeset: StrippedChangeIterable):
+def serialize_changeset(changeset: PatchIterable):
     serialized = b""
 
     # First fragment in serialization must come from bytes object.
@@ -103,7 +103,7 @@ def serialize_changeset(changeset: StrippedChangeIterable):
     return serialized
 
 
-def deserialize_changeset(stream: bytes) -> StrippedChangeIterable:
+def deserialize_changeset(stream: bytes) -> PatchIterable:
     next_is_bytes = True
 
     while len(stream):

@@ -1,5 +1,5 @@
 import pytest
-from gaspra.merge import merge
+from gaspra.merge import merge_token_sequence
 from gaspra.test_helpers.helpers import byteize, encode
 from gaspra.types import Change
 
@@ -98,7 +98,7 @@ CONFLICT_FREE_MERGES_TOKEN_CASES = [
     ],
 )
 def test_merge(parent, branch1, branch2, merged):
-    assert tuple(merge(parent, branch1, branch2)) == (merged,)
+    assert tuple(merge_token_sequence(parent, branch1, branch2)) == (merged,)
 
 
 MERGES_HAVING_CONFLICT_STRING_CASES = [
@@ -202,7 +202,7 @@ MERGES_HAVING_CONFLICT_TOKEN_CASES = [
     ],
 )
 def test_merge_conflict(parent, branch1, branch2, merged):
-    result = merge(parent, branch1, branch2)
+    result = merge_token_sequence(parent, branch1, branch2)
     assert tuple(merged) == tuple(result)
 
 
@@ -224,7 +224,7 @@ def test_merge_conflict(parent, branch1, branch2, merged):
     ],
 )
 def test_all_string_merge_tuples_are_typed(parent, branch1, branch2, __merged__):
-    merged = merge(parent, branch1, branch2)
+    merged = merge_token_sequence(parent, branch1, branch2)
     assert all(
         isinstance(change, Change) or type(change) in (bytes, str) for change in merged
     )

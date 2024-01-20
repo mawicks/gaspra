@@ -10,15 +10,16 @@ from gaspra.markup import (
     markup_changes,
 )
 
-from gaspra.merge import merge
-from gaspra.changesets import diff
+from gaspra.merge import merge_token_sequence
+from gaspra.changesets import diff_token_sequences
 from gaspra.tokenizers import (
     decode_and_transform_changes,
+    diff,
     CharTokenizer,
     LineTokenizer,
     SymbolTokenizer,
 )
-from gaspra.types import ChangeIterable
+from gaspra.types import DiffIterable
 import gaspra.torture_test as torture_test
 
 
@@ -125,7 +126,7 @@ def get_markup_function(arguments, allow_strikeout=True):
 
     def markup_function(
         writer,
-        changeset: ChangeIterable,
+        changeset: DiffIterable,
         branch0: str,
         branch1: str,
         header: str | None = "",
@@ -191,10 +192,13 @@ def _merge(parent_name, current_name, other_name, arguments):
         if arguments.diff:
             diff_markup = get_markup_function(arguments, allow_strikeout=True)
             current_changes = decode_and_transform_changes(
-                tokenizer, diff(parent, current), escape
+                diff_token_sequences(parent, current), tokenizer, escape
+            )
+            current_changes = decode_and_transform_changes(
+                diff_token_sequences(parent, current), tokenizer, escape
             )
             other_changes = decode_and_transform_changes(
-                tokenizer, diff(parent, other), escape
+                diff_token_sequences(parent, other), tokenizer, escape
             )
 
             def markup_one(changes, branch_name):
@@ -209,12 +213,12 @@ def _merge(parent_name, current_name, other_name, arguments):
             markup_one(current_changes, current_name)
             markup_one(other_changes, other_name)
 
-        merged = merge(parent, current, other)
+        merged = merge_token_sequence(parent, current, other)
         merge_markup = get_markup_function(arguments, allow_strikeout=False)
 
         merge_markup(
             writer,
-            decode_and_transform_changes(tokenizer, merged, escape),
+            decode_and_transform_changes(merged, tokenizer, escape),
             current_name,
             other_name,
             header="Merged" if arguments.diff else None,
@@ -239,18 +243,14 @@ def diff_cli():
 
     tokenizer = make_tokenizer(arguments)
 
-    original = tokenizer.encode(original)
-    modified = tokenizer.encode(modified)
-
-    changes = diff(original, modified)
-
     display_function = get_markup_function(arguments, allow_strikeout=True)
 
     with get_writer(arguments) as writer:
         writer, escape = writer
+
         display_function(
             writer,
-            decode_and_transform_changes(tokenizer, changes, escape),
+            diff(original, modified, tokenizer, escape),
             escape(modified_name),
             escape(original_name),
         )
@@ -279,4 +279,4 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
-    diff_cli()
+    merge_cli()

@@ -8,9 +8,10 @@ from gaspra.common import DATA_DIR
 from gaspra.suffix_automaton import build, find_lcs
 from gaspra.types import (
     Change,
+    DiffIterable,
+    CommonSlice,
     ChangeIterable,
-    ReducedChangeIterable,
-    StrippedChangeIterable,
+    PatchIterable,
     TokenSequence,
     TokenSequenceVar,
 )
@@ -58,23 +59,23 @@ class ChangesetLeaf:
                 ),
             )
 
-    def diff_stream(self, _: str | TokenSequence) -> ChangeIterable:
-        """Produce a simpler output stream than _stream() suitable
-        or building diff output."""
+    def as_change_stream(self) -> ChangeIterable:
+        """Produce a simple output stream containing changes.
 
-        # Construction of the tree creates "empty" changesets.
-        # Omit those from the output stream.
+        Elements of the stream are either 1) a tuple with pairs of
+        slices of common fragments from the two strings or 2) instances
+        of `Change` (a named tuple) for fragments that are different.
+        The simpler objects can be returned to a caller without exposing
+        the Change tree implementation."""
+
+        # Construction of the tree creates "empty" changesets.  Omit
+        # those from the output stream.
         if self.modified or self.original:
             yield Change(self.modified, self.original)
 
-    def change_stream(self) -> ReducedChangeIterable:
-        """Produce a simple output stream containing only changes.
-
-        Elements of the stream are 1) tuple with pairs of
-        slices of common fragments from the two strings and 2) named
-        tuple pairs of type `Change` for fragments that are different.
-        The simpler objects can returned to a caller without exposing
-        the Change tree implementation."""
+    def as_diff_stream(self, _: str | TokenSequence) -> DiffIterable:
+        """Produce a simpler output stream than _stream() suitable
+        or building diff output."""
 
         # Construction of the tree creates "empty" changesets.  Omit
         # those from the output stream.
@@ -118,26 +119,31 @@ class Changeset:
         yield CopyFragment(insert=copy, length=len(copy))
         yield from self.suffix._stream(original)
 
-    def diff_stream(self, original: str | TokenSequence) -> ChangeIterable:
+    def as_change_stream(self) -> ChangeIterable:
+        """Produce a simple output stream containing changes.
+
+        Elements of the stream are either 1) a tuple with pairs of
+        slices of common sequences from the two sequences or 2) an
+        instance of `Change` (a named tuple) for fragments that are
+        different.  The simpler objects can returned to a caller without
+        exposing the Change tree implementation."""
+
+        yield from self.prefix.as_change_stream()
+        yield CommonSlice(self.common_original, self.common_modified)
+        yield from self.suffix.as_change_stream()
+
+    def as_diff_stream(self, original: str | TokenSequence) -> DiffIterable:
         """Produce a simpler output stream than _stream() suitable
-        or building diff output."""
+        or building diff output.
 
-        yield from self.prefix.diff_stream(original)
+        Elements of the stream are either 1) a common token sequence or
+        an instance of `Change` (a named tuple) for fragments that are
+        different.  The simpler objects can returned to a caller without
+        exposing the Change tree implementation."""
+
+        yield from self.prefix.as_diff_stream(original)
         yield original[self.common_original]
-        yield from self.suffix.diff_stream(original)
-
-    def change_stream(self) -> ReducedChangeIterable:
-        """Produce a simple output stream containing only changes.
-
-        Elements of the stream are 1) tuple with pairs of
-        slices of common fragments from the two strings and 2) named
-        tuple pairs of type `Change` for fragments that are different.
-        The simpler objects can returned to a caller without exposing
-        the Change tree implementation."""
-
-        yield from self.prefix.change_stream()
-        yield (self.common_original, self.common_modified)
-        yield from self.suffix.change_stream()
+        yield from self.suffix.as_diff_stream(original)
 
     def old_apply_forward(self, original: str | TokenSequence):
         yield from self.prefix.old_apply_forward(original)
@@ -156,28 +162,31 @@ class Changeset:
         return f"original[{s_original}]/modified[{s_modified}]\n"
 
 
-def strip_forward(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+def strip_forward(stream: ChangeIterable) -> PatchIterable:
     """Return just the forward changes from a changeset."""
     for change in stream:
         if isinstance(change, Change) and change.a:
             yield change.a
-        elif change[0]:
-            yield change[0]
+        elif isinstance(change, CommonSlice) and change.a_slice:
+            yield change.a_slice
 
 
-def strip_reverse(stream: ReducedChangeIterable) -> StrippedChangeIterable:
+def strip_reverse(stream: ChangeIterable) -> PatchIterable:
     """Return just the reverse changes from a changeset."""
     for change in stream:
         if isinstance(change, Change) and change.b:
             yield change.b
-        elif change[1]:
-            yield change[1]
+        elif isinstance(change, CommonSlice) and change.a_slice:
+            yield change.b_slice
 
 
-def diff(
+def diff_token_sequences(
     original: str | TokenSequence, modified: str | TokenSequence
-) -> ChangeIterable:
+) -> DiffIterable:
     """Returns the changes between a and b.
+
+    This is a fairly low-level function.  For most use cases
+    you should use tokenizers.diff()
 
     Arguments:
         original: str
@@ -186,23 +195,24 @@ def diff(
             The "modified" string
 
     Returns:
-        Iterable[str]
+        ChangeIterable
             The changes between a and b.  Each item in the sequence is
-            either a string or a tuple of two strings.  If the item is a
-            string, it is unchanged test between `original` and
-            ``modified`.  If the item is a [named] tuple, the first
-            string is the string inserted at that point in `original` to
-            get `modified` and the second string is the string that was
-            deleted.
+            either a TokenSequence or a `Change` named tuple which is a
+            tuple of two strings.  If the item is not a Change, it is an
+            unchanged token sequence common to `original` and
+            `modified`.  If the item is a Change tuple, the first element
+            is the sequence inserted at that point in `original` to get
+            `modified` and the second element is the sequence
+            that was deleted.
 
     """
     changeset = find_changeset(original, modified)
-    yield from changeset.diff_stream(original)
+    yield from changeset.as_diff_stream(original)
 
 
 def find_changeset(
-    original: str | TokenSequence,
-    modified: str | TokenSequence,
+    original: TokenSequence,
+    modified: TokenSequence,
     original_slice: slice = slice(0, None),
     modified_slice: slice = slice(0, None),
 ) -> Changeset | ChangesetLeaf:
@@ -262,13 +272,14 @@ def join_changes(
 
 
 def apply(
-    stripped_changeset: StrippedChangeIterable, version: TokenSequenceVar
+    stripped_changeset: PatchIterable, version: TokenSequenceVar
 ) -> TokenSequenceVar:
     """
     Apply a changeset to a version sequence.
 
-    A StrippedChangeIterable is produced from strip_forward() or strip_reverse()
-    has no sense of direction.  It just applies the changes to the string.
+    A StrippedChangeIterable is produced from strip_forward() or
+    strip_reverse() This code has no sense of direction.  It just
+    applies the changes to the string.
     """
 
     def _apply() -> Iterable[TokenSequenceVar]:
@@ -281,15 +292,11 @@ def apply(
     return join_changes(version, _apply())
 
 
-def apply_forward(
-    reduced_changeset: ReducedChangeIterable, original: Sequence[Hashable]
-):
+def apply_forward(reduced_changeset: ChangeIterable, original: Sequence[Hashable]):
     return apply(strip_forward(reduced_changeset), original)
 
 
-def apply_reverse(
-    reduced_changeset: ReducedChangeIterable, modified: Sequence[Hashable]
-):
+def apply_reverse(reduced_changeset: ChangeIterable, modified: Sequence[Hashable]):
     return apply(strip_reverse(reduced_changeset), modified)
 
 

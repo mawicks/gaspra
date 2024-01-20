@@ -1,4 +1,4 @@
-from gaspra.changesets import diff
+from gaspra.changesets import diff_token_sequences
 import pytest
 
 from gaspra.wrappers import find_substring, find_lcs
@@ -31,7 +31,7 @@ def test_find_lcs():
 def test_changes():
     original = "The quick brown fox jumps over the lazy dog near the riverbank."
     modified = "The quick brown fox leaps over the lazy dogs near the river"
-    result = list(diff(original, modified))
+    result = list(diff_token_sequences(original, modified))
     assert result == [
         "The quick brown fox ",
         ("lea", "jum"),

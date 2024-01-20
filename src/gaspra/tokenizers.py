@@ -2,7 +2,9 @@ from collections.abc import Iterable, Sequence
 from typing import cast, Generic, Protocol, TypeVar
 import re
 
-from gaspra.types import Change, ChangeIterable, TokenIterable, Token
+from gaspra.types import Change, DiffIterable, TokenIterable, TokenSequence, Token
+from gaspra.changesets import diff_token_sequences
+from gaspra.merge import merge_token_sequence
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
 
@@ -47,7 +49,7 @@ def generic_encode(
 
 
 class Tokenizer(Protocol, Generic[BytesOrStr]):
-    def encode(self, contents: BytesOrStr) -> TokenIterable:
+    def encode(self, contents: BytesOrStr) -> TokenSequence:
         raise NotImplementedError
 
     def decode(self, contents: TokenIterable) -> BytesOrStr:
@@ -198,8 +200,8 @@ class SymbolTokenizer(Generic[BytesOrStr]):
 
 
 def decode_and_transform_changes(
-    tokenizer: Tokenizer, changes: ChangeIterable, transform=lambda _: _
-) -> ChangeIterable:
+    changes: DiffIterable, tokenizer: Tokenizer, transform=lambda _: _
+) -> DiffIterable:
     """
     Decode a changeset.  Changesets are first computed on token stream.
     This function decodes each token in a Changeestto a str or a bytes
@@ -215,3 +217,42 @@ def decode_and_transform_changes(
             )
         else:
             yield transform(tokenizer.decode(change))
+
+
+def diff(
+    original, modified, tokenizer: Tokenizer = NullTokenizer(), transformer=lambda _: _
+):
+    """
+    High level diff() call that optionally encodes the sequences to be
+    compared, compares the sequences, decodes, and transforms the
+    result.  This is the diff() function for most use cases.
+
+    """
+    encoded_original = tokenizer.encode(original)
+    encoded_modified = tokenizer.encode(modified)
+
+    changes = diff_token_sequences(encoded_original, encoded_modified)
+    transformed = decode_and_transform_changes(changes, tokenizer, transformer)
+    return transformed
+
+
+def merged(
+    parent,
+    current,
+    other,
+    tokenizer: Tokenizer = NullTokenizer(),
+    transformer=lambda _: _,
+):
+    """
+    High level diff() call that optionally encodes the sequences to be
+    compared, compares the sequences, decodes, and transforms the
+    result.  This is the diff() function for most use cases.
+
+    """
+    encoded_parent = tokenizer.encode(parent)
+    encoded_current = tokenizer.encode(current)
+    encoded_other = tokenizer.encode(other)
+
+    changes = merge_token_sequence(encoded_parent, encoded_current, encoded_other)
+    merged = decode_and_transform_changes(changes, tokenizer, transformer)
+    return merged

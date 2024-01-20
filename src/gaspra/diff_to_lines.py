@@ -1,5 +1,4 @@
 from collections.abc import Hashable, Iterable, Sequence
-import io
 
 from gaspra.types import Change
 
@@ -8,11 +7,13 @@ class DiffAccumulator:
     partial_line_into: list[str | Change]
     partial_line_from: list[str | Change]
     finishable: bool
+    in_conflict: bool
 
     def __init__(self):
         self.partial_line_into = []
         self.partial_line_from = []
         self.finishable = True
+        self.in_conflict = False
 
     def clear(self):
         self.partial_line_into.clear()
@@ -34,6 +35,7 @@ class DiffAccumulator:
             b_finishable = self.finishable
 
         self.finishable = a_finishable and b_finishable
+        self.in_conflict = True
 
     def conditional_add(self, input_fragment: str):
         if (self.partial_line_into and self.partial_line_into[-1] != "\n") or (
@@ -63,6 +65,8 @@ class DiffAccumulator:
         self.partial_line_into.clear()
         self.partial_line_from.clear()
 
+        self.in_conflict = False
+
         if input_fragment:
             yield input_fragment
 
@@ -71,55 +75,46 @@ class DiffAccumulator:
             # If not in a conflict, partial_line_into should be
             # exactly the same as partial_line_from.
             self.partial_line_from.append("\n")
-            yield "".join(self.accumulator.partial_line_from)  # type: ignore
+            yield "".join(self.partial_line_from)  # type: ignore
 
 
 def to_line_diff(
     fragment_sequence: Iterable[Sequence[Hashable]],
 ):
-    in_conflict = False
-    no_output = True
     accumulator = DiffAccumulator()
+    empty = True
     for fragment in fragment_sequence:
         if isinstance(fragment, Change):
-            in_conflict = True
             accumulator.add_conflict(fragment)
+            empty = False
         elif isinstance(fragment, str):
+            if fragment:
+                empty = False
+
             if accumulator.finishable and accumulator.nonempty():
                 yield from accumulator.finish_conflict("")
-                in_conflict = False
-                no_output = False
 
             lines = fragment.split("\n")
             if len(lines) > 1:  # Have a newline
-                if in_conflict:
+                if accumulator.in_conflict:
                     yield from accumulator.finish_conflict(lines[0] + "\n")
                     if _ := join_with_newline(lines[1:-1]):
                         yield _
-                    no_output = False
                 else:
                     if _ := join_with_newline(lines[:-1]):
                         yield _
-                        no_output = False
-                in_conflict = False
+
                 if lines[-1]:
                     accumulator.add(lines[-1])
-            elif lines[0]:
+            else:
                 accumulator.add(lines[0])
 
-    if in_conflict:
-        if accumulator.finishable:
-            tail = ""
-        else:
-            tail = "\n"
+    if accumulator.in_conflict:
+        tail = "" if accumulator.finishable else "\n"
         yield from accumulator.finish_conflict(tail)
-
-    elif accumulator.partial_line_from and accumulator.partial_line_from[0]:
-        # If not in a conflict, partial_line_into should be
-        # exactly the same as partial_line_from.
-        accumulator.partial_line_from.append("\n")
-        yield "".join(accumulator.partial_line_from)  # type: ignore
-    elif no_output:
+    else:
+        yield from accumulator.flush()
+    if empty:
         yield ""
 
 

@@ -290,7 +290,7 @@ def markup_stream(
             if item.b:
                 print(
                     markup_change_item(
-                        item.a, markup_from, name_into, name_from, markup1, escape
+                        item.b, markup_from, name_into, name_from, markup1, escape
                     )
                 )
 

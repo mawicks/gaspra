@@ -7,7 +7,7 @@ from gaspra.markup import (
     SCREEN_MARKUP,
     STRIKEOUT_SCREEN_MARKUP,
     line_oriented_markup_changes,
-    markup_changes,
+    old_markup_changes,
 )
 
 from gaspra.merge import merge_token_sequence
@@ -117,7 +117,7 @@ def get_markup_function(arguments, allow_strikeout=True):
     if arguments.show_lines or arguments.git_compatible:
         wrapped_markup_function = line_oriented_markup_changes
     else:
-        wrapped_markup_function = markup_changes
+        wrapped_markup_function = old_markup_changes
 
     # Is there any use for this now?
     # wrapped_markup_function = token_oriented_markup_changes

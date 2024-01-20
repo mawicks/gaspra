@@ -3,7 +3,11 @@ import io
 from itertools import chain
 
 
-from gaspra.markup import line_oriented_markup_changes, token_oriented_markup_changes
+from gaspra.markup import (
+    line_oriented_markup_changes,
+    token_oriented_markup_changes,
+    markup_changes,
+)
 from gaspra.types import Change
 from gaspra.tokenizers import decode_and_transform_changes
 from gaspra.diff_to_lines import to_line_diff
@@ -19,6 +23,26 @@ TEST_MARKUP = {
     },
     "separator": "=\n",
     "header": {"prefix": "|", "suffix": "|"},
+}
+
+TEST_DIFF_MARKUP = {
+    "level0": {
+        "into": {
+            "prefix": lambda s: f"< {s}\n",
+            "suffix": lambda _: "[i]",
+        },
+        "from": {
+            "prefix": lambda _: "[f]",
+            "suffix": lambda s: f"> {s}\n",
+        },
+        "separator": "=\n",
+    },
+    "level1": {
+        "into": {"prefix": "<", "suffix": ">"},
+        "from": {"prefix": "[", "suffix": "]"},
+        "separator": "|",
+    },
+    "header": {"prefix": "{", "suffix": ""},
 }
 
 TEST_TOKEN_MARKUP = {
@@ -430,3 +454,33 @@ def test_diff_to_lines(input_sequence, output):
     as_lines = tuple(_ for _ in to_line_diff(input_sequence))
 
     assert as_lines == output
+
+
+@pytest.mark.parametrize(
+    "input_sequence,output",
+    [
+        # Empty file remains empty.
+        (("",), ""),
+        # Just an empty line
+        (("\n",), "\n"),
+        # Two empty lines
+        (("\n\n",), "\n\n"),
+        # One line
+        (("a\n",), "a\n"),
+        # One line followed by empty line
+        (("a\n\n",), "a\n\n"),
+        # Two lines
+        (("a\nb\n",), "a\nb\n"),
+        # A line with "a" or a line with "b" (no level1)
+        (
+            (Change("a\n", "b\n"),),
+            "< x\na\n[i]=\n[f]b\n> y\n",
+        ),
+    ],
+)
+def test_markup_changes(input_sequence, output):
+    output_buffer = io.StringIO()
+
+    markup_changes(output_buffer.write, input_sequence, "x", "y", TEST_DIFF_MARKUP)
+
+    assert output_buffer.getvalue() == output

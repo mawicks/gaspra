@@ -65,7 +65,7 @@ def show_header(print, header, markup={}):
         print(f"\n{prefix}{header}{suffix}")
 
 
-def markup_changes(
+def old_markup_changes(
     print,
     fragment_sequence: Iterable[Sequence[Hashable] | tuple[Sequence[Hashable]]],
     __name0__,
@@ -277,3 +277,65 @@ def token_oriented_markup_changes(
             print_conflict(print, item.b, name1, markup["from"])
         else:
             print(item)
+
+
+def markup_single_change(print, change: Change, markup):
+    markup_into = markup["into"]
+    markup_from = markup["from"]
+
+    if change.a:
+        print(markup_into["prefix"])
+        print(change.a)
+        print(markup_into["suffix"])
+
+    if change.b:
+        print(markup_from["prefix"])
+        print(change.b)
+        print(markup_from["suffix"])
+
+
+def markup_stream(print, stream, name_into, name_from, markup0, markup1=None):
+    markup_into = markup0["into"]
+    markup_from = markup0["from"]
+
+    for item in stream:
+        if isinstance(item, str):
+            print(item)
+            continue
+        if isinstance(item, Change):
+            if item.a:
+                print(markup_into["prefix"](name_into))
+                if isinstance(item.a, str):
+                    print(item.a)
+                else:
+                    markup_stream(print, item.a, name_into, name_from, markup1)
+                print(markup_into["suffix"](name_into))
+
+            print(markup0["separator"])
+
+            if item.b:
+                print(markup_from["prefix"](name_from))
+                if isinstance(item.b, str):
+                    print(item.b)
+                else:
+                    markup_stream(print, item.b, name_into, name_from, markup1)
+                print(markup_from["suffix"](name_from))
+        else:
+            print(item)
+
+
+def markup_changes(
+    print,
+    stream,
+    name_into,
+    name_from,
+    markup={},
+    header: str | None = None,
+):
+    if header:
+        show_header(print, header, markup)
+
+    markup0 = markup["level0"]
+    markup1 = markup["level1"]
+
+    markup_stream(print, stream, name_into, name_from, markup0, markup1)

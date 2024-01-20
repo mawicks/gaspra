@@ -8,9 +8,11 @@ from gaspra.markup import (
     STRIKEOUT_SCREEN_MARKUP,
     line_oriented_markup_changes,
     old_markup_changes,
+    markup_changes,
 )
 
 from gaspra.merge import merge_token_sequence
+from gaspra.diff_to_lines import to_line_diff
 from gaspra.changesets import diff_token_sequences
 from gaspra.tokenizers import (
     decode_and_transform_changes,
@@ -113,15 +115,7 @@ def get_torture_test_arguments():
     return args
 
 
-def get_markup_function(arguments, allow_strikeout=True):
-    if arguments.show_lines or arguments.git_compatible:
-        wrapped_markup_function = line_oriented_markup_changes
-    else:
-        wrapped_markup_function = old_markup_changes
-
-    # Is there any use for this now?
-    # wrapped_markup_function = token_oriented_markup_changes
-
+def get_markup_function(arguments, escape, allow_strikeout=True):
     markup = get_markup_style(arguments, allow_strikeout)
 
     def markup_function(
@@ -131,13 +125,15 @@ def get_markup_function(arguments, allow_strikeout=True):
         branch1: str,
         header: str | None = "",
     ):
-        wrapped_markup_function(
+        markup_changes(
             writer,
             changeset,
             os.path.basename(branch0),
             os.path.basename(branch1),
-            markup=markup,
+            markup0=markup["level0"],
+            markup1=markup["level1"],
             header=os.path.basename(header) if header else None,
+            escape=escape,
         )
 
     return markup_function
@@ -190,15 +186,13 @@ def _merge(parent_name, current_name, other_name, arguments):
     with get_writer(arguments) as writer_and_escape:
         writer, escape = writer_and_escape
         if arguments.diff:
-            diff_markup = get_markup_function(arguments, allow_strikeout=True)
+            diff_markup = get_markup_function(arguments, escape, allow_strikeout=True)
+
             current_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, current), tokenizer, escape
-            )
-            current_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, current), tokenizer, escape
+                diff_token_sequences(parent, current), tokenizer
             )
             other_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, other), tokenizer, escape
+                diff_token_sequences(parent, other), tokenizer
             )
 
             def markup_one(changes, branch_name):
@@ -210,15 +204,23 @@ def _merge(parent_name, current_name, other_name, arguments):
                     header=branch_name,
                 )
 
+            if arguments.show_lines:
+                current_changes = to_line_diff(current_changes)
+                other_changes = to_line_diff(other_changes)
+
             markup_one(current_changes, current_name)
             markup_one(other_changes, other_name)
 
         merged = merge_token_sequence(parent, current, other)
-        merge_markup = get_markup_function(arguments, allow_strikeout=False)
+
+        if arguments.show_lines:
+            merged = to_line_diff(merged)
+
+        merge_markup = get_markup_function(arguments, escape, allow_strikeout=False)
 
         merge_markup(
             writer,
-            decode_and_transform_changes(merged, tokenizer, escape),
+            decode_and_transform_changes(merged, tokenizer),
             current_name,
             other_name,
             header="Merged" if arguments.diff else None,
@@ -243,10 +245,10 @@ def diff_cli():
 
     tokenizer = make_tokenizer(arguments)
 
-    display_function = get_markup_function(arguments, allow_strikeout=True)
-
     with get_writer(arguments) as writer:
         writer, escape = writer
+
+        display_function = get_markup_function(arguments, escape, allow_strikeout=True)
 
         display_function(
             writer,
@@ -279,4 +281,4 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
-    merge_cli()
+    diff_cli()

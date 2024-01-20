@@ -13,47 +13,35 @@ def rich_escape(s):
 
 
 SCREEN_MARKUP = {
-    "fragment": {
-        "into": {"prefix": "[light_green]", "suffix": "[/]"},
-        "from": {"prefix": "[pink1]", "suffix": "[/]"},
-    },
-    "line": {
+    "level0": {
         "into": {"prefix": lambda _: "[green4]", "suffix": lambda _: "[/]"},
         "from": {"prefix": lambda _: "[dark_red]", "suffix": lambda _: "[/]"},
+        "separator": "",
+        "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>\n"},
     },
-    "separator": "",
-    "header": {"prefix": "<<<[bright_blue]", "suffix": "[/]>>>\n"},
+    "level1": {
+        "into": {"prefix": lambda _: "[light_green]", "suffix": lambda _: "[/]"},
+        "from": {"prefix": lambda _: "[pink1]", "suffix": lambda _: "[/]"},
+        "separator": "",
+    },
 }
 
 STRIKEOUT_SCREEN_MARKUP = deepcopy(SCREEN_MARKUP)
-STRIKEOUT_SCREEN_MARKUP["fragment"]["from"]["prefix"] = "[bright_red strike]"
-STRIKEOUT_SCREEN_MARKUP["line"]["from"]["prefix"] = "[red strike]"
+STRIKEOUT_SCREEN_MARKUP["level0"]["from"]["prefix"] = lambda _: "[red strike]"
+STRIKEOUT_SCREEN_MARKUP["level1"]["from"]["prefix"] = lambda _: "[bright_red strike]"
 
 GIT_MARKUP = {
-    "fragment": {
-        "into": {"prefix": "", "suffix": ""},
-        "from": {"prefix": "", "suffix": ""},
+    "level1": {
+        "into": {"prefix": lambda _: "", "suffix": lambda _: ""},
+        "from": {"prefix": lambda _: "", "suffix": lambda _: ""},
+        "separator": "",
+        "header": {"prefix": "<<<", "suffix": ">>>\n"},
     },
-    "line": {
+    "level0": {
         "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
         "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
+        "separator": "=======\n",
     },
-    "separator": "=======\n",
-    "header": {"prefix": "<<<", "suffix": ">>>\n"},
-}
-
-DEPRECATED_TOKEN_GIT_MARKUP = {
-    "into": {"prefix": lambda s: f"<<<<<<< {s}\n", "suffix": lambda _: ""},
-    "from": {"prefix": lambda _: "", "suffix": lambda s: f">>>>>>> {s}\n"},
-    "separator": "=======\n",
-    "header": {"prefix": "<<<", "suffix": ">>>"},
-}
-
-DEPRECATED_TOKEN_SCREEN_MARKUP = {
-    "into": {"prefix": lambda _: "[bright_green]", "suffix": lambda _: "[/]"},
-    "from": {"prefix": lambda _: "[bright_red]", "suffix": lambda _: "[/]"},
-    "separator": "",
-    "header": {"prefix": "<<<", "suffix": ">>>"},
 }
 
 
@@ -288,28 +276,40 @@ def markup_stream(
         if isinstance(item, str):
             print(escape(item))
             continue
+
         if isinstance(item, Change):
             if item.a:
-                print(markup_into["prefix"](name_into))
-                if isinstance(item.a, str):
-                    print(escape(item.a))
-                else:
-                    markup_stream(
-                        print, item.a, name_into, name_from, markup1, escape=escape
+                print(
+                    markup_change_item(
+                        item.a, markup_into, name_into, name_from, markup1, escape
                     )
-                print(markup_into["suffix"](name_into))
+                )
 
             print(markup0["separator"])
 
             if item.b:
-                print(markup_from["prefix"](name_from))
-                if isinstance(item.b, str):
-                    print(escape(item.b))
-                else:
-                    markup_stream(
-                        print, item.b, name_into, name_from, markup1, escape=escape
+                print(
+                    markup_change_item(
+                        item.a, markup_from, name_into, name_from, markup1, escape
                     )
-                print(markup_from["suffix"](name_from))
+                )
+
+
+def markup_change_item(item, branch_markup, name_into, name_from, markup, escape):
+    # Accumulate everything into a buffer mainly because of `rich`.  It
+    # requires that the prefix and suffix be printed with the same rich
+    # call.  That means we accumulate all of the contents between the
+    # prefix and suffix and then send the accumulated result to rich.
+
+    output_buffer = io.StringIO()
+    write = output_buffer.write
+    write(branch_markup["prefix"](name_into))
+    if isinstance(item, str):
+        write(escape(item))
+    else:
+        markup_stream(write, item, name_into, name_from, markup, escape=escape)
+    write(branch_markup["suffix"](name_into))
+    return output_buffer.getvalue()
 
 
 def markup_changes(

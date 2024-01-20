@@ -4,16 +4,26 @@ import io
 from gaspra.types import Change
 
 
-def split_and_add_fragment(
+def split_and_add_conflict(
     partial_line_into: list[str | Change],
     partial_line_from: list[str | Change],
     fragment: Change,
-):
+    finishable: bool,
+) -> bool:
+    partial_line_into.append(Change(fragment.a, ""))
+    partial_line_from.append(Change("", fragment.b))
+
     if fragment.a:
-        partial_line_into.append(Change(fragment.a, ""))
+        a_finishable = fragment.a[-1:] == "\n"
+    else:
+        a_finishable = finishable
 
     if fragment.b:
-        partial_line_from.append(Change("", fragment.b))
+        b_finishable = fragment.b[-1:] == "\n"
+    else:
+        b_finishable = finishable
+
+    return a_finishable and b_finishable
 
 
 def update_partials(partial_line_into, partial_line_from, input_fragment):
@@ -38,6 +48,9 @@ def finish_conflict(partial_line_into, partial_line_from, input_fragment):
         tuple(partial_line_from),
     )
 
+    partial_line_into.clear()
+    partial_line_from.clear()
+
     if input_fragment:
         yield input_fragment
 
@@ -49,15 +62,27 @@ def to_line_diff(
     no_output = True
     partial_line_into: list[str | Change] = []
     partial_line_from: list[str | Change] = []
+    conflict_is_finishable = True
     for fragment in fragment_sequence:
         if isinstance(fragment, Change):
             in_conflict = True
-            split_and_add_fragment(
+            conflict_is_finishable = split_and_add_conflict(
                 partial_line_into,
                 partial_line_from,
                 fragment,
+                conflict_is_finishable,
             )
         elif isinstance(fragment, str):
+            if conflict_is_finishable and (partial_line_from or partial_line_into):
+                yield from finish_conflict(
+                    partial_line_into,
+                    partial_line_from,
+                    "",
+                )
+                in_conflict = False
+                conflict_is_finishable = True
+                no_output = False
+
             lines = fragment.split("\n")
             if len(lines) > 1:  # Have a newline
                 if in_conflict:
@@ -66,6 +91,7 @@ def to_line_diff(
                         partial_line_from,
                         lines[0] + "\n",
                     )
+                    conflict_is_finishable = True
                     if _ := join_with_newline(lines[1:-1]):
                         yield _
                     no_output = False
@@ -74,8 +100,6 @@ def to_line_diff(
                         yield _
                         no_output = False
                 in_conflict = False
-                partial_line_into = []
-                partial_line_from = []
                 if lines[-1]:
                     partial_line_into.append(lines[-1])
                     partial_line_from.append(lines[-1])

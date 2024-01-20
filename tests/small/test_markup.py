@@ -275,43 +275,47 @@ def test_line_oriented_markup_changes(input_sequence, output):
                 ),
             ),
         ),
-        # Same thing written diferently
-        (
-            ("a", Change("b\n", "c\n")),
-            (
-                Change(
-                    ("a", Change("b", ""), "\n"),
-                    ("a", Change("", "c"), "\n"),
-                ),
-            ),
-        ),
         # Line with "a" deleted in alternate followed by "b".
         (
             (Change("a\n", ""), "b\n"),
-            (Change("a\n", ""), "b\n"),
+            (
+                Change(
+                    (Change("a\n", ""),),
+                    (Change("", ""),),
+                ),
+                "b\n",
+            ),
         ),
         # Same with reversed directions.
         (
             (Change("", "a\n"), "b\n"),
-            (Change("", "a\n"), "b\n"),
+            (
+                Change(
+                    (Change("", ""),),
+                    (Change("", "a\n"),),
+                ),
+                "b\n",
+            ),
         ),
         # "a" line followed by "b" or "c" lines
         (
+            ("a\n", Change("b", "c"), "\n"),
             (
                 "a\n",
-                Change("b\n", "c\n"),
-            ),
-            (
-                "a\n",
-                Change("b\n", "c\n"),
+                Change(
+                    (Change("b", ""), "\n"),
+                    (Change("", "c"), "\n"),
+                ),
             ),
         ),
         # Conflict in the middle of a line (abd | acd).
         (
             ("a", Change("b", "c"), "d\n"),
             (
-                ("a", Change("b", ""), "d\n"),
-                ("a", Change("", "c"), "d\n"),
+                Change(
+                    ("a", Change("b", ""), "d\n"),
+                    ("a", Change("", "c"), "d\n"),
+                ),
             ),
         ),
         # Two conflicts with one line between them. There was

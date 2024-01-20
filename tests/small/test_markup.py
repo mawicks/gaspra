@@ -381,6 +381,16 @@ def test_line_oriented_markup_changes(input_sequence, output):
                 ),
             ),
         ),
+        # Newline in the middle of a conflict.
+        (
+            ("a", Change("b\nc", "d"), "\n"),
+            (
+                Change(
+                    ("a", Change("b\nc", ""), "\n"),
+                    ("a", Change("", "d"), "\n"),
+                ),
+            ),
+        ),
         #
         # Malformed files without newlines.
         (

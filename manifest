@@ -1,5 +1,5 @@
-C Add\stest\swith\snewline\swithin\sconflict\sfor\sdiff_to_lines()
-D 2024-01-20T17:11:01.314
+C Add\sDiffAccumulator\sclass.
+D 2024-01-20T17:36:27.785
 F .github/workflows/python-app.yml c0a206f11f5c4d2e15d04047099815edef2506cbdf61dc5c57dfe64d05d2b818
 F LICENSE c69a9b067da6dbd652838c99392b450f7e9fbe86b40bbbee92c392d086c42853
 F README.md 168d324c360e400ef2df8d3d8486425e70b79f0855b1e81af437edd6bc9447b9
@@ -17,7 +17,7 @@ F src/gaspra/db_collections.py ae871c940b470ee7a18f6838f9cdac3954e75afeef4f0f62e
 F src/gaspra/db_connections.py 894aac7e1c7d66f34aeed46c5559d658ca88fadf749bfda700034e54890c5612
 F src/gaspra/db_tree.py ba74801a5ed6ade73c4a29e88228252ad93c55a29882514de03b674cdefcef54
 F src/gaspra/db_tree_sql.py 7ac16adc3be77fc4dcd766593f2a6a0313bc6c0c7339ca4deddcfc1d3a737efc
-F src/gaspra/diff_to_lines.py 015b28acbe2e225ca6f2ea4d72439f7f62c13c7d1c185c23962be7750be37082
+F src/gaspra/diff_to_lines.py a3d3fafe831d2304f41e90d54027290fe6341024c4387e5481e501792963e3f0
 F src/gaspra/difflib_benchmark.py a31918b2adb16f84860ba0f863fc539e4d8425537da76a78b57d76100499fb67
 F src/gaspra/dot_dump.py 97fe818fdfa41897cd06d7b4849690fca281e686a48052785fb4c0e53469a4d1
 F src/gaspra/examples.py 82ddc947472b9ecc618281b842f1dcf65cbe7b26214851dea48a8f8712d09b38
@@ -51,8 +51,8 @@ F tests/small/test_tokenizers.py ebf094a8c340c3fee14e23894cb124390c4ca0c9362d37c
 F tests/small/test_tree.py 5d3c3946d6ffa241380bf68440d943a28517e04e99e0a8d6a59b62a0b431493a
 F tests/small/test_versions.py 1e2f4041c63908e0698d6a5b55e2f03027f2577aa789fbc1867c59ac1928b18c
 F tests/small/test_wrappers.py ae0fd279a6406163e949fc27e0e8b17f62dcaf199c0da085af3ce6abe22c8f3c
-P 8759ae3d2cae441d21dac2b049a6ae86bb9204283cee85fc561c755e4810216c d9f2added2787d4f536164797474f32fb1a19d8501fdcb37d2079cf37c52f9ad
-R 123728f121578eb9b5c52fd0ae0c6e8e
+P 0c8af76848052f1edbdfa4bedb3e4772ff4a6d03707a0f7ffda1e512cd4c3bd4
+R 538d21a632c87d035d3ffe7cf5e5127e
 U mwicks
-Z 916e8a59f09b9a47ebd8218f8e67c821
+Z f786aa05c0082704e570119db1d191aa
 # Remove this line to create a well-formed Fossil manifest.

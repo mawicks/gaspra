@@ -4,6 +4,62 @@ import io
 from gaspra.types import Change
 
 
+class DiffAccumulator:
+    partial_line_into: list[str | Change]
+    partial_line_from: list[str | Change]
+    finishable: bool
+
+    def __init__(self):
+        self.partial_line_into = []
+        self.partial_line_from = []
+        self.finishable = True
+
+    def clear(self):
+        self.partial_line_into.clear()
+        self.partial_line_from.clear()
+        self.finishable = True
+
+    def add_conflict(self, conflict: Change):
+        self.partial_line_into.append(Change(conflict.a, ""))
+        self.partial_line_from.append(Change("", conflict.b))
+
+        if conflict.a:
+            a_finishable = conflict.a[-1:] == "\n"
+        else:
+            a_finishable = self.finishable
+
+        if conflict.b:
+            b_finishable = conflict.b[-1:] == "\n"
+        else:
+            b_finishable = self.finishable
+
+        self.finishable = a_finishable and b_finishable
+
+    def add(self, input_fragment: str):
+        if (self.partial_line_into and self.partial_line_into[-1] != "\n") or (
+            self.partial_line_from and self.partial_line_from[-1] != "\n"
+        ):
+            if input_fragment:
+                self.partial_line_into.append(input_fragment)
+                self.partial_line_from.append(input_fragment)
+            input_fragment = ""
+        return input_fragment
+
+    def finish_conflict(self, input_fragment):
+        input_fragment = self.add(input_fragment)
+
+        yield Change(
+            tuple(self.partial_line_into),
+            tuple(self.partial_line_from),
+        )
+
+        self.partial_line_into.clear()
+        self.partial_line_from.clear()
+
+        if input_fragment:
+            yield input_fragment
+
+
 def split_and_add_conflict(
     partial_line_into: list[str | Change],
     partial_line_from: list[str | Change],
@@ -38,7 +94,6 @@ def update_partials(partial_line_into, partial_line_from, input_fragment):
 
 
 def finish_conflict(partial_line_into, partial_line_from, input_fragment):
-    input_fragment = input_fragment
     input_fragment = update_partials(
         partial_line_into, partial_line_from, input_fragment
     )

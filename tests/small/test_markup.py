@@ -339,14 +339,36 @@ def test_line_oriented_markup_changes(input_sequence, output):
         # Two conflicts with two lines between them:
         #
         (
-            ("a\n", Change("b\n", "c\n"), "d\ne\n", Change("f\n", "g\n")),
-            ("a\n", Change("b\n", "c\n"), "d\ne\n", Change("f\n", "g\n")),
+            ("a\n", Change("b", "c"), "\nd\ne\n", Change("f", "g"), "\n"),
+            (
+                "a\n",
+                Change(
+                    (Change("b", ""), "\n"),
+                    (Change("", "c"), "\n"),
+                ),
+                "d\ne\n",
+                Change(
+                    (Change("f", ""), "\n"),
+                    (Change("", "g"), "\n"),
+                ),
+            ),
         ),
         # Two conflicts with three lines between them:
         #
         (
-            ("a\n", Change("b\n", "c\n"), "d\ne\nf\n", Change("g\n", "h\n")),
-            ("a\n", Change("b\n", "c\n"), "d\ne\nf\n", Change("g\n", "h\n")),
+            ("a\n", Change("b", "c"), "\nd\ne\nf\n", Change("g", "h"), "\n"),
+            (
+                "a\n",
+                Change(
+                    (Change("b", ""), "\n"),
+                    (Change("", "c"), "\n"),
+                ),
+                "d\ne\nf\n",
+                Change(
+                    (Change("g", ""), "\n"),
+                    (Change("", "h"), "\n"),
+                ),
+            ),
         ),
         #
         # Two conflicts in the same line
@@ -356,6 +378,16 @@ def test_line_oriented_markup_changes(input_sequence, output):
                 Change(
                     ("a", Change("b", ""), "d", Change("e", ""), "g\n"),
                     ("a", Change("", "c"), "d", Change("", "f"), "g\n"),
+                ),
+            ),
+        ),
+        # Newline in the middle of a conflict.
+        (
+            ("a", Change("b\nc", "d"), "\n"),
+            (
+                Change(
+                    ("a", Change("b\nc", ""), "\n"),
+                    ("a", Change("", "d"), "\n"),
                 ),
             ),
         ),
@@ -369,8 +401,8 @@ def test_line_oriented_markup_changes(input_sequence, output):
             ("a", Change("c", "d")),
             (
                 Change(
-                    ("a", Change("c\n", "")),
-                    ("a", Change("", "d\n")),
+                    ("a", Change("c", ""), "\n"),
+                    ("a", Change("", "d"), "\n"),
                 ),
             ),
         ),
@@ -378,14 +410,19 @@ def test_line_oriented_markup_changes(input_sequence, output):
             ("a", Change("c", "")),
             (
                 Change(
-                    ("a", Change("c\n", "")),
-                    ("a", Change("", "\n")),
-                )
+                    ("a", Change("c", ""), "\n"),
+                    ("a", Change("", ""), "\n"),
+                ),
             ),
         ),
         (
             (Change("a", "b"),),
-            (Change("a\n", "b\n"),),
+            (
+                Change(
+                    (Change("a", ""), "\n"),
+                    (Change("", "b"), "\n"),
+                ),
+            ),
         ),
     ],
 )

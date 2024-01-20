@@ -49,6 +49,9 @@ class DiffAccumulator:
         self.partial_line_into.append(input_fragment)
         self.partial_line_from.append(input_fragment)
 
+    def nonempty(self):
+        return bool(self.partial_line_into and self.partial_line_from)
+
     def finish_conflict(self, input_fragment):
         input_fragment = self.conditional_add(input_fragment)
 
@@ -63,6 +66,13 @@ class DiffAccumulator:
         if input_fragment:
             yield input_fragment
 
+    def flush(self):
+        if self.partial_line_from and self.partial_line_from[0]:
+            # If not in a conflict, partial_line_into should be
+            # exactly the same as partial_line_from.
+            self.partial_line_from.append("\n")
+            yield "".join(self.accumulator.partial_line_from)  # type: ignore
+
 
 def to_line_diff(
     fragment_sequence: Iterable[Sequence[Hashable]],
@@ -75,9 +85,7 @@ def to_line_diff(
             in_conflict = True
             accumulator.add_conflict(fragment)
         elif isinstance(fragment, str):
-            if accumulator.finishable and (
-                accumulator.partial_line_from or accumulator.partial_line_into
-            ):
+            if accumulator.finishable and accumulator.nonempty():
                 yield from accumulator.finish_conflict("")
                 in_conflict = False
                 no_output = False
@@ -100,17 +108,12 @@ def to_line_diff(
                 accumulator.add(lines[0])
 
     if in_conflict:
-        if (
-            isinstance(accumulator.partial_line_into[-1], Change)
-            and accumulator.partial_line_into[-1].a[-1:] != "\n"
-        ) or (
-            isinstance(accumulator.partial_line_from[-1], Change)
-            and accumulator.partial_line_from[-1].b[-1:] != "\n"
-        ):
-            tail = "\n"
-        else:
+        if accumulator.finishable:
             tail = ""
+        else:
+            tail = "\n"
         yield from accumulator.finish_conflict(tail)
+
     elif accumulator.partial_line_from and accumulator.partial_line_from[0]:
         # If not in a conflict, partial_line_into should be
         # exactly the same as partial_line_from.

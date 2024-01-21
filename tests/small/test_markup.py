@@ -2,6 +2,7 @@ import pytest
 import io
 from itertools import chain
 
+import sys
 
 from gaspra.markup import (
     line_oriented_markup_changes,

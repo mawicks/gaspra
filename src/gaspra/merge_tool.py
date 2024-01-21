@@ -1,6 +1,7 @@
 import argparse
 import os
 import copy
+import sys
 
 from gaspra.markup import console_writer, file_writer
 from gaspra.markup import (
@@ -155,7 +156,7 @@ def get_markup_style(arguments, allow_strikeout=True):
 
     if arguments.strikeout and allow_strikeout:
         markup["level0"]["from"] = STRIKEOUT_LEVEL0
-        markup["level1"]["from"] = STRIKEOUT_LEVEL0
+        markup["level1"]["from"] = STRIKEOUT_LEVEL1
 
     return copy.deepcopy(markup)
 
@@ -266,6 +267,7 @@ def diff_cli():
         display_function = get_markup_function(arguments, escape, allow_strikeout=True)
 
         changes = diff(original, modified, tokenizer)
+
         if arguments.show_lines or arguments.git_compatible:
             changes = to_line_diff(changes)
 
@@ -300,4 +302,11 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
+    sys.argv = [
+        __file__,
+        "-dg",
+        "test-files/x",
+        "test-files/y",
+        "test-files/z",
+    ]
     merge_cli()

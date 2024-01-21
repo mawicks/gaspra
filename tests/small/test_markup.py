@@ -98,10 +98,9 @@ def tokenizer():
             (Change("a", "b"), "\n\n"),
             (
                 Change(
-                    (Change("a", ""), "\n"),
-                    (Change("", "b"), "\n"),
+                    (Change("a", ""), "\n\n"),
+                    (Change("", "b"), "\n\n"),
                 ),
-                "\n",
             ),
         ),
         # A line with "ab" or a line with "ac"
@@ -270,8 +269,8 @@ def tokenizer():
             (Change("a", "b"), "\n", Change("c", "d"), "\n"),
             (
                 Change(
-                    (Change("a", ""), "\n", Change("c", "")),
-                    (Change("", "b"), "\n", Change("", "d")),
+                    (Change("a", ""), "\n", Change("c", ""), "\n"),
+                    (Change("", "b"), "\n", Change("", "d"), "\n"),
                 ),
             ),
         ),

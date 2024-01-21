@@ -37,23 +37,25 @@ class DiffAccumulator:
         self.finishable = a_finishable and b_finishable
         self.in_conflict = True
 
-    def conditional_add(self, input_fragment: str):
+    def conditional_add(self, fragment: str):
         if not self.finishable:
-            if input_fragment:
-                self.partial_line_into.append(input_fragment)
-                self.partial_line_from.append(input_fragment)
-            input_fragment = ""
-        return input_fragment
+            if fragment:
+                self.add(fragment)
 
-    def add(self, input_fragment: str):
-        self.partial_line_into.append(input_fragment)
-        self.partial_line_from.append(input_fragment)
+            fragment = ""
+        return fragment
+
+    def add(self, fragment: str):
+        self.partial_line_into.append(fragment)
+        self.partial_line_from.append(fragment)
+
+        self.finishable = (fragment[-1:] == "\n") if fragment else self.finishable
 
     def is_nonempty(self):
         return bool(self.partial_line_into and self.partial_line_from)
 
-    def finish_conflict(self, input_fragment):
-        input_fragment = self.conditional_add(input_fragment)
+    def finish_conflict(self, fragment):
+        fragment = self.conditional_add(fragment)
 
         yield Change(
             tuple(self.partial_line_into),
@@ -65,8 +67,8 @@ class DiffAccumulator:
 
         self.in_conflict = False
 
-        if input_fragment:
-            yield input_fragment
+        if fragment:
+            yield fragment
 
     def flush(self):
         if self.in_conflict:
@@ -105,6 +107,11 @@ def handle_fragment(fragment, accumulator):
         accumulator.add_conflict(fragment)
 
     elif isinstance(fragment, str):
+        # Don't finish an accumulating conflict on spaces/newlines.
+        if accumulator.in_conflict and fragment.isspace():
+            accumulator.add(fragment)
+            return
+
         if accumulator.finishable and accumulator.is_nonempty():
             yield from accumulator.finish_conflict("")
 

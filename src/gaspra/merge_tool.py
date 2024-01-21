@@ -131,10 +131,10 @@ def get_markup_function(arguments, escape, allow_strikeout=True):
         markup_changes(
             writer,
             changeset,
-            os.path.basename(branch0),
-            os.path.basename(branch1),
             markup0=markup["level0"],
             markup1=markup["level1"],
+            name_into=os.path.basename(branch0),
+            name_from=os.path.basename(branch1),
             header=os.path.basename(header) if header else None,
             escape=escape,
         )

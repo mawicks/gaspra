@@ -313,10 +313,10 @@ def test_markup_changes(input_sequence, output):
     markup_changes(
         output_buffer.write,
         input_sequence,
-        "x",
-        "y",
         TEST_DIFF_MARKUP["level0"],
         TEST_DIFF_MARKUP["level1"],
+        "x",
+        "y",
     )
 
     assert output_buffer.getvalue() == output
@@ -351,10 +351,10 @@ def test_markup_changes_applies_escape(input_sequence, output):
     markup_changes(
         output_buffer.write,
         input_sequence,
-        "x",
-        "y",
         TEST_DIFF_MARKUP["level0"],
         TEST_DIFF_MARKUP["level1"],
+        "x",
+        "y",
         escape=str.upper,
     )
 

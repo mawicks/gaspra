@@ -71,7 +71,13 @@ def console_writer():
 
 
 def markup_stream(
-    print, stream, name_into, name_from, markup0, markup1=None, escape=lambda _: _
+    print,
+    stream,
+    markup0,
+    markup1=None,
+    name_into=None,
+    name_from=None,
+    escape=lambda _: _,
 ):
     markup_into = markup0["into"]
     markup_from = markup0["from"]
@@ -88,8 +94,6 @@ def markup_stream(
                         item.a,
                         markup_into,
                         name_into,
-                        name_into,
-                        name_from,
                         markup1,
                         escape,
                     )
@@ -103,17 +107,13 @@ def markup_stream(
                         item.b,
                         markup_from,
                         name_from,
-                        name_into,
-                        name_from,
                         markup1,
                         escape,
                     )
                 )
 
 
-def markup_change_item(
-    item, branch_markup, branch_name, name_into, name_from, markup, escape
-):
+def markup_change_item(item, branch_markup, branch_name, markup, escape):
     # Accumulate everything into a buffer mainly because of `rich`.  It
     # requires that the prefix and suffix be printed with the same rich
     # call.  That means we accumulate all of the contents between the
@@ -125,7 +125,7 @@ def markup_change_item(
     if isinstance(item, str):
         write(escape(item))
     else:
-        markup_stream(write, item, name_into, name_from, markup, escape=escape)
+        markup_stream(write, item, markup, escape=escape)
     write(branch_markup["suffix"](branch_name))
     return output_buffer.getvalue()
 
@@ -133,14 +133,14 @@ def markup_change_item(
 def markup_changes(
     print,
     stream,
-    name_into,
-    name_from,
     markup0={},
     markup1={},
+    name_into=None,
+    name_from=None,
     header: str | None = None,
     escape=lambda _: _,
 ):
     if header:
         show_header(print, header, markup0)
 
-    markup_stream(print, stream, name_into, name_from, markup0, markup1, escape)
+    markup_stream(print, stream, markup0, markup1, name_into, name_from, escape)

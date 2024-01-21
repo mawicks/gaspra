@@ -1,4 +1,3 @@
-from collections.abc import Hashable, Iterable, Sequence
 from contextlib import contextmanager
 import io
 
@@ -39,8 +38,12 @@ COLORED_LEVEL1 = {
 }
 
 
-STRIKEOUT_LEVEL0 = lambda _: "[dark_red strike]"
-STRIKEOUT_LEVEL1 = lambda _: "[pink1 strike]"
+def strikeout_level0() -> str:
+    return "[dark_red strike]"
+
+
+def strikeout_level1() -> str:
+    return "[pink1 strike]"
 
 
 def show_header(print, header, markup={}):

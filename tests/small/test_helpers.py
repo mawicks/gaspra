@@ -1,6 +1,6 @@
 import pytest
 
-from gaspra.test_helpers import helpers
+from helpers.helpers import encode
 
 
 @pytest.mark.parametrize(
@@ -22,4 +22,4 @@ from gaspra.test_helpers import helpers
     ],
 )
 def test_encode(test_input, expected):
-    assert helpers.encode(test_input) == expected
+    assert encode(test_input) == expected

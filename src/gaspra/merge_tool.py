@@ -1,16 +1,21 @@
 import argparse
 import os
+import copy
+import sys
 
 from gaspra.markup import console_writer, file_writer
 from gaspra.markup import (
-    GIT_MARKUP,
-    SCREEN_MARKUP,
-    STRIKEOUT_SCREEN_MARKUP,
-    line_oriented_markup_changes,
+    GIT_MARKUP_LEVEL0,
+    COLORED_LEVEL0,
+    PLAIN_LEVEL1,
+    COLORED_LEVEL1,
+    STRIKEOUT_LEVEL0,
+    STRIKEOUT_LEVEL1,
     markup_changes,
 )
 
 from gaspra.merge import merge_token_sequence
+from gaspra.diff_to_lines import to_line_diff
 from gaspra.changesets import diff_token_sequences
 from gaspra.tokenizers import (
     decode_and_transform_changes,
@@ -113,15 +118,7 @@ def get_torture_test_arguments():
     return args
 
 
-def get_markup_function(arguments, allow_strikeout=True):
-    if arguments.show_lines or arguments.git_compatible:
-        wrapped_markup_function = line_oriented_markup_changes
-    else:
-        wrapped_markup_function = markup_changes
-
-    # Is there any use for this now?
-    # wrapped_markup_function = token_oriented_markup_changes
-
+def get_markup_function(arguments, escape, allow_strikeout=True):
     markup = get_markup_style(arguments, allow_strikeout)
 
     def markup_function(
@@ -131,13 +128,15 @@ def get_markup_function(arguments, allow_strikeout=True):
         branch1: str,
         header: str | None = "",
     ):
-        wrapped_markup_function(
+        markup_changes(
             writer,
             changeset,
-            os.path.basename(branch0),
-            os.path.basename(branch1),
-            markup=markup,
+            markup0=markup["level0"],
+            markup1=markup["level1"],
+            name_into=os.path.basename(branch0),
+            name_from=os.path.basename(branch1),
             header=os.path.basename(header) if header else None,
+            escape=escape,
         )
 
     return markup_function
@@ -145,10 +144,21 @@ def get_markup_function(arguments, allow_strikeout=True):
 
 def get_markup_style(arguments, allow_strikeout=True):
     if arguments.git_compatible:
-        return GIT_MARKUP
-    elif arguments.strikeout and allow_strikeout:
-        return STRIKEOUT_SCREEN_MARKUP
-    return SCREEN_MARKUP
+        level0 = GIT_MARKUP_LEVEL0
+    else:
+        level0 = COLORED_LEVEL0
+    if arguments.output:
+        level1 = PLAIN_LEVEL1
+    else:
+        level1 = COLORED_LEVEL1
+
+    markup = {"level0": level0, "level1": level1}
+
+    if arguments.strikeout and allow_strikeout:
+        markup["level0"]["from"] = STRIKEOUT_LEVEL0
+        markup["level1"]["from"] = STRIKEOUT_LEVEL1
+
+    return copy.deepcopy(markup)
 
 
 def get_writer(arguments):
@@ -190,15 +200,13 @@ def _merge(parent_name, current_name, other_name, arguments):
     with get_writer(arguments) as writer_and_escape:
         writer, escape = writer_and_escape
         if arguments.diff:
-            diff_markup = get_markup_function(arguments, allow_strikeout=True)
+            diff_markup = get_markup_function(arguments, escape, allow_strikeout=True)
+
             current_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, current), tokenizer, escape
-            )
-            current_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, current), tokenizer, escape
+                diff_token_sequences(parent, current), tokenizer
             )
             other_changes = decode_and_transform_changes(
-                diff_token_sequences(parent, other), tokenizer, escape
+                diff_token_sequences(parent, other), tokenizer
             )
 
             def markup_one(changes, branch_name):
@@ -210,15 +218,25 @@ def _merge(parent_name, current_name, other_name, arguments):
                     header=branch_name,
                 )
 
+            if arguments.show_lines or arguments.git_compatible:
+                current_changes = to_line_diff(current_changes)
+                other_changes = to_line_diff(other_changes)
+
             markup_one(current_changes, current_name)
             markup_one(other_changes, other_name)
 
-        merged = merge_token_sequence(parent, current, other)
-        merge_markup = get_markup_function(arguments, allow_strikeout=False)
+        merged = decode_and_transform_changes(
+            merge_token_sequence(parent, current, other), tokenizer
+        )
+
+        if arguments.show_lines or arguments.git_compatible:
+            merged = to_line_diff(merged)
+
+        merge_markup = get_markup_function(arguments, escape, allow_strikeout=False)
 
         merge_markup(
             writer,
-            decode_and_transform_changes(merged, tokenizer, escape),
+            merged,
             current_name,
             other_name,
             header="Merged" if arguments.diff else None,
@@ -243,14 +261,19 @@ def diff_cli():
 
     tokenizer = make_tokenizer(arguments)
 
-    display_function = get_markup_function(arguments, allow_strikeout=True)
-
     with get_writer(arguments) as writer:
         writer, escape = writer
 
+        display_function = get_markup_function(arguments, escape, allow_strikeout=True)
+
+        changes = diff(original, modified, tokenizer)
+
+        if arguments.show_lines or arguments.git_compatible:
+            changes = to_line_diff(changes)
+
         display_function(
             writer,
-            diff(original, modified, tokenizer, escape),
+            changes,
             escape(modified_name),
             escape(original_name),
         )
@@ -279,4 +302,11 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 
 
 if __name__ == "__main__":
+    sys.argv = [
+        __file__,
+        "-dg",
+        "test-files/x",
+        "test-files/y",
+        "test-files/z",
+    ]
     merge_cli()

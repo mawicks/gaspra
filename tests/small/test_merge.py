@@ -1,6 +1,6 @@
 import pytest
 from gaspra.merge import merge_token_sequence
-from gaspra.test_helpers.helpers import byteize, encode
+from helpers.helpers import byteize, encode
 from gaspra.types import Change
 
 

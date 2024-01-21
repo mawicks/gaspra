@@ -8,7 +8,7 @@ from gaspra.suffix_automaton import (
     find_lcs,
 )
 
-from gaspra.test_helpers.helpers import random_string, random_tokens, encode
+from helpers.helpers import random_string, random_tokens, encode
 
 
 def test_build_empty_string():

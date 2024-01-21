@@ -12,7 +12,7 @@ from gaspra.changesets import (
     strip_reverse,
     apply,
 )
-from gaspra.test_helpers.helpers import random_string, encode
+from helpers.helpers import random_string, encode
 from gaspra.types import Change
 
 

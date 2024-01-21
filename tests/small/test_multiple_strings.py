@@ -5,7 +5,7 @@ import pytest
 
 
 from gaspra.multiple_strings import find_lcs, concatenate_strings
-from gaspra.test_helpers.helpers import encode
+from helpers.helpers import encode
 from gaspra.types import Separator
 
 

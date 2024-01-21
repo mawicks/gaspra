@@ -2,13 +2,10 @@ import pytest
 import io
 from itertools import chain
 
-import sys
-
 from gaspra.markup import (
     markup_changes,
 )
 from gaspra.types import Change
-from gaspra.tokenizers import decode_and_transform_changes
 from gaspra.diff_to_lines import to_line_diff
 
 TEST_MARKUP = {

@@ -91,31 +91,37 @@ def to_line_diff(
             continue
 
         empty = False
-        if isinstance(fragment, Change):
-            accumulator.add_conflict(fragment)
-        elif isinstance(fragment, str):
-            if accumulator.finishable and accumulator.is_nonempty():
-                yield from accumulator.finish_conflict("")
 
-            lines = fragment.split("\n")
-            if len(lines) > 1:  # Have a newline
-                if accumulator.in_conflict:
-                    yield from accumulator.finish_conflict(lines[0] + "\n")
-                    if joined := join_with_newline(lines[1:-1]):
-                        yield joined
-                else:
-                    if joined := join_with_newline(lines[:-1]):
-                        yield joined
-
-                if lines[-1]:
-                    accumulator.add(lines[-1])
-            else:
-                accumulator.add(lines[0])
+        yield from handle_fragment(fragment, accumulator)
 
     yield from accumulator.flush()
 
     if empty:
         yield ""
+
+
+def handle_fragment(fragment, accumulator):
+    if isinstance(fragment, Change):
+        accumulator.add_conflict(fragment)
+
+    elif isinstance(fragment, str):
+        if accumulator.finishable and accumulator.is_nonempty():
+            yield from accumulator.finish_conflict("")
+
+        lines = fragment.split("\n")
+        if len(lines) > 1:  # Have a newline
+            if accumulator.in_conflict:
+                yield from accumulator.finish_conflict(lines[0] + "\n")
+                if joined := join_with_newline(lines[1:-1]):
+                    yield joined
+            else:
+                if joined := join_with_newline(lines[:-1]):
+                    yield joined
+
+            if lines[-1]:
+                accumulator.add(lines[-1])
+        else:
+            accumulator.add(lines[0])
 
 
 def join_with_newline(lines):

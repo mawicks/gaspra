@@ -9,8 +9,8 @@ from gaspra.markup import (
     COLORED_LEVEL0,
     PLAIN_LEVEL1,
     COLORED_LEVEL1,
-    STRIKEOUT_LEVEL0,
-    STRIKEOUT_LEVEL1,
+    strikeout_level0,
+    strikeout_level1,
     markup_changes,
 )
 
@@ -155,8 +155,8 @@ def get_markup_style(arguments, allow_strikeout=True):
     markup = {"level0": level0, "level1": level1}
 
     if arguments.strikeout and allow_strikeout:
-        markup["level0"]["from"] = STRIKEOUT_LEVEL0
-        markup["level1"]["from"] = STRIKEOUT_LEVEL1
+        markup["level0"]["from"] = strikeout_level0
+        markup["level1"]["from"] = strikeout_level1
 
     return copy.deepcopy(markup)
 

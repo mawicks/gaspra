@@ -263,6 +263,18 @@ def tokenizer():
                 ),
             ),
         ),
+        # Two consecutive lines of changes should be consolidated.
+        # "The newlines are considered  "common sequences"
+        # by all tokenizers except the line tokenizer.
+        (
+            (Change("a", "b"), "\n", Change("c", "d"), "\n"),
+            (
+                Change(
+                    (Change("a", ""), "\n", Change("c", "")),
+                    (Change("", "b"), "\n", Change("", "d")),
+                ),
+            ),
+        ),
     ],
 )
 def test_diff_to_lines(input_sequence, output):

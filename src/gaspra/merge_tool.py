@@ -18,7 +18,7 @@ from gaspra.merge import merge_token_sequence
 from gaspra.diff_to_lines import to_line_diff
 from gaspra.changesets import diff_token_sequences
 from gaspra.tokenizers import (
-    decode_and_transform_changes,
+    decode_changes,
     diff,
     CharTokenizer,
     LineTokenizer,
@@ -202,10 +202,10 @@ def _merge(parent_name, current_name, other_name, arguments):
         if arguments.diff:
             diff_markup = get_markup_function(arguments, escape, allow_strikeout=True)
 
-            current_changes = decode_and_transform_changes(
+            current_changes = decode_changes(
                 diff_token_sequences(parent, current), tokenizer
             )
-            other_changes = decode_and_transform_changes(
+            other_changes = decode_changes(
                 diff_token_sequences(parent, other), tokenizer
             )
 
@@ -225,9 +225,7 @@ def _merge(parent_name, current_name, other_name, arguments):
             markup_one(current_changes, current_name)
             markup_one(other_changes, other_name)
 
-        merged = decode_and_transform_changes(
-            merge_token_sequence(parent, current, other), tokenizer
-        )
+        merged = decode_changes(merge_token_sequence(parent, current, other), tokenizer)
 
         if arguments.show_lines or arguments.git_compatible:
             merged = to_line_diff(merged)

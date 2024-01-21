@@ -5,6 +5,7 @@ import re
 from gaspra.types import Change, DiffIterable, TokenIterable, TokenSequence, Token
 from gaspra.changesets import diff_token_sequences
 from gaspra.merge import merge_token_sequence
+from gaspra.diff_to_lines import to_line_diff
 
 SYMBOLS = re.compile(r"[\w\d$-]+|.|\n")
 
@@ -199,9 +200,7 @@ class SymbolTokenizer(Generic[BytesOrStr]):
         return generic_decode(contents, self.decoding, cast(BytesOrStr, joiner))
 
 
-def decode_and_transform_changes(
-    changes: DiffIterable, tokenizer: Tokenizer, transform=lambda _: _
-) -> DiffIterable:
+def decode_changes(changes: DiffIterable, tokenizer: Tokenizer) -> DiffIterable:
     """
     Decode a changeset.  Changesets are first computed on token stream.
     This function decodes each token in a Changeestto a str or a bytes
@@ -212,16 +211,22 @@ def decode_and_transform_changes(
     for change in changes:
         if isinstance(change, Change):
             yield Change(
-                transform(tokenizer.decode(change.a)),
-                transform(tokenizer.decode(change.b)),
+                tokenizer.decode(change.a),
+                tokenizer.decode(change.b),
             )
         else:
-            yield transform(tokenizer.decode(change))
+            yield tokenizer.decode(change)
 
 
-def diff(
-    original, modified, tokenizer: Tokenizer = NullTokenizer(), transformer=lambda _: _
-):
+def decode_and_line_diff_changes(
+    changes: DiffIterable, tokenizer: Tokenizer, transform=lambda _: _
+) -> DiffIterable:
+    decoded_and_transformed = decode_changes(changes, tokenizer)
+
+    yield from to_line_diff(decoded_and_transformed)
+
+
+def diff(original, modified, tokenizer: Tokenizer = NullTokenizer()):
     """
     High level diff() call that optionally encodes the sequences to be
     compared, compares the sequences, decodes, and transforms the
@@ -232,7 +237,7 @@ def diff(
     encoded_modified = tokenizer.encode(modified)
 
     changes = diff_token_sequences(encoded_original, encoded_modified)
-    transformed = decode_and_transform_changes(changes, tokenizer, transformer)
+    transformed = decode_changes(changes, tokenizer)
     return transformed
 
 
@@ -254,5 +259,5 @@ def merged(
     encoded_other = tokenizer.encode(other)
 
     changes = merge_token_sequence(encoded_parent, encoded_current, encoded_other)
-    merged = decode_and_transform_changes(changes, tokenizer, transformer)
+    merged = decode_changes(changes, tokenizer, transformer)
     return merged

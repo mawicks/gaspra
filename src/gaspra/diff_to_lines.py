@@ -1,6 +1,6 @@
 from collections.abc import Hashable, Iterable, Sequence
 
-from gaspra.types import Change
+from gaspra.types import Change, DiffIterable
 
 
 class DiffAccumulator:
@@ -83,9 +83,7 @@ class DiffAccumulator:
             yield "".join(self.partial_line_from)  # type: ignore
 
 
-def to_line_diff(
-    fragment_sequence: Iterable[Sequence[Hashable]],
-):
+def to_line_diff(fragment_sequence: DiffIterable):
     accumulator = DiffAccumulator()
     empty = True
     for fragment in fragment_sequence:
@@ -136,3 +134,37 @@ def join_with_newline(lines):
         return "\n".join(line for line in lines) + "\n"
     else:
         return ""
+
+
+# Following routine is very similar to consolidate_*() functions in
+# merge.py.  There's an opportunity for some refactoring.
+
+
+def consolidate(stream: DiffIterable) -> DiffIterable:
+    """Loop through change stream of strange and Change objeccts
+    and consolidate the change objects.
+
+    It's not important whether strings or level1 chnage objects
+    get consolidated, but the level 0 Change objects should be.
+    """
+    a_fragments = []
+    b_fragments = []
+    for fragment in stream:
+        if isinstance(fragment, Change):
+            # At this level, Change components should be
+            # sequences so use extend() rather than append()
+            a_fragments.extend(fragment.a)
+            b_fragments.extend(fragment.b)
+        else:
+            if a_fragments or b_fragments:
+                yield Change(tuple(a_fragments), tuple(b_fragments))
+                a_fragments.clear()
+                b_fragments.clear()
+
+            yield fragment
+    if a_fragments or b_fragments:
+        yield Change(tuple(a_fragments), tuple(b_fragments))
+
+
+def consolidated_line_diff(stream: DiffIterable) -> DiffIterable:
+    yield from consolidate(to_line_diff(stream))

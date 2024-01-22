@@ -15,7 +15,7 @@ from gaspra.markup import (
 )
 
 from gaspra.merge import merge_token_sequence
-from gaspra.diff_to_lines import to_line_diff
+from gaspra.diff_to_lines import consolidated_line_diff
 from gaspra.changesets import diff_token_sequences
 from gaspra.tokenizers import (
     decode_changes,
@@ -219,8 +219,8 @@ def _merge(parent_name, current_name, other_name, arguments):
                 )
 
             if arguments.show_lines or arguments.git_compatible:
-                current_changes = to_line_diff(current_changes)
-                other_changes = to_line_diff(other_changes)
+                current_changes = consolidated_line_diff(current_changes)
+                other_changes = consolidated_line_diff(other_changes)
 
             markup_one(current_changes, current_name)
             markup_one(other_changes, other_name)
@@ -228,7 +228,7 @@ def _merge(parent_name, current_name, other_name, arguments):
         merged = decode_changes(merge_token_sequence(parent, current, other), tokenizer)
 
         if arguments.show_lines or arguments.git_compatible:
-            merged = to_line_diff(merged)
+            merged = consolidated_line_diff(merged)
 
         merge_markup = get_markup_function(arguments, escape, allow_strikeout=False)
 
@@ -267,7 +267,7 @@ def diff_cli():
         changes = diff(original, modified, tokenizer)
 
         if arguments.show_lines or arguments.git_compatible:
-            changes = to_line_diff(changes)
+            changes = consolidated_line_diff(changes)
 
         display_function(
             writer,
@@ -302,9 +302,9 @@ def get_bytes(*filenames: str) -> tuple[bytes, ...]:
 if __name__ == "__main__":
     sys.argv = [
         __file__,
-        "-dg",
+        "-g",
         "test-files/x",
         "test-files/y",
-        "test-files/z",
+        # "test-files/z",
     ]
-    merge_cli()
+    diff_cli()

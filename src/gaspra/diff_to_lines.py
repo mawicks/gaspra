@@ -1,6 +1,6 @@
 from collections.abc import Hashable, Iterable, Sequence
 
-from gaspra.types import Change
+from gaspra.types import Change, DiffIterable
 
 
 class DiffAccumulator:
@@ -37,23 +37,25 @@ class DiffAccumulator:
         self.finishable = a_finishable and b_finishable
         self.in_conflict = True
 
-    def conditional_add(self, input_fragment: str):
+    def conditional_add(self, fragment: str):
         if not self.finishable:
-            if input_fragment:
-                self.partial_line_into.append(input_fragment)
-                self.partial_line_from.append(input_fragment)
-            input_fragment = ""
-        return input_fragment
+            if fragment:
+                self.add(fragment)
 
-    def add(self, input_fragment: str):
-        self.partial_line_into.append(input_fragment)
-        self.partial_line_from.append(input_fragment)
+            fragment = ""
+        return fragment
+
+    def add(self, fragment: str):
+        self.partial_line_into.append(fragment)
+        self.partial_line_from.append(fragment)
+
+        self.finishable = (fragment[-1:] == "\n") if fragment else self.finishable
 
     def is_nonempty(self):
         return bool(self.partial_line_into and self.partial_line_from)
 
-    def finish_conflict(self, input_fragment):
-        input_fragment = self.conditional_add(input_fragment)
+    def finish_conflict(self, fragment):
+        fragment = self.conditional_add(fragment)
 
         yield Change(
             tuple(self.partial_line_into),
@@ -65,8 +67,8 @@ class DiffAccumulator:
 
         self.in_conflict = False
 
-        if input_fragment:
-            yield input_fragment
+        if fragment:
+            yield fragment
 
     def flush(self):
         if self.in_conflict:
@@ -81,9 +83,7 @@ class DiffAccumulator:
             yield "".join(self.partial_line_from)  # type: ignore
 
 
-def to_line_diff(
-    fragment_sequence: Iterable[Sequence[Hashable]],
-):
+def to_line_diff(fragment_sequence: DiffIterable):
     accumulator = DiffAccumulator()
     empty = True
     for fragment in fragment_sequence:
@@ -105,6 +105,11 @@ def handle_fragment(fragment, accumulator):
         accumulator.add_conflict(fragment)
 
     elif isinstance(fragment, str):
+        # Don't finish an accumulating conflict on spaces/newlines.
+        if accumulator.in_conflict and fragment.isspace():
+            accumulator.add(fragment)
+            return
+
         if accumulator.finishable and accumulator.is_nonempty():
             yield from accumulator.finish_conflict("")
 
@@ -129,3 +134,37 @@ def join_with_newline(lines):
         return "\n".join(line for line in lines) + "\n"
     else:
         return ""
+
+
+# Following routine is very similar to consolidate_*() functions in
+# merge.py.  There's an opportunity for some refactoring.
+
+
+def consolidate(stream: DiffIterable) -> DiffIterable:
+    """Loop through change stream of strange and Change objeccts
+    and consolidate the change objects.
+
+    It's not important whether strings or level1 chnage objects
+    get consolidated, but the level 0 Change objects should be.
+    """
+    a_fragments = []
+    b_fragments = []
+    for fragment in stream:
+        if isinstance(fragment, Change):
+            # At this level, Change components should be
+            # sequences so use extend() rather than append()
+            a_fragments.extend(fragment.a)
+            b_fragments.extend(fragment.b)
+        else:
+            if a_fragments or b_fragments:
+                yield Change(tuple(a_fragments), tuple(b_fragments))
+                a_fragments.clear()
+                b_fragments.clear()
+
+            yield fragment
+    if a_fragments or b_fragments:
+        yield Change(tuple(a_fragments), tuple(b_fragments))
+
+
+def consolidated_line_diff(stream: DiffIterable) -> DiffIterable:
+    yield from consolidate(to_line_diff(stream))
